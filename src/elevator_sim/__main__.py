@@ -75,6 +75,28 @@ def cmd_run(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_compare(a: argparse.Namespace) -> int:
+    from .compare import Variant, format_markdown, format_table, load_manifest, run_matrix
+
+    scenarios = load_manifest(a.manifest)
+    if a.scenario:
+        scenarios = [s for s in scenarios if s.name in a.scenario]
+    variants = [Variant(name) for name in a.schedulers.split(",")]
+    variants += [Variant("etd", fairness=w) for w in a.fairness]
+    rows = run_matrix(
+        scenarios, variants, dwell_ticks=a.dwell, trace_dir=a.out / "traces" if a.traces else None
+    )
+    print(format_table(rows))
+    a.out.mkdir(parents=True, exist_ok=True)
+    (a.out / "comparison.json").write_text(json.dumps(rows, indent=2) + "\n")
+    (a.out / "comparison.md").write_text(format_markdown(rows) + "\n")
+    print(
+        f"\nwrote {a.out / 'comparison.json'}, {a.out / 'comparison.md'}"
+        + (f", traces in {a.out / 'traces'}" if a.traces else "")
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="elevator-sim", description="Destination-dispatch elevator simulation"
@@ -90,6 +112,22 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--out", type=Path, default=Path("outputs/run"))
     _add_config_args(run)
     run.set_defaults(func=cmd_run)
+
+    cmp_ = sub.add_parser("compare", help="run every scheduler on every scenario in a manifest")
+    cmp_.add_argument("--manifest", type=Path, default=Path("scenarios/manifest.json"))
+    cmp_.add_argument("--scenario", action="append", default=[], help="limit to these names")
+    cmp_.add_argument("--schedulers", default=",".join(sorted(SCHEDULERS)))
+    cmp_.add_argument(
+        "--fairness",
+        type=float,
+        action="append",
+        default=[],
+        help="also run ETD with this fairness weight (repeatable)",
+    )
+    cmp_.add_argument("--dwell", type=int, default=1)
+    cmp_.add_argument("--traces", action="store_true", help="write a JSON trace per run")
+    cmp_.add_argument("--out", type=Path, default=Path("outputs/compare"))
+    cmp_.set_defaults(func=cmd_compare)
     return parser
 
 

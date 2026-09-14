@@ -1,0 +1,65 @@
+[
+  {
+    "name": "sample",
+    "file": "sample.csv",
+    "floors": 51,
+    "elevators": 2,
+    "capacity": 8,
+    "description": "The three requests from the brief.",
+    "seed": null
+  },
+  {
+    "name": "morning_up_peak",
+    "file": "morning_up_peak.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "description": "Office morning: 13% of population per window, almost all from the lobby.",
+    "seed": 1
+  },
+  {
+    "name": "lunch_two_way",
+    "file": "lunch_two_way.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "description": "Lunchtime: balanced up and down traffic, the hardest pattern for control.",
+    "seed": 2
+  },
+  {
+    "name": "evening_down_peak",
+    "file": "evening_down_peak.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "description": "End of day: high rate for a short time, nearly everyone heading to the lobby.",
+    "seed": 3
+  },
+  {
+    "name": "interfloor",
+    "file": "interfloor.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "description": "Quiet interfloor traffic between upper floors, no lobby involvement.",
+    "seed": 4
+  },
+  {
+    "name": "capacity_stress",
+    "file": "capacity_stress.csv",
+    "floors": 20,
+    "elevators": 2,
+    "capacity": 6,
+    "description": "Two small cars, a burst of lobby arrivals: cars fill and passengers get left behind.",
+    "seed": 5
+  },
+  {
+    "name": "tall_building",
+    "file": "tall_building.csv",
+    "floors": 51,
+    "elevators": 6,
+    "capacity": 10,
+    "description": "The 51-floor building implied by the brief's sample, beyond a single bank's comfort.",
+    "seed": 6
+  }
+]
