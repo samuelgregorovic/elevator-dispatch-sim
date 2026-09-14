@@ -8,6 +8,8 @@ Every item here is a place where the brief (`brief.pdf`) leaves a choice open. E
 
 **A2. Stops cost time.** The brief does not say whether boarding takes time. Default: a car that stops at a floor to load or unload spends `dwell_ticks = 1` tick stationary there before moving on. Reason: without a stop cost, "fewer stops" — the main benefit of destination dispatch — has no effect on any metric, and every scheduler looks the same. `dwell_ticks = 0` reproduces the literal brief and is supported.
 
+A stop is one dwell per floor visit. Passengers who arrive at the floor while the car is already dwelling there may still board if there is room, but they do not restart the dwell; the car leaves when the dwell ends and anyone who missed it waits for the next pass. `stops_made` counts floor visits with activity, not boarding events. (An earlier implementation restarted the dwell on every boarding, which let a busy lobby hold a car indefinitely.)
+
 **A3. Order of operations within a tick `t`.** A tick is the state of the system *at* time `t`; movement happens between ticks.
 
 1. Release all requests with `time == t` to the controller (never any with `time > t`).
@@ -34,7 +36,7 @@ Consequence: a passenger who requests at `t` on the floor where an idle car alre
 
 **A9. Idle behaviour.** An idle car stays where it last stopped. Optional `park_floor` policy sends idle cars to a floor (usually the lobby); off by default.
 
-**A10. Express cars.** A car may have a `served_floors` set. It never stops elsewhere and is never assigned a passenger whose origin or destination it does not serve. Transfers between cars (sky lobbies) are out of scope.
+**A10. Express cars.** A car may have a `served_floors` set. It never stops elsewhere and is never assigned a passenger whose origin or destination it does not serve. A request that no car could serve is rejected before the run starts, and a park floor must be served by every express car. Transfers between cars (sky lobbies) are out of scope.
 
 ## Dispatch
 
@@ -50,9 +52,9 @@ One refinement, found by a property-based test: a passenger waiting at the car's
 
 **A14. Input format.** CSV with header `time,id,source,dest`, as in the brief. Rows need not be sorted; they are sorted by `time` (stable, preserving file order within a tick) on load. Sorting is not peeking: the controller still only sees a row once the clock reaches its `time`.
 
-**A15. Validation.** The following are rejected with a message naming the row: non-integer fields; `time < 0`; `source == dest`; `source` or `dest` outside `1..n`; duplicate `id`. An empty request list is valid and produces a single log row for tick 0.
+**A15. Validation.** The following are rejected with a message naming the row: rows with fewer than four fields; non-integer fields; `time < 0`; `source == dest`; `source` or `dest` outside `1..n`; duplicate `id`. An empty request list is valid and produces a single log row for tick 0.
 
-**A16. No peek-ahead is structural.** The simulation reads requests through a feed object that only releases rows with `time <= now`. The scheduler receives new requests one tick at a time and has no reference to the feed. A test with a spy feed asserts this.
+**A16. No peek-ahead is structural.** The simulation reads requests through a feed object that only releases rows with `time <= now`. The scheduler receives new requests one tick at a time and has no reference to the feed. A spy scheduler that records the clock at which it sees each request asserts this, and the feed's release rule is tested directly.
 
 ## Output
 

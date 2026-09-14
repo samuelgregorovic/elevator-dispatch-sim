@@ -242,7 +242,7 @@
     if (waits.length) { const m = waits.reduce((a, b) => a + b, 0) / waits.length; ctx.fillStyle = css('--ink'); ctx.fillText(`mean ${m.toFixed(1)}`, 60, 12); }
   }
 
-  function pct(sorted, p) { if (!sorted.length) return 0; const r = Math.max(1, Math.round(p / 100 * sorted.length + 0.5)); return sorted[Math.min(r, sorted.length) - 1]; }
+  function pct(sorted, p) { if (!sorted.length) return 0; const r = Math.max(1, Math.ceil(p / 100 * sorted.length)); return sorted[Math.min(r, sorted.length) - 1]; }  // nearest rank, same as metrics.percentile
   async function renderComparison() {
     const s = index.find(x => x.scenario === $('scenario').value);
     const rows = [];

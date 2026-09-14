@@ -1,6 +1,6 @@
 # Testing approach
 
-`uv run pytest` — 77 tests, about ten seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12.
+`uv run pytest` — 84 tests, about ten seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12.
 
 The suite is organised by what kind of mistake it would catch, not by module.
 
@@ -8,7 +8,7 @@ The suite is organised by what kind of mistake it would catch, not by module.
 
 `test_tick_semantics.py`, `test_capacity_and_direction.py`, `test_validation.py`
 
-Each assumption in `ASSUMPTIONS.md` that has an observable consequence has a test that pins it: the idle-car-on-the-floor case gives wait 0 and the one-floor-away case gives wait 1 (A3); dwell adds exactly one tick per stop and `dwell_ticks = 0` reproduces the literal brief (A2); tick 0 logs the initial positions and the simulation ticks through idle gaps instead of jumping (A5); capacity is never exceeded and a passenger left behind boards the same car on a later pass (A8, A11); a car going up does not pick up a down passenger it passes (A12); an idle car adopts the direction of the longest-waiting passenger at its floor; an express car is only ever assigned feasible passengers (A10); every invalid-input case in A15 is rejected with a message that names the row and the reason.
+Each assumption in `ASSUMPTIONS.md` that has an observable consequence has a test that pins it: the idle-car-on-the-floor case gives wait 0 and the one-floor-away case gives wait 1 (A3); dwell adds exactly one tick per stop and `dwell_ticks = 0` reproduces the literal brief (A2); tick 0 logs the initial positions and the simulation ticks through idle gaps instead of jumping (A5); capacity is never exceeded and a passenger left behind boards the same car on a later pass (A8, A11); a car going up does not pick up a down passenger it passes (A12); an idle car adopts the direction of the longest-waiting passenger at its floor; an express car is only ever assigned feasible passengers, an infeasible request is rejected before the run starts, and a park floor must lie inside every express zone (A10); a stop is one dwell per floor visit and passengers arriving mid-dwell do not extend it (A2); an idle car reports an idle direction; `percentile` is nearest-rank; every invalid-input case in A15 is rejected with a message that names the row and the reason, and a UTF-8 BOM is tolerated.
 
 These tests are deliberately tiny — one to four requests, one or two cars — so that when one fails the reason is obvious.
 
@@ -16,15 +16,15 @@ These tests are deliberately tiny — one to four requests, one or two cars — 
 
 `test_no_peek_ahead.py`
 
-A spy scheduler records the clock value at which it sees each request. The test asserts that every request is seen exactly at its own `time`, never earlier, on an input that is deliberately out of order. The `RequestFeed` is also tested directly. This is the brief's hardest constraint to trust by inspection, so it is tested rather than promised.
+A spy *scheduler* records the clock value at which it sees each request. The test asserts that every request is seen exactly at its own `time`, never earlier, on an input that is deliberately out of order. The `RequestFeed` is also tested directly for its release rule. This is the brief's hardest constraint to trust by inspection, so it is tested rather than promised.
 
 ## 3. Property-based invariants
 
 `test_invariants.py` (Hypothesis)
 
-For random buildings (2–12 floors, 1–4 cars, capacity 1–6, dwell 0–2) and random request sets (0–25 requests over 30 ticks), for every scheduler:
+For random buildings (2–24 floors, 1–6 cars, capacity 1–6, dwell 0–2, any start floor, optionally one express car and a park floor) and random request sets (0–40 requests over 30 ticks), for every scheduler:
 
-- every passenger is delivered, and `request ≤ board < alight`;
+- every passenger is delivered, `request ≤ board < alight`, and boarding happens only at the origin and alighting only at the destination;
 - every car stays within the building and moves at most one floor per tick;
 - load never exceeds capacity;
 - two runs on the same input produce identical positions and events;
@@ -36,7 +36,7 @@ These are the properties the brief's three objectives translate into. The delive
 
 `test_scenarios_golden.py`, `test_policies.py`
 
-The sample from the brief is run with each scheduler and its tick count, wait and total statistics are pinned. Three empirical findings from the committed scenarios are pinned as inequalities (parking reduces up-peak wait; the fairness weight lowers the tall-building maximum wait; the zoned scenario is fully served). Any change in behaviour — intended or not — changes these numbers and has to be acknowledged by updating the test.
+The sample from the brief is run with each scheduler and its tick count, wait and total statistics are pinned. Three empirical findings from the committed scenarios are pinned as inequalities (parking reduces up-peak wait; the fairness weight lowers the maximum wait on `tall_lobby_traffic`; the zoned scenario is fully served). Any change in behaviour — intended or not — changes these numbers and has to be acknowledged by updating the test.
 
 ## 5. Scenario and tooling tests
 
@@ -47,5 +47,9 @@ The scenario generator is re-run inside the test and its output compared byte fo
 ## What is not tested, and why
 
 - Rendering details of the charts and the viewer beyond "produces a file" / "loads without console errors" (the viewer was checked manually in a headless browser). Pixel tests would cost more than they catch here.
-- Performance. The full comparison runs in about a second; there is no requirement that would justify a benchmark.
+- Performance. The full comparison runs in a few seconds; there is no requirement that would justify a benchmark.
 - The projection horizon bound in `etd.py` is generous by construction rather than proven tight; the invariant tests cover the outcome (every passenger delivered, deterministic), not the bound itself.
+
+## Adversarial testing
+
+Beyond the suite, the engine was fuzzed with 400 random buildings (1–10 cars, 2–60 floors, capacity 1–12, random express zones, park and start floors), reconstructing load from events and checking delivery, movement, capacity, boarding at origin and alighting at destination; no invariant broke, and the Hypothesis strategy was widened to the same ranges afterwards. Malformed and edge-case inputs — missing fields, a BOM, CRLF, blank lines, float times, a header-only file, a last-tick request, a single pair, adversarial oscillation and streaming cases — produced two fixes, both now covered by tests. The browser page's comparison figures were cross-checked against `comparison.md`, which found and fixed a double-rounding of the published means.

@@ -61,8 +61,8 @@ Other commands:
 uv run python -m elevator_sim compare                    # every scheduler × every scenario, table + JSON
 uv run python -m elevator_sim compare --fairness 0.5 --traces --out docs/viewer   # regenerate viewer traces
 uv run python scenarios/generate.py                      # regenerate the scenario CSVs (seeded, byte-identical)
-uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.5   # PNG charts
-uv run pytest                                            # 77 tests
+uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # PNG charts as committed
+uv run pytest                                            # 84 tests
 uv run ruff check . && uv run ruff format --check .
 ```
 
@@ -72,17 +72,17 @@ uv run ruff check . && uv run ruff format --check .
 |---|---|
 | **Engine** | Tick loop with a fixed order of operations; LOOK car movement; capacity; configurable dwell per stop; a request feed that structurally cannot peek ahead; input validation that fails fast with the row named. |
 | **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` and `round_robin` as baselines. |
-| **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak, interfloor, a capacity burst and a 51-floor building, with traffic mixes taken from the elevator-traffic literature; policy variants for parking at the lobby and zoned express cars. |
+| **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature, plus a capacity burst and two 51-floor cases chosen as stress tests; policy variants for parking at the lobby and zoned express cars. |
 | **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and a static viewer on GitHub Pages. |
-| **Tests** | 77 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, and end-to-end CLI checks. |
+| **Tests** | 84 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, and end-to-end CLI checks — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
 
 ## Results in brief
 
 Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/viewer/comparison.md`](docs/viewer/comparison.md).
 
-- ETD has the lowest average and p90 wait on every realistic traffic pattern, by 1.5–3× over nearest-car; the gap is widest on the tall building.
+- ETD has the lowest average and p90 wait on every realistic traffic pattern: 1.2× (quiet interfloor) to 3.7× (tall building) lower average wait than nearest-car, and 2–3.3× lower than round robin.
 - Under a single-origin capacity burst ETD and round robin tie: when the system is saturated the only lever is spreading load evenly.
-- Parking idle cars at the lobby cuts ETD's up-peak average wait by ~30%. A fairness weight of 0.5 halves the tall building's maximum wait without hurting the average, but slightly hurts the 20-floor patterns — it is a per-building tuning knob, not a free improvement.
+- Parking idle cars at the lobby cuts ETD's up-peak average wait by ~40%. A fairness weight of 0.5 halves the tall building's maximum wait at a ~25% cost in average wait, improves everything under the capacity burst, and is close to neutral on the 20-floor patterns — a per-building tuning knob, not a free improvement.
 - Splitting six cars into local and express zones is worse than six free cars at moderate load: zoning trades flexibility for stop reduction and only pays off under saturation.
 
 ![Waiting-time distribution on the tall building](docs/charts/wait_distribution_tall_building.png)

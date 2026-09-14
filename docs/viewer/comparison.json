@@ -38,7 +38,7 @@
       "count": 3,
       "min": 0,
       "max": 19,
-      "mean": 6.33,
+      "mean": 6.333333333333333,
       "p50": 0.0,
       "p90": 19.0
     },
@@ -46,7 +46,7 @@
       "count": 3,
       "min": 37,
       "max": 52,
-      "mean": 42.67,
+      "mean": 42.666666666666664,
       "p50": 39.0,
       "p90": 52.0
     },
@@ -68,7 +68,7 @@
       "count": 3,
       "min": 0,
       "max": 73,
-      "mean": 24.33,
+      "mean": 24.333333333333332,
       "p50": 0.0,
       "p90": 73.0
     },
@@ -76,7 +76,7 @@
       "count": 3,
       "min": 37,
       "max": 93,
-      "mean": 60.33,
+      "mean": 60.333333333333336,
       "p50": 51.0,
       "p90": 93.0
     },
@@ -128,123 +128,123 @@
       "count": 166,
       "min": 0,
       "max": 19,
-      "mean": 6.76,
-      "p50": 5.0,
-      "p90": 15.0
+      "mean": 7.126506024096385,
+      "p50": 6.0,
+      "p90": 16.0
     },
     "total": {
       "count": 166,
       "min": 2,
       "max": 44,
-      "mean": 20.16,
+      "mean": 20.566265060240966,
       "p50": 20.0,
-      "p90": 32.0
+      "p90": 33.0
     },
     "observations": [
-      "41 of 166 passengers (25%) waited more than twice the median wait of 5 ticks",
+      "30 of 166 passengers (18%) waited more than twice the median wait of 6 ticks",
       "15 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 34, stops 37, floors travelled 205, idle 50% of ticks",
-      "elevator 2: carried 45, stops 52, floors travelled 260, idle 36% of ticks",
-      "elevator 3: carried 37, stops 50, floors travelled 284, idle 32% of ticks",
-      "elevator 4: carried 50, stops 52, floors travelled 277, idle 32% of ticks"
+      "elevator 1: carried 32, stops 33, floors travelled 200, idle 52% of ticks",
+      "elevator 2: carried 39, stops 47, floors travelled 230, idle 43% of ticks",
+      "elevator 3: carried 59, stops 63, floors travelled 315, idle 22% of ticks",
+      "elevator 4: carried 36, stops 45, floors travelled 267, idle 36% of ticks"
     ]
   },
   {
     "scenario": "morning_up_peak",
     "scheduler": "nearest_car",
     "passengers": 166,
-    "ticks": 503,
+    "ticks": 487,
     "wait": {
       "count": 166,
       "min": 0,
-      "max": 44,
-      "mean": 11.88,
-      "p50": 7.0,
-      "p90": 35.0
+      "max": 68,
+      "mean": 12.012048192771084,
+      "p50": 6.0,
+      "p90": 34.0
     },
     "total": {
       "count": 166,
       "min": 2,
-      "max": 62,
-      "mean": 24.76,
+      "max": 73,
+      "mean": 24.662650602409638,
       "p50": 22.0,
-      "p90": 45.0
+      "p90": 49.0
     },
     "observations": [
-      "56 of 166 passengers (34%) waited more than twice the median wait of 7 ticks",
-      "32 passengers boarded in the tick they requested (wait 0)",
+      "59 of 166 passengers (36%) waited more than twice the median wait of 6 ticks",
+      "35 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 41, stops 59, floors travelled 385, idle 13% of ticks",
-      "elevator 2: carried 45, stops 65, floors travelled 414, idle 6% of ticks",
-      "elevator 3: carried 39, stops 54, floors travelled 397, idle 12% of ticks",
-      "elevator 4: carried 41, stops 57, floors travelled 381, idle 15% of ticks"
+      "elevator 1: carried 44, stops 54, floors travelled 408, idle 6% of ticks",
+      "elevator 2: carried 39, stops 53, floors travelled 370, idle 16% of ticks",
+      "elevator 3: carried 44, stops 56, floors travelled 378, idle 12% of ticks",
+      "elevator 4: carried 39, stops 53, floors travelled 391, idle 11% of ticks"
     ]
   },
   {
     "scenario": "morning_up_peak",
     "scheduler": "round_robin",
     "passengers": 166,
-    "ticks": 494,
+    "ticks": 490,
     "wait": {
       "count": 166,
       "min": 0,
       "max": 42,
-      "mean": 16.65,
-      "p50": 16.0,
+      "mean": 16.47590361445783,
+      "p50": 15.0,
       "p90": 34.0
     },
     "total": {
       "count": 166,
       "min": 2,
       "max": 64,
-      "mean": 29.36,
-      "p50": 29.0,
-      "p90": 47.0
+      "mean": 29.042168674698797,
+      "p50": 28.0,
+      "p90": 46.0
     },
     "observations": [
-      "23 of 166 passengers (14%) waited more than twice the median wait of 16 ticks",
+      "27 of 166 passengers (16%) waited more than twice the median wait of 15 ticks",
       "13 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 42, stops 55, floors travelled 428, idle 2% of ticks",
-      "elevator 2: carried 42, stops 60, floors travelled 429, idle 1% of ticks",
-      "elevator 3: carried 41, stops 59, floors travelled 381, idle 12% of ticks",
-      "elevator 4: carried 41, stops 58, floors travelled 416, idle 5% of ticks"
+      "elevator 1: carried 42, stops 54, floors travelled 428, idle 2% of ticks",
+      "elevator 2: carried 42, stops 58, floors travelled 427, idle 1% of ticks",
+      "elevator 3: carried 41, stops 57, floors travelled 381, idle 11% of ticks",
+      "elevator 4: carried 41, stops 55, floors travelled 416, idle 5% of ticks"
     ]
   },
   {
     "scenario": "morning_up_peak",
     "scheduler": "etd_f0.5",
     "passengers": 166,
-    "ticks": 476,
+    "ticks": 482,
     "wait": {
       "count": 166,
       "min": 0,
-      "max": 25,
-      "mean": 7.73,
+      "max": 22,
+      "mean": 7.716867469879518,
       "p50": 6.0,
-      "p90": 17.0
+      "p90": 16.0
     },
     "total": {
       "count": 166,
-      "min": 2,
-      "max": 42,
-      "mean": 20.84,
+      "min": 1,
+      "max": 39,
+      "mean": 20.572289156626507,
       "p50": 21.0,
       "p90": 31.0
     },
     "observations": [
-      "42 of 166 passengers (25%) waited more than twice the median wait of 6 ticks",
-      "22 passengers boarded in the tick they requested (wait 0)",
+      "43 of 166 passengers (26%) waited more than twice the median wait of 6 ticks",
+      "21 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 46, stops 56, floors travelled 327, idle 21% of ticks",
-      "elevator 2: carried 49, stops 61, floors travelled 331, idle 20% of ticks",
-      "elevator 3: carried 52, stops 58, floors travelled 344, idle 18% of ticks",
-      "elevator 4: carried 19, stops 22, floors travelled 152, idle 64% of ticks"
+      "elevator 1: carried 34, stops 42, floors travelled 276, idle 35% of ticks",
+      "elevator 2: carried 39, stops 44, floors travelled 251, idle 40% of ticks",
+      "elevator 3: carried 42, stops 48, floors travelled 295, idle 31% of ticks",
+      "elevator 4: carried 51, stops 56, floors travelled 331, idle 22% of ticks"
     ]
   },
   {
@@ -256,59 +256,59 @@
       "count": 131,
       "min": 0,
       "max": 21,
-      "mean": 4.25,
+      "mean": 4.038167938931298,
       "p50": 2.0,
       "p90": 11.0
     },
     "total": {
       "count": 131,
-      "min": 2,
+      "min": 1,
       "max": 40,
-      "mean": 15.22,
+      "mean": 14.977099236641221,
       "p50": 14.0,
-      "p90": 26.0
+      "p90": 25.0
     },
     "observations": [
-      "50 of 131 passengers (38%) waited more than twice the median wait of 2 ticks",
-      "37 passengers boarded in the tick they requested (wait 0)",
+      "42 of 131 passengers (32%) waited more than twice the median wait of 2 ticks",
+      "33 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (53 of 131 requests)",
       "direction mix: 59 up, 72 down",
-      "elevator 1: carried 33, stops 50, floors travelled 326, idle 24% of ticks",
-      "elevator 2: carried 40, stops 58, floors travelled 326, idle 22% of ticks",
-      "elevator 3: carried 29, stops 48, floors travelled 245, idle 41% of ticks",
-      "elevator 4: carried 29, stops 44, floors travelled 270, idle 37% of ticks"
+      "elevator 1: carried 40, stops 58, floors travelled 314, idle 24% of ticks",
+      "elevator 2: carried 32, stops 47, floors travelled 284, idle 33% of ticks",
+      "elevator 3: carried 31, stops 48, floors travelled 299, idle 30% of ticks",
+      "elevator 4: carried 28, stops 46, floors travelled 228, idle 45% of ticks"
     ]
   },
   {
     "scenario": "lunch_two_way",
     "scheduler": "nearest_car",
     "passengers": 131,
-    "ticks": 489,
+    "ticks": 485,
     "wait": {
       "count": 131,
       "min": 0,
-      "max": 36,
-      "mean": 7.32,
+      "max": 33,
+      "mean": 6.877862595419847,
       "p50": 4.0,
       "p90": 18.0
     },
     "total": {
       "count": 131,
       "min": 2,
-      "max": 52,
-      "mean": 18.47,
+      "max": 51,
+      "mean": 17.984732824427482,
       "p50": 17.0,
-      "p90": 35.0
+      "p90": 34.0
     },
     "observations": [
-      "41 of 131 passengers (31%) waited more than twice the median wait of 4 ticks",
-      "32 passengers boarded in the tick they requested (wait 0)",
+      "42 of 131 passengers (32%) waited more than twice the median wait of 4 ticks",
+      "33 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (53 of 131 requests)",
       "direction mix: 59 up, 72 down",
-      "elevator 1: carried 35, stops 55, floors travelled 327, idle 25% of ticks",
-      "elevator 2: carried 36, stops 54, floors travelled 322, idle 26% of ticks",
-      "elevator 3: carried 25, stops 45, floors travelled 334, idle 26% of ticks",
-      "elevator 4: carried 35, stops 50, floors travelled 304, idle 30% of ticks"
+      "elevator 1: carried 35, stops 53, floors travelled 327, idle 25% of ticks",
+      "elevator 2: carried 35, stops 51, floors travelled 308, idle 29% of ticks",
+      "elevator 3: carried 26, stops 44, floors travelled 356, idle 20% of ticks",
+      "elevator 4: carried 35, stops 52, floors travelled 321, idle 27% of ticks"
     ]
   },
   {
@@ -320,27 +320,27 @@
       "count": 131,
       "min": 0,
       "max": 38,
-      "mean": 13.24,
+      "mean": 13.206106870229007,
       "p50": 11.0,
       "p90": 28.0
     },
     "total": {
       "count": 131,
-      "min": 3,
+      "min": 2,
       "max": 55,
-      "mean": 24.22,
+      "mean": 24.15267175572519,
       "p50": 24.0,
       "p90": 40.0
     },
     "observations": [
       "29 of 131 passengers (22%) waited more than twice the median wait of 11 ticks",
-      "9 passengers boarded in the tick they requested (wait 0)",
+      "10 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (53 of 131 requests)",
       "direction mix: 59 up, 72 down",
-      "elevator 1: carried 33, stops 54, floors travelled 414, idle 6% of ticks",
+      "elevator 1: carried 33, stops 53, floors travelled 414, idle 6% of ticks",
       "elevator 2: carried 33, stops 49, floors travelled 384, idle 13% of ticks",
       "elevator 3: carried 33, stops 51, floors travelled 361, idle 17% of ticks",
-      "elevator 4: carried 32, stops 54, floors travelled 404, idle 7% of ticks"
+      "elevator 4: carried 32, stops 53, floors travelled 404, idle 8% of ticks"
     ]
   },
   {
@@ -351,28 +351,28 @@
     "wait": {
       "count": 131,
       "min": 0,
-      "max": 21,
-      "mean": 4.72,
+      "max": 18,
+      "mean": 4.541984732824427,
       "p50": 3.0,
-      "p90": 13.0
+      "p90": 12.0
     },
     "total": {
       "count": 131,
-      "min": 3,
-      "max": 40,
-      "mean": 15.63,
+      "min": 2,
+      "max": 37,
+      "mean": 15.465648854961833,
       "p50": 15.0,
       "p90": 26.0
     },
     "observations": [
-      "44 of 131 passengers (34%) waited more than twice the median wait of 3 ticks",
-      "34 passengers boarded in the tick they requested (wait 0)",
+      "39 of 131 passengers (30%) waited more than twice the median wait of 3 ticks",
+      "35 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (53 of 131 requests)",
       "direction mix: 59 up, 72 down",
-      "elevator 1: carried 33, stops 50, floors travelled 286, idle 32% of ticks",
-      "elevator 2: carried 35, stops 54, floors travelled 330, idle 22% of ticks",
-      "elevator 3: carried 28, stops 46, floors travelled 301, idle 30% of ticks",
-      "elevator 4: carried 35, stops 51, floors travelled 290, idle 31% of ticks"
+      "elevator 1: carried 39, stops 55, floors travelled 304, idle 27% of ticks",
+      "elevator 2: carried 27, stops 42, floors travelled 316, idle 27% of ticks",
+      "elevator 3: carried 34, stops 57, floors travelled 281, idle 32% of ticks",
+      "elevator 4: carried 31, stops 45, floors travelled 298, idle 30% of ticks"
     ]
   },
   {
@@ -384,27 +384,27 @@
       "count": 113,
       "min": 0,
       "max": 25,
-      "mean": 7.83,
+      "mean": 7.601769911504425,
       "p50": 7.0,
       "p90": 17.0
     },
     "total": {
       "count": 113,
-      "min": 3,
+      "min": 2,
       "max": 44,
-      "mean": 19.55,
-      "p50": 19.0,
+      "mean": 19.265486725663717,
+      "p50": 18.0,
       "p90": 36.0
     },
     "observations": [
-      "19 of 113 passengers (17%) waited more than twice the median wait of 7 ticks",
-      "12 passengers boarded in the tick they requested (wait 0)",
+      "17 of 113 passengers (15%) waited more than twice the median wait of 7 ticks",
+      "15 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 14 (11 of 113 requests)",
       "direction mix: 15 up, 98 down",
-      "elevator 1: carried 26, stops 37, floors travelled 240, idle 20% of ticks",
-      "elevator 2: carried 32, stops 39, floors travelled 212, idle 29% of ticks",
-      "elevator 3: carried 24, stops 32, floors travelled 258, idle 17% of ticks",
-      "elevator 4: carried 31, stops 44, floors travelled 194, idle 33% of ticks"
+      "elevator 1: carried 28, stops 42, floors travelled 216, idle 27% of ticks",
+      "elevator 2: carried 31, stops 35, floors travelled 234, idle 24% of ticks",
+      "elevator 3: carried 23, stops 32, floors travelled 258, idle 17% of ticks",
+      "elevator 4: carried 31, stops 40, floors travelled 196, idle 33% of ticks"
     ]
   },
   {
@@ -415,28 +415,28 @@
     "wait": {
       "count": 113,
       "min": 0,
-      "max": 49,
-      "mean": 12.27,
-      "p50": 8.0,
-      "p90": 37.0
+      "max": 43,
+      "mean": 10.805309734513274,
+      "p50": 6.0,
+      "p90": 33.0
     },
     "total": {
       "count": 113,
-      "min": 2,
+      "min": 3,
       "max": 69,
-      "mean": 24.84,
-      "p50": 21.0,
-      "p90": 49.0
+      "mean": 23.123893805309734,
+      "p50": 19.0,
+      "p90": 48.0
     },
     "observations": [
-      "27 of 113 passengers (24%) waited more than twice the median wait of 8 ticks",
-      "13 passengers boarded in the tick they requested (wait 0)",
+      "37 of 113 passengers (33%) waited more than twice the median wait of 6 ticks",
+      "12 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 14 (11 of 113 requests)",
       "direction mix: 15 up, 98 down",
-      "elevator 1: carried 32, stops 40, floors travelled 238, idle 18% of ticks",
-      "elevator 2: carried 27, stops 35, floors travelled 222, idle 25% of ticks",
-      "elevator 3: carried 21, stops 29, floors travelled 234, idle 22% of ticks",
-      "elevator 4: carried 33, stops 42, floors travelled 210, idle 26% of ticks"
+      "elevator 1: carried 33, stops 41, floors travelled 250, idle 14% of ticks",
+      "elevator 2: carried 30, stops 38, floors travelled 236, idle 20% of ticks",
+      "elevator 3: carried 22, stops 33, floors travelled 216, idle 27% of ticks",
+      "elevator 4: carried 28, stops 38, floors travelled 234, idle 19% of ticks"
     ]
   },
   {
@@ -448,7 +448,7 @@
       "count": 113,
       "min": 0,
       "max": 42,
-      "mean": 17.9,
+      "mean": 17.902654867256636,
       "p50": 17.0,
       "p90": 33.0
     },
@@ -456,7 +456,7 @@
       "count": 113,
       "min": 3,
       "max": 61,
-      "mean": 30.01,
+      "mean": 30.008849557522122,
       "p50": 31.0,
       "p90": 46.0
     },
@@ -480,15 +480,15 @@
       "count": 113,
       "min": 0,
       "max": 27,
-      "mean": 8.66,
+      "mean": 8.619469026548673,
       "p50": 8.0,
       "p90": 17.0
     },
     "total": {
       "count": 113,
-      "min": 3,
+      "min": 2,
       "max": 45,
-      "mean": 20.37,
+      "mean": 20.27433628318584,
       "p50": 19.0,
       "p90": 35.0
     },
@@ -497,10 +497,10 @@
       "12 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 14 (11 of 113 requests)",
       "direction mix: 15 up, 98 down",
-      "elevator 1: carried 28, stops 35, floors travelled 252, idle 17% of ticks",
-      "elevator 2: carried 28, stops 40, floors travelled 216, idle 27% of ticks",
+      "elevator 1: carried 29, stops 35, floors travelled 252, idle 17% of ticks",
+      "elevator 2: carried 28, stops 39, floors travelled 216, idle 27% of ticks",
       "elevator 3: carried 24, stops 34, floors travelled 246, idle 19% of ticks",
-      "elevator 4: carried 33, stops 38, floors travelled 246, idle 18% of ticks"
+      "elevator 4: carried 32, stops 37, floors travelled 246, idle 18% of ticks"
     ]
   },
   {
@@ -512,15 +512,15 @@
       "count": 85,
       "min": 0,
       "max": 17,
-      "mean": 3.87,
+      "mean": 3.8705882352941177,
       "p50": 3.0,
       "p90": 10.0
     },
     "total": {
       "count": 85,
-      "min": 2,
+      "min": 1,
       "max": 29,
-      "mean": 11.39,
+      "mean": 11.376470588235295,
       "p50": 11.0,
       "p90": 19.0
     },
@@ -531,7 +531,7 @@
       "direction mix: 42 up, 43 down",
       "elevator 1: carried 22, stops 42, floors travelled 209, idle 49% of ticks",
       "elevator 2: carried 25, stops 45, floors travelled 206, idle 49% of ticks",
-      "elevator 3: carried 22, stops 42, floors travelled 176, idle 55% of ticks",
+      "elevator 3: carried 22, stops 41, floors travelled 176, idle 56% of ticks",
       "elevator 4: carried 16, stops 30, floors travelled 117, idle 70% of ticks"
     ]
   },
@@ -539,32 +539,32 @@
     "scenario": "interfloor",
     "scheduler": "nearest_car",
     "passengers": 85,
-    "ticks": 453,
+    "ticks": 454,
     "wait": {
       "count": 85,
       "min": 0,
-      "max": 36,
-      "mean": 5.44,
-      "p50": 3.0,
-      "p90": 16.0
+      "max": 23,
+      "mean": 4.529411764705882,
+      "p50": 2.0,
+      "p90": 12.0
     },
     "total": {
       "count": 85,
       "min": 3,
-      "max": 39,
-      "mean": 12.99,
-      "p50": 11.0,
-      "p90": 26.0
+      "max": 37,
+      "mean": 12.176470588235293,
+      "p50": 10.0,
+      "p90": 23.0
     },
     "observations": [
-      "23 of 85 passengers (27%) waited more than twice the median wait of 3 ticks",
-      "15 passengers boarded in the tick they requested (wait 0)",
+      "29 of 85 passengers (34%) waited more than twice the median wait of 2 ticks",
+      "18 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 7 (8 of 85 requests)",
       "direction mix: 42 up, 43 down",
-      "elevator 1: carried 23, stops 43, floors travelled 184, idle 52% of ticks",
-      "elevator 2: carried 23, stops 44, floors travelled 177, idle 55% of ticks",
-      "elevator 3: carried 20, stops 37, floors travelled 170, idle 57% of ticks",
-      "elevator 4: carried 19, stops 37, floors travelled 215, idle 48% of ticks"
+      "elevator 1: carried 26, stops 50, floors travelled 198, idle 49% of ticks",
+      "elevator 2: carried 20, stops 36, floors travelled 133, idle 66% of ticks",
+      "elevator 3: carried 19, stops 37, floors travelled 203, idle 50% of ticks",
+      "elevator 4: carried 20, stops 38, floors travelled 186, idle 54% of ticks"
     ]
   },
   {
@@ -576,7 +576,7 @@
       "count": 85,
       "min": 0,
       "max": 27,
-      "mean": 8.06,
+      "mean": 8.058823529411764,
       "p50": 7.0,
       "p90": 15.0
     },
@@ -584,7 +584,7 @@
       "count": 85,
       "min": 4,
       "max": 47,
-      "mean": 15.47,
+      "mean": 15.470588235294118,
       "p50": 14.0,
       "p90": 25.0
     },
@@ -608,15 +608,15 @@
       "count": 85,
       "min": 0,
       "max": 17,
-      "mean": 3.58,
+      "mean": 3.5764705882352943,
       "p50": 3.0,
       "p90": 8.0
     },
     "total": {
       "count": 85,
-      "min": 2,
+      "min": 1,
       "max": 29,
-      "mean": 11.09,
+      "mean": 11.058823529411764,
       "p50": 11.0,
       "p90": 19.0
     },
@@ -627,8 +627,8 @@
       "direction mix: 42 up, 43 down",
       "elevator 1: carried 25, stops 45, floors travelled 215, idle 46% of ticks",
       "elevator 2: carried 22, stops 42, floors travelled 174, idle 56% of ticks",
-      "elevator 3: carried 22, stops 42, floors travelled 194, idle 51% of ticks",
-      "elevator 4: carried 16, stops 32, floors travelled 133, idle 67% of ticks"
+      "elevator 3: carried 22, stops 41, floors travelled 194, idle 52% of ticks",
+      "elevator 4: carried 16, stops 31, floors travelled 133, idle 67% of ticks"
     ]
   },
   {
@@ -640,7 +640,7 @@
       "count": 76,
       "min": 0,
       "max": 120,
-      "mean": 60.28,
+      "mean": 60.276315789473685,
       "p50": 67.0,
       "p90": 91.0
     },
@@ -648,7 +648,7 @@
       "count": 76,
       "min": 14,
       "max": 140,
-      "mean": 72.97,
+      "mean": 72.97368421052632,
       "p50": 79.0,
       "p90": 108.0
     },
@@ -665,30 +665,30 @@
     "scenario": "capacity_stress",
     "scheduler": "nearest_car",
     "passengers": 76,
-    "ticks": 340,
+    "ticks": 305,
     "wait": {
       "count": 76,
       "min": 0,
-      "max": 178,
-      "mean": 82.11,
-      "p50": 71.0,
-      "p90": 153.0
+      "max": 154,
+      "mean": 76.22368421052632,
+      "p50": 75.0,
+      "p90": 131.0
     },
     "total": {
       "count": 76,
-      "min": 3,
-      "max": 196,
-      "mean": 94.76,
-      "p50": 82.0,
-      "p90": 171.0
+      "min": 2,
+      "max": 172,
+      "mean": 88.82894736842105,
+      "p50": 91.0,
+      "p90": 142.0
     },
     "observations": [
-      "15 of 76 passengers (20%) waited more than twice the median wait of 71 ticks",
+      "3 of 76 passengers (4%) waited more than twice the median wait of 75 ticks",
       "5 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (76 of 76 requests)",
       "direction mix: 76 up, 0 down",
-      "elevator 1: carried 45, stops 50, floors travelled 286, idle 2% of ticks",
-      "elevator 2: carried 31, stops 33, floors travelled 189, idle 35% of ticks"
+      "elevator 1: carried 39, stops 42, floors travelled 259, idle 2% of ticks",
+      "elevator 2: carried 37, stops 39, floors travelled 221, idle 15% of ticks"
     ]
   },
   {
@@ -700,7 +700,7 @@
       "count": 76,
       "min": 0,
       "max": 128,
-      "mean": 60.13,
+      "mean": 60.13157894736842,
       "p50": 67.0,
       "p90": 98.0
     },
@@ -730,7 +730,7 @@
       "count": 76,
       "min": 0,
       "max": 99,
-      "mean": 55.18,
+      "mean": 55.18421052631579,
       "p50": 62.0,
       "p90": 83.0
     },
@@ -738,7 +738,7 @@
       "count": 76,
       "min": 12,
       "max": 119,
-      "mean": 67.68,
+      "mean": 67.6842105263158,
       "p50": 76.0,
       "p90": 96.0
     },
@@ -755,68 +755,68 @@
     "scenario": "tall_building",
     "scheduler": "etd",
     "passengers": 231,
-    "ticks": 362,
+    "ticks": 371,
     "wait": {
       "count": 231,
       "min": 0,
       "max": 108,
-      "mean": 17.93,
+      "mean": 18.251082251082252,
       "p50": 15.0,
-      "p90": 38.0
+      "p90": 37.0
     },
     "total": {
       "count": 231,
       "min": 2,
       "max": 124,
-      "mean": 46.96,
+      "mean": 47.21212121212121,
       "p50": 47.0,
-      "p90": 73.0
+      "p90": 78.0
     },
     "observations": [
-      "38 of 231 passengers (16%) waited more than twice the median wait of 15 ticks",
+      "37 of 231 passengers (16%) waited more than twice the median wait of 15 ticks",
       "10 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (160 of 231 requests)",
       "direction mix: 179 up, 52 down",
-      "elevator 1: carried 41, stops 44, floors travelled 302, idle 5% of ticks",
-      "elevator 2: carried 31, stops 40, floors travelled 290, idle 9% of ticks",
-      "elevator 3: carried 39, stops 38, floors travelled 299, idle 7% of ticks",
-      "elevator 4: carried 46, stops 49, floors travelled 306, idle 2% of ticks",
-      "elevator 5: carried 31, stops 37, floors travelled 282, idle 13% of ticks",
-      "elevator 6: carried 43, stops 46, floors travelled 264, idle 15% of ticks"
+      "elevator 1: carried 41, stops 44, floors travelled 302, idle 7% of ticks",
+      "elevator 2: carried 31, stops 38, floors travelled 290, idle 12% of ticks",
+      "elevator 3: carried 40, stops 40, floors travelled 320, idle 4% of ticks",
+      "elevator 4: carried 35, stops 40, floors travelled 259, idle 20% of ticks",
+      "elevator 5: carried 42, stops 45, floors travelled 300, idle 8% of ticks",
+      "elevator 6: carried 42, stops 45, floors travelled 257, idle 19% of ticks"
     ]
   },
   {
     "scenario": "tall_building",
     "scheduler": "nearest_car",
     "passengers": 231,
-    "ticks": 487,
+    "ticks": 532,
     "wait": {
       "count": 231,
       "min": 0,
-      "max": 227,
-      "mean": 54.79,
-      "p50": 29.0,
-      "p90": 115.0
+      "max": 230,
+      "mean": 67.11688311688312,
+      "p50": 61.0,
+      "p90": 145.0
     },
     "total": {
       "count": 231,
-      "min": 2,
-      "max": 242,
-      "mean": 84.13,
-      "p50": 70.0,
-      "p90": 156.0
+      "min": 1,
+      "max": 279,
+      "mean": 96.04761904761905,
+      "p50": 90.0,
+      "p90": 187.0
     },
     "observations": [
-      "101 of 231 passengers (44%) waited more than twice the median wait of 29 ticks",
-      "21 passengers boarded in the tick they requested (wait 0)",
+      "34 of 231 passengers (15%) waited more than twice the median wait of 61 ticks",
+      "24 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (160 of 231 requests)",
       "direction mix: 179 up, 52 down",
-      "elevator 1: carried 36, stops 48, floors travelled 308, idle 27% of ticks",
-      "elevator 2: carried 56, stops 60, floors travelled 366, idle 13% of ticks",
-      "elevator 3: carried 32, stops 39, floors travelled 319, idle 27% of ticks",
-      "elevator 4: carried 38, stops 44, floors travelled 431, idle 3% of ticks",
-      "elevator 5: carried 41, stops 49, floors travelled 379, idle 12% of ticks",
-      "elevator 6: carried 28, stops 34, floors travelled 301, idle 32% of ticks"
+      "elevator 1: carried 40, stops 49, floors travelled 380, idle 20% of ticks",
+      "elevator 2: carried 58, stops 64, floors travelled 364, idle 20% of ticks",
+      "elevator 3: carried 42, stops 47, floors travelled 420, idle 13% of ticks",
+      "elevator 4: carried 38, stops 42, floors travelled 482, idle 2% of ticks",
+      "elevator 5: carried 25, stops 36, floors travelled 348, idle 28% of ticks",
+      "elevator 6: carried 28, stops 35, floors travelled 350, idle 28% of ticks"
     ]
   },
   {
@@ -828,7 +828,7 @@
       "count": 231,
       "min": 0,
       "max": 115,
-      "mean": 51.38,
+      "mean": 51.37662337662338,
       "p50": 49.0,
       "p90": 95.0
     },
@@ -836,7 +836,7 @@
       "count": 231,
       "min": 2,
       "max": 164,
-      "mean": 80.24,
+      "mean": 80.24242424242425,
       "p50": 81.0,
       "p90": 131.0
     },
@@ -857,135 +857,135 @@
     "scenario": "tall_building",
     "scheduler": "etd_f0.5",
     "passengers": 231,
-    "ticks": 362,
+    "ticks": 381,
     "wait": {
       "count": 231,
       "min": 0,
-      "max": 44,
-      "mean": 16.51,
-      "p50": 17.0,
-      "p90": 31.0
+      "max": 56,
+      "mean": 22.917748917748916,
+      "p50": 20.0,
+      "p90": 45.0
     },
     "total": {
       "count": 231,
       "min": 2,
-      "max": 86,
-      "mean": 45.39,
-      "p50": 46.0,
-      "p90": 67.0
+      "max": 105,
+      "mean": 51.48051948051948,
+      "p50": 51.0,
+      "p90": 78.0
     },
     "observations": [
-      "13 of 231 passengers (6%) waited more than twice the median wait of 17 ticks",
-      "17 passengers boarded in the tick they requested (wait 0)",
+      "36 of 231 passengers (16%) waited more than twice the median wait of 20 ticks",
+      "14 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (160 of 231 requests)",
       "direction mix: 179 up, 52 down",
-      "elevator 1: carried 40, stops 43, floors travelled 302, idle 5% of ticks",
-      "elevator 2: carried 38, stops 45, floors travelled 302, idle 5% of ticks",
-      "elevator 3: carried 38, stops 43, floors travelled 314, idle 2% of ticks",
-      "elevator 4: carried 36, stops 36, floors travelled 288, idle 11% of ticks",
-      "elevator 5: carried 35, stops 38, floors travelled 270, idle 15% of ticks",
-      "elevator 6: carried 44, stops 47, floors travelled 266, idle 14% of ticks"
+      "elevator 1: carried 40, stops 37, floors travelled 303, idle 11% of ticks",
+      "elevator 2: carried 29, stops 35, floors travelled 307, idle 10% of ticks",
+      "elevator 3: carried 40, stops 43, floors travelled 308, idle 8% of ticks",
+      "elevator 4: carried 39, stops 40, floors travelled 298, idle 12% of ticks",
+      "elevator 5: carried 38, stops 38, floors travelled 336, idle 2% of ticks",
+      "elevator 6: carried 45, stops 51, floors travelled 310, idle 6% of ticks"
     ]
   },
   {
     "scenario": "tall_lobby_traffic",
     "scheduler": "etd",
     "passengers": 198,
-    "ticks": 380,
+    "ticks": 367,
     "wait": {
       "count": 198,
       "min": 0,
-      "max": 52,
-      "mean": 20.47,
-      "p50": 21.0,
-      "p90": 38.0
+      "max": 56,
+      "mean": 21.444444444444443,
+      "p50": 22.0,
+      "p90": 37.0
     },
     "total": {
       "count": 198,
       "min": 7,
-      "max": 97,
-      "mean": 50.64,
+      "max": 96,
+      "mean": 51.56060606060606,
       "p50": 50.0,
-      "p90": 79.0
+      "p90": 78.0
     },
     "observations": [
-      "12 of 198 passengers (6%) waited more than twice the median wait of 21 ticks",
-      "13 passengers boarded in the tick they requested (wait 0)",
+      "3 of 198 passengers (2%) waited more than twice the median wait of 22 ticks",
+      "14 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 34, stops 37, floors travelled 268, idle 20% of ticks",
-      "elevator 2: carried 25, stops 27, floors travelled 266, idle 24% of ticks",
-      "elevator 3: carried 38, stops 36, floors travelled 246, idle 27% of ticks",
-      "elevator 4: carried 37, stops 37, floors travelled 269, idle 20% of ticks",
-      "elevator 5: carried 40, stops 38, floors travelled 324, idle 5% of ticks",
-      "elevator 6: carried 24, stops 25, floors travelled 239, idle 31% of ticks"
+      "elevator 1: carried 39, stops 42, floors travelled 282, idle 12% of ticks",
+      "elevator 2: carried 47, stops 47, floors travelled 314, idle 2% of ticks",
+      "elevator 3: carried 40, stops 42, floors travelled 316, idle 3% of ticks",
+      "elevator 4: carried 27, stops 26, floors travelled 276, idle 19% of ticks",
+      "elevator 5: carried 21, stops 20, floors travelled 220, idle 35% of ticks",
+      "elevator 6: carried 24, stops 25, floors travelled 239, idle 29% of ticks"
     ]
   },
   {
     "scenario": "tall_lobby_traffic",
     "scheduler": "nearest_car",
     "passengers": 198,
-    "ticks": 444,
+    "ticks": 508,
     "wait": {
       "count": 198,
       "min": 0,
-      "max": 209,
-      "mean": 43.78,
-      "p50": 9.0,
-      "p90": 106.0
+      "max": 201,
+      "mean": 64.98989898989899,
+      "p50": 68.0,
+      "p90": 135.0
     },
     "total": {
       "count": 198,
-      "min": 4,
-      "max": 260,
-      "mean": 74.1,
-      "p50": 52.0,
-      "p90": 153.0
+      "min": 6,
+      "max": 252,
+      "mean": 95.05050505050505,
+      "p50": 92.0,
+      "p90": 177.0
     },
     "observations": [
-      "86 of 198 passengers (43%) waited more than twice the median wait of 9 ticks",
-      "34 passengers boarded in the tick they requested (wait 0)",
+      "19 of 198 passengers (10%) waited more than twice the median wait of 68 ticks",
+      "18 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 29, stops 31, floors travelled 286, idle 29% of ticks",
-      "elevator 2: carried 38, stops 42, floors travelled 371, idle 7% of ticks",
-      "elevator 3: carried 18, stops 21, floors travelled 293, idle 30% of ticks",
-      "elevator 4: carried 27, stops 42, floors travelled 313, idle 20% of ticks",
-      "elevator 5: carried 41, stops 45, floors travelled 295, idle 24% of ticks",
-      "elevator 6: carried 45, stops 47, floors travelled 376, idle 5% of ticks"
+      "elevator 1: carried 13, stops 17, floors travelled 302, idle 38% of ticks",
+      "elevator 2: carried 49, stops 51, floors travelled 392, idle 13% of ticks",
+      "elevator 3: carried 61, stops 63, floors travelled 437, idle 2% of ticks",
+      "elevator 4: carried 21, stops 23, floors travelled 321, idle 33% of ticks",
+      "elevator 5: carried 27, stops 31, floors travelled 354, idle 25% of ticks",
+      "elevator 6: carried 27, stops 30, floors travelled 305, idle 34% of ticks"
     ]
   },
   {
     "scenario": "tall_lobby_traffic",
     "scheduler": "round_robin",
     "passengers": 198,
-    "ticks": 423,
+    "ticks": 422,
     "wait": {
       "count": 198,
       "min": 0,
       "max": 121,
-      "mean": 47.65,
+      "mean": 47.52020202020202,
       "p50": 46.0,
       "p90": 90.0
     },
     "total": {
       "count": 198,
       "min": 5,
-      "max": 158,
-      "mean": 77.4,
+      "max": 157,
+      "mean": 77.23737373737374,
       "p50": 77.0,
       "p90": 127.0
     },
     "observations": [
-      "17 of 198 passengers (9%) waited more than twice the median wait of 46 ticks",
+      "16 of 198 passengers (8%) waited more than twice the median wait of 46 ticks",
       "6 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
       "elevator 1: carried 33, stops 36, floors travelled 376, idle 3% of ticks",
-      "elevator 2: carried 33, stops 37, floors travelled 382, idle 1% of ticks",
+      "elevator 2: carried 33, stops 36, floors travelled 382, idle 1% of ticks",
       "elevator 3: carried 33, stops 37, floors travelled 314, idle 17% of ticks",
       "elevator 4: carried 33, stops 37, floors travelled 354, idle 8% of ticks",
-      "elevator 5: carried 33, stops 33, floors travelled 359, idle 8% of ticks",
+      "elevator 5: carried 33, stops 33, floors travelled 359, idle 7% of ticks",
       "elevator 6: carried 33, stops 35, floors travelled 339, idle 12% of ticks"
     ]
   },
@@ -993,98 +993,98 @@
     "scenario": "tall_lobby_traffic",
     "scheduler": "etd_f0.5",
     "passengers": 198,
-    "ticks": 365,
+    "ticks": 366,
     "wait": {
       "count": 198,
       "min": 0,
-      "max": 47,
-      "mean": 16.82,
-      "p50": 17.0,
-      "p90": 29.0
+      "max": 53,
+      "mean": 23.045454545454547,
+      "p50": 24.0,
+      "p90": 40.0
     },
     "total": {
       "count": 198,
-      "min": 7,
-      "max": 79,
-      "mean": 46.69,
-      "p50": 47.0,
-      "p90": 66.0
+      "min": 3,
+      "max": 93,
+      "mean": 52.65151515151515,
+      "p50": 54.0,
+      "p90": 74.0
     },
     "observations": [
-      "12 of 198 passengers (6%) waited more than twice the median wait of 17 ticks",
-      "13 passengers boarded in the tick they requested (wait 0)",
+      "2 of 198 passengers (1%) waited more than twice the median wait of 24 ticks",
+      "15 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 33, stops 33, floors travelled 252, idle 22% of ticks",
-      "elevator 2: carried 36, stops 35, floors travelled 314, idle 5% of ticks",
-      "elevator 3: carried 37, stops 37, floors travelled 261, idle 19% of ticks",
-      "elevator 4: carried 33, stops 33, floors travelled 280, idle 15% of ticks",
-      "elevator 5: carried 28, stops 30, floors travelled 310, idle 8% of ticks",
-      "elevator 6: carried 31, stops 31, floors travelled 285, idle 14% of ticks"
+      "elevator 1: carried 40, stops 41, floors travelled 286, idle 11% of ticks",
+      "elevator 2: carried 39, stops 38, floors travelled 324, idle 1% of ticks",
+      "elevator 3: carried 29, stops 28, floors travelled 319, idle 5% of ticks",
+      "elevator 4: carried 29, stops 28, floors travelled 313, idle 7% of ticks",
+      "elevator 5: carried 34, stops 31, floors travelled 301, idle 10% of ticks",
+      "elevator 6: carried 27, stops 27, floors travelled 308, idle 9% of ticks"
     ]
   },
   {
     "scenario": "morning_up_peak_parked",
     "scheduler": "etd",
     "passengers": 166,
-    "ticks": 488,
+    "ticks": 484,
     "wait": {
       "count": 166,
       "min": 0,
-      "max": 18,
-      "mean": 4.65,
-      "p50": 4.0,
-      "p90": 12.0
+      "max": 22,
+      "mean": 4.253012048192771,
+      "p50": 3.0,
+      "p90": 11.0
     },
     "total": {
       "count": 166,
-      "min": 2,
-      "max": 39,
-      "mean": 17.43,
+      "min": 1,
+      "max": 43,
+      "mean": 16.825301204819276,
       "p50": 17.0,
       "p90": 28.0
     },
     "observations": [
-      "33 of 166 passengers (20%) waited more than twice the median wait of 4 ticks",
-      "36 passengers boarded in the tick they requested (wait 0)",
+      "43 of 166 passengers (26%) waited more than twice the median wait of 3 ticks",
+      "47 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 47, stops 60, floors travelled 422, idle 23% of ticks",
-      "elevator 2: carried 40, stops 54, floors travelled 418, idle 24% of ticks",
-      "elevator 3: carried 44, stops 58, floors travelled 402, idle 32% of ticks",
-      "elevator 4: carried 35, stops 47, floors travelled 386, idle 38% of ticks"
+      "elevator 1: carried 44, stops 55, floors travelled 418, idle 21% of ticks",
+      "elevator 2: carried 42, stops 54, floors travelled 412, idle 29% of ticks",
+      "elevator 3: carried 41, stops 53, floors travelled 400, idle 29% of ticks",
+      "elevator 4: carried 39, stops 48, floors travelled 370, idle 33% of ticks"
     ]
   },
   {
     "scenario": "morning_up_peak_parked",
     "scheduler": "nearest_car",
     "passengers": 166,
-    "ticks": 515,
+    "ticks": 505,
     "wait": {
       "count": 166,
       "min": 0,
-      "max": 45,
-      "mean": 13.28,
-      "p50": 5.0,
-      "p90": 37.0
+      "max": 42,
+      "mean": 10.036144578313253,
+      "p50": 4.0,
+      "p90": 34.0
     },
     "total": {
       "count": 166,
-      "min": 2,
-      "max": 66,
-      "mean": 26.27,
-      "p50": 21.0,
-      "p90": 52.0
+      "min": 1,
+      "max": 60,
+      "mean": 22.572289156626507,
+      "p50": 20.0,
+      "p90": 45.0
     },
     "observations": [
-      "67 of 166 passengers (40%) waited more than twice the median wait of 5 ticks",
-      "45 passengers boarded in the tick they requested (wait 0)",
+      "64 of 166 passengers (39%) waited more than twice the median wait of 4 ticks",
+      "54 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 48, stops 66, floors travelled 446, idle 7% of ticks",
-      "elevator 2: carried 38, stops 56, floors travelled 388, idle 32% of ticks",
-      "elevator 3: carried 42, stops 61, floors travelled 386, idle 31% of ticks",
-      "elevator 4: carried 38, stops 52, floors travelled 386, idle 27% of ticks"
+      "elevator 1: carried 42, stops 57, floors travelled 402, idle 18% of ticks",
+      "elevator 2: carried 43, stops 56, floors travelled 418, idle 24% of ticks",
+      "elevator 3: carried 40, stops 52, floors travelled 428, idle 16% of ticks",
+      "elevator 4: carried 41, stops 53, floors travelled 400, idle 29% of ticks"
     ]
   },
   {
@@ -1096,59 +1096,59 @@
       "count": 166,
       "min": 0,
       "max": 40,
-      "mean": 16.48,
-      "p50": 16.0,
+      "mean": 16.295180722891565,
+      "p50": 15.0,
       "p90": 33.0
     },
     "total": {
       "count": 166,
       "min": 2,
-      "max": 63,
-      "mean": 29.09,
+      "max": 62,
+      "mean": 28.85542168674699,
       "p50": 27.0,
-      "p90": 47.0
+      "p90": 46.0
     },
     "observations": [
-      "19 of 166 passengers (11%) waited more than twice the median wait of 16 ticks",
-      "11 passengers boarded in the tick they requested (wait 0)",
+      "24 of 166 passengers (14%) waited more than twice the median wait of 15 ticks",
+      "12 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 42, stops 55, floors travelled 432, idle 5% of ticks",
+      "elevator 1: carried 42, stops 54, floors travelled 432, idle 5% of ticks",
       "elevator 2: carried 42, stops 58, floors travelled 446, idle 5% of ticks",
       "elevator 3: carried 41, stops 56, floors travelled 400, idle 13% of ticks",
-      "elevator 4: carried 41, stops 57, floors travelled 440, idle 7% of ticks"
+      "elevator 4: carried 41, stops 55, floors travelled 440, idle 7% of ticks"
     ]
   },
   {
     "scenario": "morning_up_peak_parked",
     "scheduler": "etd_f0.5",
     "passengers": 166,
-    "ticks": 487,
+    "ticks": 482,
     "wait": {
       "count": 166,
       "min": 0,
-      "max": 25,
-      "mean": 5.81,
+      "max": 23,
+      "mean": 5.475903614457831,
       "p50": 4.0,
       "p90": 14.0
     },
     "total": {
       "count": 166,
-      "min": 2,
-      "max": 40,
-      "mean": 18.45,
-      "p50": 19.0,
+      "min": 1,
+      "max": 39,
+      "mean": 17.8855421686747,
+      "p50": 18.0,
       "p90": 29.0
     },
     "observations": [
-      "46 of 166 passengers (28%) waited more than twice the median wait of 4 ticks",
-      "31 passengers boarded in the tick they requested (wait 0)",
+      "43 of 166 passengers (26%) waited more than twice the median wait of 4 ticks",
+      "39 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (142 of 166 requests)",
       "direction mix: 144 up, 22 down",
-      "elevator 1: carried 41, stops 60, floors travelled 418, idle 21% of ticks",
-      "elevator 2: carried 48, stops 52, floors travelled 428, idle 19% of ticks",
-      "elevator 3: carried 35, stops 52, floors travelled 394, idle 33% of ticks",
-      "elevator 4: carried 42, stops 57, floors travelled 398, idle 24% of ticks"
+      "elevator 1: carried 34, stops 49, floors travelled 406, idle 25% of ticks",
+      "elevator 2: carried 44, stops 60, floors travelled 404, idle 25% of ticks",
+      "elevator 3: carried 44, stops 57, floors travelled 404, idle 24% of ticks",
+      "elevator 4: carried 44, stops 48, floors travelled 416, idle 22% of ticks"
     ]
   },
   {
@@ -1160,26 +1160,26 @@
       "count": 198,
       "min": 0,
       "max": 79,
-      "mean": 25.98,
-      "p50": 21.0,
+      "mean": 25.803030303030305,
+      "p50": 20.0,
       "p90": 59.0
     },
     "total": {
       "count": 198,
-      "min": 3,
+      "min": 6,
       "max": 133,
-      "mean": 55.46,
+      "mean": 55.16161616161616,
       "p50": 53.0,
       "p90": 98.0
     },
     "observations": [
-      "50 of 198 passengers (25%) waited more than twice the median wait of 21 ticks",
-      "11 passengers boarded in the tick they requested (wait 0)",
+      "53 of 198 passengers (27%) waited more than twice the median wait of 20 ticks",
+      "16 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 18, stops 23, floors travelled 216, idle 40% of ticks",
-      "elevator 2: carried 37, stops 41, floors travelled 214, idle 36% of ticks",
-      "elevator 3: carried 35, stops 39, floors travelled 247, idle 29% of ticks",
+      "elevator 1: carried 18, stops 23, floors travelled 200, idle 44% of ticks",
+      "elevator 2: carried 30, stops 35, floors travelled 249, idle 29% of ticks",
+      "elevator 3: carried 42, stops 46, floors travelled 258, idle 23% of ticks",
       "elevator 4: carried 42, stops 38, floors travelled 352, idle 1% of ticks",
       "elevator 5: carried 34, stops 35, floors travelled 318, idle 11% of ticks",
       "elevator 6: carried 32, stops 31, floors travelled 332, idle 8% of ticks"
@@ -1194,27 +1194,27 @@
       "count": 198,
       "min": 0,
       "max": 205,
-      "mean": 55.56,
-      "p50": 41.0,
+      "mean": 52.505050505050505,
+      "p50": 31.0,
       "p90": 127.0
     },
     "total": {
       "count": 198,
-      "min": 2,
+      "min": 3,
       "max": 259,
-      "mean": 84.71,
-      "p50": 63.0,
+      "mean": 81.57575757575758,
+      "p50": 61.0,
       "p90": 178.0
     },
     "observations": [
-      "56 of 198 passengers (28%) waited more than twice the median wait of 41 ticks",
-      "14 passengers boarded in the tick they requested (wait 0)",
+      "68 of 198 passengers (34%) waited more than twice the median wait of 31 ticks",
+      "18 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 25, stops 34, floors travelled 295, idle 31% of ticks",
-      "elevator 2: carried 27, stops 32, floors travelled 258, idle 39% of ticks",
-      "elevator 3: carried 38, stops 45, floors travelled 291, idle 29% of ticks",
-      "elevator 4: carried 23, stops 26, floors travelled 386, idle 13% of ticks",
+      "elevator 1: carried 25, stops 31, floors travelled 285, idle 33% of ticks",
+      "elevator 2: carried 36, stops 43, floors travelled 305, idle 27% of ticks",
+      "elevator 3: carried 29, stops 31, floors travelled 265, idle 38% of ticks",
+      "elevator 4: carried 23, stops 25, floors travelled 386, idle 13% of ticks",
       "elevator 5: carried 45, stops 45, floors travelled 416, idle 3% of ticks",
       "elevator 6: carried 40, stops 37, floors travelled 424, idle 2% of ticks"
     ]
@@ -1228,24 +1228,24 @@
       "count": 198,
       "min": 0,
       "max": 248,
-      "mean": 56.53,
-      "p50": 38.0,
+      "mean": 56.26767676767677,
+      "p50": 37.0,
       "p90": 144.0
     },
     "total": {
       "count": 198,
-      "min": 5,
+      "min": 4,
       "max": 299,
-      "mean": 85.88,
-      "p50": 62.0,
+      "mean": 85.6010101010101,
+      "p50": 61.0,
       "p90": 180.0
     },
     "observations": [
-      "47 of 198 passengers (24%) waited more than twice the median wait of 38 ticks",
-      "8 passengers boarded in the tick they requested (wait 0)",
+      "50 of 198 passengers (25%) waited more than twice the median wait of 37 ticks",
+      "10 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 55, stops 54, floors travelled 298, idle 36% of ticks",
+      "elevator 1: carried 55, stops 53, floors travelled 298, idle 36% of ticks",
       "elevator 2: carried 25, stops 33, floors travelled 291, idle 41% of ticks",
       "elevator 3: carried 10, stops 16, floors travelled 161, idle 68% of ticks",
       "elevator 4: carried 60, stops 56, floors travelled 489, idle 1% of ticks",
@@ -1262,26 +1262,26 @@
       "count": 198,
       "min": 0,
       "max": 93,
-      "mean": 28.05,
+      "mean": 27.767676767676768,
       "p50": 20.0,
       "p90": 65.0
     },
     "total": {
       "count": 198,
-      "min": 6,
+      "min": 1,
       "max": 128,
-      "mean": 56.96,
-      "p50": 55.0,
+      "mean": 56.56565656565657,
+      "p50": 54.0,
       "p90": 103.0
     },
     "observations": [
       "56 of 198 passengers (28%) waited more than twice the median wait of 20 ticks",
-      "11 passengers boarded in the tick they requested (wait 0)",
+      "16 passengers boarded in the tick they requested (wait 0)",
       "busiest origin floor: 1 (158 of 198 requests)",
       "direction mix: 158 up, 40 down",
-      "elevator 1: carried 22, stops 29, floors travelled 280, idle 27% of ticks",
-      "elevator 2: carried 39, stops 46, floors travelled 263, idle 26% of ticks",
-      "elevator 3: carried 29, stops 32, floors travelled 228, idle 39% of ticks",
+      "elevator 1: carried 26, stops 33, floors travelled 284, idle 24% of ticks",
+      "elevator 2: carried 22, stops 28, floors travelled 232, idle 38% of ticks",
+      "elevator 3: carried 42, stops 46, floors travelled 269, idle 25% of ticks",
       "elevator 4: carried 40, stops 32, floors travelled 380, idle 1% of ticks",
       "elevator 5: carried 36, stops 30, floors travelled 318, idle 17% of ticks",
       "elevator 6: carried 32, stops 30, floors travelled 324, idle 15% of ticks"
