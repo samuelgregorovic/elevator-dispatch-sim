@@ -88,3 +88,32 @@ def test_run_cli_rejects_invalid_input(tmp_path, capsys):
     bad.write_text("time,id,source,dest\n0,a,5,5\n")
     assert main(["run", str(bad), "--out", str(tmp_path / "o")]) == 2
     assert "source and dest are both 5" in capsys.readouterr().err
+
+
+def test_report_renders_charts_when_matplotlib_is_available(tmp_path):
+    import pytest
+
+    pytest.importorskip("matplotlib")
+    from elevator_sim.report import build_report
+
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps(
+            [
+                {
+                    "name": "morning_up_peak",
+                    "file": str(ROOT / "scenarios" / "morning_up_peak.csv"),
+                    "floors": 20,
+                    "elevators": 4,
+                    "capacity": 8,
+                }
+            ]
+        )
+    )
+    written = build_report(manifest, tmp_path / "charts", fairness=[0.5])
+    names = {p.name for p in written}
+    assert "wait_by_scenario.png" in names
+    assert "wait_distribution_morning_up_peak.png" in names
+    assert "positions_morning_up_peak_etd.png" in names
+    assert "fairness_sweep_morning_up_peak.png" in names
+    assert all(p.stat().st_size > 1000 for p in written)

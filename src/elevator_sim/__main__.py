@@ -97,6 +97,14 @@ def cmd_compare(a: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_report(a: argparse.Namespace) -> int:
+    from .report import build_report
+
+    for path in build_report(a.manifest, a.out, a.fairness, dwell=a.dwell):
+        print(f"wrote {path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="elevator-sim", description="Destination-dispatch elevator simulation"
@@ -128,6 +136,13 @@ def build_parser() -> argparse.ArgumentParser:
     cmp_.add_argument("--traces", action="store_true", help="write a JSON trace per run")
     cmp_.add_argument("--out", type=Path, default=Path("outputs/compare"))
     cmp_.set_defaults(func=cmd_compare)
+
+    rep = sub.add_parser("report", help="render PNG charts (needs the viz extra)")
+    rep.add_argument("--manifest", type=Path, default=Path("scenarios/manifest.json"))
+    rep.add_argument("--fairness", type=float, action="append", default=[])
+    rep.add_argument("--dwell", type=int, default=1)
+    rep.add_argument("--out", type=Path, default=Path("docs/charts"))
+    rep.set_defaults(func=cmd_report)
     return parser
 
 
