@@ -82,12 +82,14 @@ def observations(result: SimulationResult) -> list[str]:
 
     waits = sorted(p.wait for p in served if p.wait is not None)
     median = percentile(waits, 50)
-    long_waits = sum(1 for w in waits if median > 0 and w > 2 * median)
-    if waits:
+    if waits and median > 0:
+        long_waits = sum(1 for w in waits if w > 2 * median)
         notes.append(
             f"{long_waits} of {len(waits)} passengers ({100 * long_waits / len(waits):.0f}%) "
             f"waited more than twice the median wait of {median:g} ticks"
         )
+    elif waits:
+        notes.append("median wait is 0 ticks: most passengers boarded immediately")
     zero = sum(1 for w in waits if w == 0)
     if zero:
         notes.append(f"{zero} passengers boarded in the tick they requested (wait 0)")

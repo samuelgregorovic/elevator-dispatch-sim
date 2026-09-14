@@ -1,7 +1,13 @@
 # elevator-dispatch-sim
 
-Discrete-time simulation of a destination-dispatch elevator system: configurable cars, floors and capacity; pluggable scheduling algorithms; a positions log and passenger statistics as required by the [brief](docs/brief.pdf); and a comparison of schedulers on realistic traffic patterns.
+[![ci](https://github.com/samuelgregorovic/elevator-dispatch-sim/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelgregorovic/elevator-dispatch-sim/actions/workflows/ci.yml)
 
+Discrete-time simulation of a destination-dispatch elevator system, built against the brief in [`docs/brief.pdf`](docs/brief.pdf): configurable cars, floors and capacity; three scheduling algorithms behind one interface; the positions log and passenger statistics the brief asks for; and a measured comparison of the schedulers on realistic traffic patterns.
+
+**See it run without installing anything:** [the viewer](https://samuelgregorovic.github.io/elevator-dispatch-sim/viewer/) replays committed simulation traces — pick a scenario and a scheduler, play or scrub through ticks, and watch cars, loads and waiting passengers.
+
+
+![Average and p90 waiting time per scenario and scheduler](docs/charts/wait_by_scenario.png)
 
 ## How to run
 
@@ -19,32 +25,82 @@ uv run python -m elevator_sim run scenarios/sample.csv --elevators 2 --floors 51
 PYTHONPATH=src python3 -m elevator_sim run scenarios/sample.csv --elevators 2
 ```
 
-`run` writes `positions.csv` (one row per tick, one column per elevator), `trace.json` (per-tick car state and every request/assign/board/alight event) and `summary.json` into `outputs/run/` (change with `--out`), and prints the passenger statistics.
+`run` writes `positions.csv` (one row per tick, one column per elevator), `trace.json` (per-tick car state and every request/assign/board/alight event) and `summary.json` into `outputs/run/` (change with `--out`), and prints the passenger statistics:
 
-Options: `--scheduler {etd,nearest_car,round_robin}` (default `etd`), `--fairness W` (ETD age weight, default 0), `--dwell N` (ticks per stop, default 1; `0` is the literal brief), `--start-floor`, `--park-floor`, `--express CAR:FLOORS` (e.g. `--express 3:1,30-51` makes car 3 serve only the lobby and floors 30–51).
+```
+scheduler: etd
+passengers: 3   ticks simulated: 77
 
-Tests and lint:
+           min   max    mean    p50    p90
+wait         0    45   15.00      0     45
+travel      20    51   36.00     37     51
+total       37    65   51.00     51     65
+
+observations:
+  - median wait is 0 ticks: most passengers boarded immediately
+  - 2 passengers boarded in the tick they requested (wait 0)
+  - busiest origin floor: 1 (2 of 3 requests)
+  - direction mix: 2 up, 1 down
+  - elevator 1: carried 1, stops 2, floors travelled 50, idle 34% of ticks
+  - elevator 2: carried 2, stops 4, floors travelled 72, idle 3% of ticks
+```
+
+Options for `run`: `--scheduler {etd,nearest_car,round_robin}` (default `etd`), `--fairness W` (ETD age weight, default 0), `--dwell N` (ticks per stop, default 1; `0` is the literal brief), `--start-floor`, `--park-floor` (send idle cars there), `--express CAR:FLOORS` (e.g. `--express 3:1,30-51` makes car 3 serve only the lobby and floors 30–51).
+
+Other commands:
 
 ```bash
-uv run pytest
+uv run python -m elevator_sim compare                    # every scheduler × every scenario, table + JSON
+uv run python -m elevator_sim compare --fairness 0.5 --traces --out docs/viewer   # regenerate viewer traces
+uv run python scenarios/generate.py                      # regenerate the scenario CSVs (seeded, byte-identical)
+uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.5   # PNG charts
+uv run pytest                                            # 77 tests
 uv run ruff check . && uv run ruff format --check .
 ```
 
+## What was built
+
+| | |
+|---|---|
+| **Engine** | Tick loop with a fixed order of operations; LOOK car movement; capacity; configurable dwell per stop; a request feed that structurally cannot peek ahead; input validation that fails fast with the row named. |
+| **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` and `round_robin` as baselines. |
+| **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak, interfloor, a capacity burst and a 51-floor building, with traffic mixes taken from the elevator-traffic literature; policy variants for parking at the lobby and zoned express cars. |
+| **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and a static viewer on GitHub Pages. |
+| **Tests** | 77 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, and end-to-end CLI checks. |
+
+## Results in brief
+
+Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/viewer/comparison.md`](docs/viewer/comparison.md).
+
+- ETD has the lowest average and p90 wait on every realistic traffic pattern, by 1.5–3× over nearest-car; the gap is widest on the tall building.
+- Under a single-origin capacity burst ETD and round robin tie: when the system is saturated the only lever is spreading load evenly.
+- Parking idle cars at the lobby cuts ETD's up-peak average wait by ~30%. A fairness weight of 0.5 halves the tall building's maximum wait without hurting the average, but slightly hurts the 20-floor patterns — it is a per-building tuning knob, not a free improvement.
+- Splitting six cars into local and express zones is worse than six free cars at moderate load: zoning trades flexibility for stop reduction and only pays off under saturation.
+
+![Waiting-time distribution on the tall building](docs/charts/wait_distribution_tall_building.png)
+
 ## Time spent
 
-_(filled in at submission)_
+About one hour of my own time framing the problem, writing the plan and reviewing the outputs, then autonomous execution of the plan by AI tooling, plus follow-up steering for later changes.
 
 ## Assumptions, simplifications and trade-offs
 
-See [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md) for every decision the brief left open, with reasons. Design and algorithm trade-offs are in [`docs/DESIGN.md`](docs/DESIGN.md).
+Every decision the brief left open — what costs time, the order of operations inside a tick, immutable assignment, direction discipline, floor numbering, idle behaviour, validation — is recorded with its reason in [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md). Design-level trade-offs (tick-based over event-driven, exact projection over a heuristic ETA, greedy per-request assignment, immutable assignment) are discussed in [`docs/DESIGN.md`](docs/DESIGN.md). The testing approach is in [`docs/TESTING.md`](docs/TESTING.md).
 
 ## What I would improve with more time
 
-_(filled in at submission)_
+1. **Reassignment window.** Allow the controller to move a passenger to another car until their car starts slowing for the pickup, as hybrid ETA systems do. This is the single change most likely to improve results under bursty load, and it needs a display model (what the passenger was told) to stay honest.
+2. **Batch re-optimisation.** Re-evaluate all outstanding assignments every few ticks instead of deciding each request once; the greedy per-request choice is what loses on the brief's three-request sample.
+3. **Time-of-day policies.** Parking floor and fairness weight should follow the traffic profile (park low in up-peak, high in down-peak) rather than being fixed per run.
+4. **Richer physics.** Door times and acceleration would make dwell a function of stop type; the one-tick model is enough to make stops cost something, which is all the comparison needs.
+5. **Sky-lobby transfers.** Two-leg journeys across zones, so that zoned buildings can serve interfloor traffic; a routing problem across banks rather than a scheduler change.
+6. **Event-driven core.** For very large buildings or long idle periods a discrete-event engine would be faster; at the brief's scale the tick loop is simpler and the outputs are per tick anyway.
 
 ## Repository
 
-- `src/elevator_sim/` — the package (stdlib only)
-- `tests/` — unit, property-based and scenario tests
-- `scenarios/` — input files and the seeded generator
+- `src/elevator_sim/` — the package (stdlib only); `schedulers/` holds the algorithms
+- `tests/` — unit, structural, property-based, golden and CLI tests
+- `scenarios/` — input files, `manifest.json`, and the seeded generator
 - `docs/` — brief, assumptions, design, research, testing, charts, viewer
+
+MIT licence.
