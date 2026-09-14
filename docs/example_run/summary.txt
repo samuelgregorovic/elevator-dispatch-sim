@@ -1,0 +1,17 @@
+scheduler: etd
+passengers: 166   ticks simulated: 474
+
+           min   max    mean    p50    p90
+wait         0    19    6.76      5     15
+travel       2    26   13.40     14     23
+total        2    44   20.16     20     32
+
+observations:
+  - 41 of 166 passengers (25%) waited more than twice the median wait of 5 ticks
+  - 15 passengers boarded in the tick they requested (wait 0)
+  - busiest origin floor: 1 (142 of 166 requests)
+  - direction mix: 144 up, 22 down
+  - elevator 1: carried 34, stops 37, floors travelled 205, idle 50% of ticks
+  - elevator 2: carried 45, stops 52, floors travelled 260, idle 36% of ticks
+  - elevator 3: carried 37, stops 50, floors travelled 284, idle 32% of ticks
+  - elevator 4: carried 50, stops 52, floors travelled 277, idle 32% of ticks

@@ -4,10 +4,18 @@
 
 Discrete-time simulation of a destination-dispatch elevator system, built against the brief in [`docs/brief.pdf`](docs/brief.pdf): configurable cars, floors and capacity; three scheduling algorithms behind one interface; the positions log and passenger statistics the brief asks for; and a measured comparison of the schedulers on realistic traffic patterns.
 
-**See it run without installing anything:** [the viewer](https://samuelgregorovic.github.io/elevator-dispatch-sim/viewer/) replays committed simulation traces — pick a scenario and a scheduler, play or scrub through ticks, and watch cars, loads and waiting passengers.
+**See it run without installing anything:** [the viewer](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) replays committed simulation traces — pick a scenario and a scheduler, play or scrub through ticks, and watch cars, loads and waiting passengers.
 
 
 ![Average and p90 waiting time per scenario and scheduler](docs/charts/wait_by_scenario.png)
+
+## Looking at the solution on GitHub, without running anything
+
+- **[The viewer](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — replays every scenario × scheduler tick by tick (GitHub Pages, static, no install). Use ← → to step, space to play.
+- **[Comparison table](docs/viewer/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
+- **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps.
+- **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).
+- **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
 
 ## How to run
 
