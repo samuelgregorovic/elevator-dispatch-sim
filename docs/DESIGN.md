@@ -27,6 +27,7 @@ Seven small modules, one responsibility each:
 | `metrics.py` | Distributions (min, max, mean, p50, p90) and generated observations. |
 | `validate.py`, `io.py` | Fail-fast input checks; CSV/JSON readers and writers. |
 | `compare.py` | Runs a scheduler × scenario matrix from `scenarios/manifest.json`. |
+| `docs/viewer/engine.js` | JavaScript port of the engine for the browser simulator; `tests/test_js_conformance.py` proves it identical to the Python engine on every scenario. |
 
 The runtime is standard library only; `matplotlib` is an optional extra used only to render charts.
 

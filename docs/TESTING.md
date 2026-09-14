@@ -1,6 +1,6 @@
 # Testing approach
 
-`uv run pytest` — 84 tests, about ten seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12.
+`uv run pytest` — 124 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix.
 
 The suite is organised by what kind of mistake it would catch, not by module.
 
@@ -44,9 +44,15 @@ The sample from the brief is run with each scheduler and its tick count, wait an
 
 The scenario generator is re-run inside the test and its output compared byte for byte with the committed CSV files, so the data in the README cannot drift from the generator. The `compare` and `run` CLIs are exercised end to end, and `report` is smoke-tested when `matplotlib` is installed (skipped otherwise, so the stdlib-only install still passes).
 
+## 6. Conformance: the browser engine equals the Python engine
+
+`test_js_conformance.py`
+
+The interactive simulator on GitHub Pages runs a JavaScript port of the engine (`docs/viewer/engine.js`). Two implementations of the same rules will drift unless something stops them, so the suite runs the port with Node (`docs/viewer/conform.mjs`) on every committed scenario with every scheduler — 40 combinations — and asserts that positions per tick, the full event list, and every passenger's assignment, boarding and alighting ticks are identical to Python's. Skipped when Node is absent; CI installs it.
+
 ## What is not tested, and why
 
-- Rendering details of the charts and the viewer beyond "produces a file" / "loads without console errors" (the viewer was checked manually in a headless browser). Pixel tests would cost more than they catch here.
+- Rendering details of the charts and the simulator page beyond "produces a file" / "loads without console errors" (the page was exercised in a headless browser: floor click, live traffic, CSV upload, phone width). The engine underneath is covered by the conformance matrix. Pixel tests would cost more than they catch here.
 - Performance. The full comparison runs in a few seconds; there is no requirement that would justify a benchmark.
 - The projection horizon bound in `etd.py` is generous by construction rather than proven tight; the invariant tests cover the outcome (every passenger delivered, deterministic), not the bound itself.
 

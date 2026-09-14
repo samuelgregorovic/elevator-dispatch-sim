@@ -4,15 +4,17 @@
 
 Discrete-time simulation of a destination-dispatch elevator system, built against the brief in [`docs/brief.pdf`](docs/brief.pdf): configurable cars, floors and capacity; three scheduling algorithms behind one interface; the positions log and passenger statistics the brief asks for; and a measured comparison of the schedulers on realistic traffic patterns.
 
-**See it run without installing anything:** [the viewer](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) replays committed simulation traces — pick a scenario and a scheduler, play or scrub through ticks, and watch cars, loads and waiting passengers.
+**See it run without installing anything:** [the interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) runs the engine in your browser — pick a traffic pattern and a dispatch rule, compare two rules side by side on identical traffic, click a floor to add a passenger, turn on continuous arrivals, change the building, or upload your own CSV. It is a JavaScript port of the Python engine, verified identical on every committed scenario by an automated test.
 
+
+[![The interactive simulator comparing two rules on the morning rush](docs/charts/simulator.png)](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)
 
 ![Average and p90 waiting time per scenario and scheduler](docs/charts/wait_by_scenario.png)
 
 ## Looking at the solution on GitHub, without running anything
 
-- **[The viewer](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — replays every scenario × scheduler tick by tick (GitHub Pages, static, no install). Use ← → to step, space to play.
-- **[Comparison table](docs/viewer/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
+- **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): scenarios, side-by-side rules, add passengers, live traffic, your own CSV. Space to play, ← → to step.
+- **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
 - **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps.
 - **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).
 - **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
@@ -59,10 +61,10 @@ Other commands:
 
 ```bash
 uv run python -m elevator_sim compare                    # every scheduler × every scenario, table + JSON
-uv run python -m elevator_sim compare --fairness 0.5 --traces --out docs/viewer   # regenerate viewer traces
+uv run python -m elevator_sim compare --fairness 0.5 --out docs/results          # regenerate the committed tables
 uv run python scenarios/generate.py                      # regenerate the scenario CSVs (seeded, byte-identical)
 uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # PNG charts as committed
-uv run pytest                                            # 84 tests
+uv run pytest                                            # 124 tests (40 are the JS/Python conformance matrix; need Node)
 uv run ruff check . && uv run ruff format --check .
 ```
 
@@ -73,12 +75,12 @@ uv run ruff check . && uv run ruff format --check .
 | **Engine** | Tick loop with a fixed order of operations; LOOK car movement; capacity; configurable dwell per stop; a request feed that structurally cannot peek ahead; input validation that fails fast with the row named. |
 | **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` and `round_robin` as baselines. |
 | **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature, plus a capacity burst and two 51-floor cases chosen as stress tests; policy variants for parking at the lobby and zoned express cars. |
-| **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and a static viewer on GitHub Pages. |
-| **Tests** | 84 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, and end-to-end CLI checks — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
+| **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and an interactive browser simulator on GitHub Pages (JavaScript port of the engine, conformance-tested against Python). |
+| **Tests** | 124 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
 
 ## Results in brief
 
-Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/viewer/comparison.md`](docs/viewer/comparison.md).
+Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/results/comparison.md`](docs/results/comparison.md).
 
 - ETD has the lowest average and p90 wait on every realistic traffic pattern: 1.2× (quiet interfloor) to 3.7× (tall building) lower average wait than nearest-car, and 2–3.3× lower than round robin.
 - Under a single-origin capacity burst ETD and round robin tie: when the system is saturated the only lever is spreading load evenly.
@@ -109,6 +111,6 @@ Every decision the brief left open — what costs time, the order of operations 
 - `src/elevator_sim/` — the package (stdlib only); `schedulers/` holds the algorithms
 - `tests/` — unit, structural, property-based, golden and CLI tests
 - `scenarios/` — input files, `manifest.json`, and the seeded generator
-- `docs/` — brief, assumptions, design, research, testing, charts, viewer
+- `docs/` — brief, assumptions, design, research, testing, charts, results, the browser simulator (`viewer/`)
 
 MIT licence.
