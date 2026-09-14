@@ -61,5 +61,41 @@
     "capacity": 10,
     "description": "The 51-floor building implied by the brief's sample, beyond a single bank's comfort.",
     "seed": 6
+  },
+  {
+    "name": "tall_lobby_traffic",
+    "file": "tall_lobby_traffic.csv",
+    "floors": 51,
+    "elevators": 6,
+    "capacity": 10,
+    "description": "51 floors, lobby-only trips (no interfloor), so a zoned bank can serve every request.",
+    "seed": 7
+  },
+  {
+    "name": "morning_up_peak_parked",
+    "file": "morning_up_peak.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "park_floor": 1,
+    "description": "Same morning traffic; idle cars return to the lobby (park_floor=1).",
+    "seed": 1
+  },
+  {
+    "name": "tall_lobby_zoned",
+    "file": "tall_lobby_traffic.csv",
+    "floors": 51,
+    "elevators": 6,
+    "capacity": 10,
+    "express": {
+      "1": "1-26",
+      "2": "1-26",
+      "3": "1-26",
+      "4": "1,27-51",
+      "5": "1,27-51",
+      "6": "1,27-51"
+    },
+    "description": "Same lobby-only traffic; three local cars (1-26) and three express cars (lobby + 27-51).",
+    "seed": 7
   }
 ]

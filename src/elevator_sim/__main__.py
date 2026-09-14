@@ -7,6 +7,7 @@ import json
 import sys
 from pathlib import Path
 
+from .compare import parse_floors
 from .config import SimulationConfig
 from .io import read_requests, write_positions, write_trace
 from .metrics import format_summary, summarize
@@ -40,7 +41,7 @@ def _config_from_args(a: argparse.Namespace) -> SimulationConfig:
     served: dict[int, frozenset[int]] = {}
     for spec in a.express:
         car, _, floors = spec.partition(":")
-        served[int(car) - 1] = frozenset(_parse_floors(floors))
+        served[int(car) - 1] = frozenset(parse_floors(floors))
     return SimulationConfig(
         elevators=a.elevators,
         floors=a.floors,
@@ -50,14 +51,6 @@ def _config_from_args(a: argparse.Namespace) -> SimulationConfig:
         park_floor=a.park_floor,
         served_floors=served,
     )
-
-
-def _parse_floors(spec: str) -> set[int]:
-    out: set[int] = set()
-    for part in spec.split(","):
-        lo, _, hi = part.partition("-")
-        out.update(range(int(lo), int(hi or lo) + 1))
-    return out
 
 
 def cmd_run(a: argparse.Namespace) -> int:
@@ -88,6 +81,21 @@ def cmd_compare(a: argparse.Namespace) -> int:
     )
     print(format_table(rows))
     a.out.mkdir(parents=True, exist_ok=True)
+    if a.traces:
+        index = [
+            {
+                "scenario": s.name,
+                "description": s.description,
+                "floors": s.floors,
+                "elevators": s.elevators,
+                "capacity": s.capacity,
+                "park_floor": s.park_floor,
+                "express": {str(k + 1): sorted(v) for k, v in s.served_floors.items()},
+                "schedulers": [v.label for v in variants],
+            }
+            for s in scenarios
+        ]
+        (a.out / "traces" / "index.json").write_text(json.dumps(index, indent=2) + "\n")
     (a.out / "comparison.json").write_text(json.dumps(rows, indent=2) + "\n")
     (a.out / "comparison.md").write_text(format_markdown(rows) + "\n")
     print(

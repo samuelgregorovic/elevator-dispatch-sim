@@ -49,7 +49,7 @@ def chart_wait_by_scenario(rows: list[dict[str, Any]], out: Path) -> Path:
     """Two panels (mean, p90) of waiting time per scenario, one bar per scheduler."""
     plt = _plt()
     scenarios = [s for s in dict.fromkeys(r["scenario"] for r in rows) if s != "sample"]
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.2), sharey=False)
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6), sharey=False)
     for ax, stat, title in zip(axes, ("mean", "p90"), ("Average wait", "p90 wait"), strict=True):
         width = 0.26
         for i, sched in enumerate(ORDER):
@@ -62,7 +62,7 @@ def chart_wait_by_scenario(rows: list[dict[str, Any]], out: Path) -> Path:
             xs = [x + (i - 1) * (width + 0.02) for x in range(len(scenarios))]
             ax.bar(xs, vals, width=width, color=COLORS[sched], label=sched, linewidth=0)
         ax.set_xticks(range(len(scenarios)))
-        ax.set_xticklabels([s.replace("_", "\n") for s in scenarios], fontsize=8.5)
+        ax.set_xticklabels([s.replace("_", "\n") for s in scenarios], fontsize=7.5)
         ax.set_title(f"{title} (ticks)", loc="left", color=INK, fontsize=11)
         ax.grid(axis="x", visible=False)
     axes[0].legend(frameon=False, fontsize=9)

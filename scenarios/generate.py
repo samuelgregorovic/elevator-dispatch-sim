@@ -112,6 +112,18 @@ SCENARIOS: list[Traffic] = [
         6,
         "The 51-floor building implied by the brief's sample, beyond a single bank's comfort.",
     ),
+    Traffic(
+        "tall_lobby_traffic",
+        51,
+        6,
+        10,
+        900,
+        0.12,
+        2,
+        (0.80, 0.20, 0.0),
+        7,
+        "51 floors, lobby-only trips (no interfloor), so a zoned bank can serve every request.",
+    ),
 ]
 
 
@@ -172,6 +184,38 @@ def write_all() -> None:
                 "seed": t.seed,
             }
         )
+    manifest += [
+        {
+            "name": "morning_up_peak_parked",
+            "file": "morning_up_peak.csv",
+            "floors": 20,
+            "elevators": 4,
+            "capacity": 8,
+            "park_floor": 1,
+            "description": "Same morning traffic; idle cars return to the lobby (park_floor=1).",
+            "seed": 1,
+        },
+        {
+            "name": "tall_lobby_zoned",
+            "file": "tall_lobby_traffic.csv",
+            "floors": 51,
+            "elevators": 6,
+            "capacity": 10,
+            "express": {
+                "1": "1-26",
+                "2": "1-26",
+                "3": "1-26",
+                "4": "1,27-51",
+                "5": "1,27-51",
+                "6": "1,27-51",
+            },
+            "description": (
+                "Same lobby-only traffic; three local cars (1-26) "
+                "and three express cars (lobby + 27-51)."
+            ),
+            "seed": 7,
+        },
+    ]
     manifest.insert(
         0,
         {
@@ -186,7 +230,8 @@ def write_all() -> None:
     )
     (HERE / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     for m in manifest:
-        rows = sum(1 for _ in open(HERE / m["file"])) - 1
+        with (HERE / m["file"]).open() as fh:
+            rows = sum(1 for _ in fh) - 1
         print(f"{m['name']:18} {rows:5d} requests  floors={m['floors']} cars={m['elevators']}")
 
 

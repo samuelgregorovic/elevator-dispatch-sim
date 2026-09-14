@@ -66,28 +66,46 @@ The projection is O(route length) per candidate car and runs once per request, s
 
 ## What the comparison shows
 
-`uv run python -m elevator_sim compare` on the committed scenarios (dwell 1, all cars start at the lobby):
+`uv run python -m elevator_sim compare --fairness 0.5` on the committed scenarios (dwell 1, all cars start at the lobby; `etd_f0.5` is ETD with fairness weight 0.5). The sample from the brief is discussed separately below.
 
 | scenario | scheduler | n | ticks | wait avg | wait p90 | wait max | total avg | total p90 | total max |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
 | morning_up_peak | etd | 166 | 474 | 6.8 | 15 | 19 | 20.2 | 32 | 44 |
 | morning_up_peak | nearest_car | 166 | 503 | 11.9 | 35 | 44 | 24.8 | 45 | 62 |
 | morning_up_peak | round_robin | 166 | 494 | 16.6 | 34 | 42 | 29.4 | 47 | 64 |
+| morning_up_peak | etd_f0.5 | 166 | 476 | 7.7 | 17 | 25 | 20.8 | 31 | 42 |
 | lunch_two_way | etd | 131 | 476 | 4.2 | 11 | 21 | 15.2 | 26 | 40 |
 | lunch_two_way | nearest_car | 131 | 489 | 7.3 | 18 | 36 | 18.5 | 35 | 52 |
 | lunch_two_way | round_robin | 131 | 487 | 13.2 | 28 | 38 | 24.2 | 40 | 55 |
+| lunch_two_way | etd_f0.5 | 131 | 474 | 4.7 | 13 | 21 | 15.6 | 26 | 40 |
 | evening_down_peak | etd | 113 | 341 | 7.8 | 17 | 25 | 19.6 | 36 | 44 |
 | evening_down_peak | nearest_car | 113 | 331 | 12.3 | 37 | 49 | 24.8 | 49 | 69 |
 | evening_down_peak | round_robin | 113 | 337 | 17.9 | 33 | 42 | 30.0 | 46 | 61 |
+| evening_down_peak | etd_f0.5 | 113 | 337 | 8.7 | 17 | 27 | 20.4 | 35 | 45 |
 | interfloor | etd | 85 | 457 | 3.9 | 10 | 17 | 11.4 | 19 | 29 |
 | interfloor | nearest_car | 85 | 453 | 5.4 | 16 | 36 | 13.0 | 26 | 39 |
 | interfloor | round_robin | 85 | 462 | 8.1 | 15 | 27 | 15.5 | 25 | 47 |
+| interfloor | etd_f0.5 | 85 | 457 | 3.6 | 8 | 17 | 11.1 | 19 | 29 |
 | capacity_stress | etd | 76 | 290 | 60.3 | 91 | 120 | 73.0 | 108 | 140 |
 | capacity_stress | nearest_car | 76 | 340 | 82.1 | 153 | 178 | 94.8 | 171 | 196 |
 | capacity_stress | round_robin | 76 | 281 | 60.1 | 98 | 128 | 72.8 | 110 | 135 |
+| capacity_stress | etd_f0.5 | 76 | 269 | 55.2 | 83 | 99 | 67.7 | 96 | 119 |
 | tall_building | etd | 231 | 362 | 17.9 | 38 | 108 | 47.0 | 73 | 124 |
 | tall_building | nearest_car | 231 | 487 | 54.8 | 115 | 227 | 84.1 | 156 | 242 |
 | tall_building | round_robin | 231 | 431 | 51.4 | 95 | 115 | 80.2 | 131 | 164 |
+| tall_building | etd_f0.5 | 231 | 362 | 16.5 | 31 | 44 | 45.4 | 67 | 86 |
+| tall_lobby_traffic | etd | 198 | 380 | 20.5 | 38 | 52 | 50.6 | 79 | 97 |
+| tall_lobby_traffic | nearest_car | 198 | 444 | 43.8 | 106 | 209 | 74.1 | 153 | 260 |
+| tall_lobby_traffic | round_robin | 198 | 423 | 47.6 | 90 | 121 | 77.4 | 127 | 158 |
+| tall_lobby_traffic | etd_f0.5 | 198 | 365 | 16.8 | 29 | 47 | 46.7 | 66 | 79 |
+| morning_up_peak_parked | etd | 166 | 488 | 4.7 | 12 | 18 | 17.4 | 28 | 39 |
+| morning_up_peak_parked | nearest_car | 166 | 515 | 13.3 | 37 | 45 | 26.3 | 52 | 66 |
+| morning_up_peak_parked | round_robin | 166 | 507 | 16.5 | 33 | 40 | 29.1 | 47 | 63 |
+| morning_up_peak_parked | etd_f0.5 | 166 | 487 | 5.8 | 14 | 25 | 18.4 | 29 | 40 |
+| tall_lobby_zoned | etd | 198 | 394 | 26.0 | 59 | 79 | 55.5 | 98 | 133 |
+| tall_lobby_zoned | nearest_car | 198 | 471 | 55.6 | 127 | 205 | 84.7 | 178 | 259 |
+| tall_lobby_zoned | round_robin | 198 | 549 | 56.5 | 144 | 248 | 85.9 | 180 | 299 |
+| tall_lobby_zoned | etd_f0.5 | 198 | 416 | 28.1 | 65 | 93 | 57.0 | 103 | 128 |
 
 Observations:
 
@@ -95,6 +113,16 @@ Observations:
 - On `capacity_stress` (two small cars, everyone at the lobby at once) ETD and round robin are equal. When every request has the same origin and the system is saturated, the only lever is spreading load evenly, and round robin does that by construction. Nearest-car is worst here because it keeps piling passengers onto whichever car is nearest the lobby.
 - On the three-request sample from the brief nearest-car happens to beat ETD (6.3 vs 15.0 average wait). ETD spreads the two lobby passengers over both cars to avoid the extra stop, which leaves no idle car for the third request; nearest-car puts both on car 1 and the idle car 2 collects the third. Greedy assignment with no knowledge of future demand can lose on tiny inputs; the scenarios are what the algorithm should be judged on.
 - Round robin's maximum wait is often *lower* than nearest-car's (tall building: 115 vs 227). Ignoring position is bad on average but it never starves anyone, which is the fairness-versus-efficiency tension the brief asks about; the ETD fairness weight is the deliberate version of that trade.
+
+## Policies: fairness weight, parking, zoning
+
+Three configuration-level policies were added after the baseline comparison. Each is one flag; the table above already includes them.
+
+**Fairness weight.** With `fairness = 0.5` the delay inflicted on a passenger who has waited `a` ticks is weighted `1 + 0.5·a`. On the tall building this cuts the maximum wait from 108 to 44 ticks *and* lowers the average total time (47.0 → 45.4): protecting the tail also removes the pathological assignments that produced it. On the 20-floor office patterns the same weight costs a little on average (up-peak 6.8 → 7.7) and raises the maximum (19 → 25). The effect is not monotonic in the weight — see `docs/charts/fairness_sweep_*.png` — because the cost function is greedy and per-request; the weight changes which local optimum is picked, not the global structure. Read it as a tuning knob to be set per building and traffic profile, not a free lunch.
+
+**Park idle cars at the lobby.** `morning_up_peak_parked` is the same traffic with `park_floor = 1`. ETD's average wait falls from 6.8 to 4.7 ticks (−30%) and the maximum from 19 to 18: in up-peak nearly every request starts at the lobby, so an idle car waiting there answers it with wait 0. The cost is extra travel (empty runs down) and it would hurt in down-peak, where idle cars should wait high; the right policy is time-of-day dependent, which is why it is a flag rather than a default.
+
+**Zoning / express cars.** `tall_lobby_zoned` splits six cars into three local (floors 1–26) and three express (lobby + 27–51), on lobby-only traffic. It is *worse* than the same six cars unzoned: ETD average wait 26.0 vs 20.5, maximum 79 vs 52. At this load the loss of flexibility (a request for floor 30 can only use three cars) outweighs the stop reduction. Zoning is a handling-capacity tool for saturated tall buildings and a way to save shaft space, not a wait-time optimisation at moderate load — consistent with the guidance in `RESEARCH.md` §5. Interfloor trips across the zone boundary are rejected with a clear error; serving them needs a sky-lobby transfer, which is out of scope.
 
 ## Trade-offs made
 

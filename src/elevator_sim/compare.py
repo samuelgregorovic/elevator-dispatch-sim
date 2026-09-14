@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -22,11 +22,17 @@ class Scenario:
     elevators: int
     capacity: int
     description: str = ""
+    park_floor: int | None = None
+    served_floors: dict[int, frozenset[int]] = field(default_factory=dict)
 
-    @property
-    def config(self) -> SimulationConfig:
+    def config(self, dwell_ticks: int = 1) -> SimulationConfig:
         return SimulationConfig(
-            elevators=self.elevators, floors=self.floors, capacity=self.capacity
+            elevators=self.elevators,
+            floors=self.floors,
+            capacity=self.capacity,
+            dwell_ticks=dwell_ticks,
+            park_floor=self.park_floor,
+            served_floors=self.served_floors,
         )
 
 
@@ -40,9 +46,23 @@ def load_manifest(path: Path) -> list[Scenario]:
             elevators=e["elevators"],
             capacity=e["capacity"],
             description=e.get("description", ""),
+            park_floor=e.get("park_floor"),
+            served_floors={
+                int(car) - 1: frozenset(parse_floors(spec))
+                for car, spec in e.get("express", {}).items()
+            },
         )
         for e in entries
     ]
+
+
+def parse_floors(spec: str) -> set[int]:
+    """``"1,27-51"`` -> {1, 27, 28, ..., 51}."""
+    out: set[int] = set()
+    for part in spec.split(","):
+        lo, _, hi = part.partition("-")
+        out.update(range(int(lo), int(hi or lo) + 1))
+    return out
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,12 +86,7 @@ def run_matrix(
     rows: list[dict[str, Any]] = []
     for scenario in scenarios:
         requests = read_requests(scenario.file, scenario.floors)
-        config = SimulationConfig(
-            elevators=scenario.elevators,
-            floors=scenario.floors,
-            capacity=scenario.capacity,
-            dwell_ticks=dwell_ticks,
-        )
+        config = scenario.config(dwell_ticks)
         for variant in variants:
             scheduler = make_scheduler(variant.scheduler, fairness=variant.fairness)
             result = Simulation(config, scheduler, requests).run()
@@ -119,7 +134,8 @@ def format_table(rows: list[dict[str, Any]]) -> str:
 
 def format_markdown(rows: list[dict[str, Any]]) -> str:
     lines = [
-        "| scenario | scheduler | n | ticks | wait avg | wait p90 | wait max | total avg | total p90 | total max |",
+        "| scenario | scheduler | n | ticks | wait avg | wait p90 | wait max "
+        "| total avg | total p90 | total max |",
         "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for r in rows:
