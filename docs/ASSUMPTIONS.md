@@ -8,15 +8,17 @@ Every item here is a place where the brief (`brief.pdf`) leaves a choice open. E
 
 **A2. Stops cost time.** The brief does not say whether boarding takes time. Default: a car that stops at a floor to load or unload spends `dwell_ticks = 1` tick stationary there before moving on. Reason: without a stop cost, "fewer stops" — the main benefit of destination dispatch — has no effect on any metric, and every scheduler looks the same. `dwell_ticks = 0` reproduces the literal brief and is supported.
 
-**A3. Order of operations within a tick `t`.**
+**A3. Order of operations within a tick `t`.** A tick is the state of the system *at* time `t`; movement happens between ticks.
 
 1. Release all requests with `time == t` to the controller (never any with `time > t`).
 2. The scheduler assigns each new request to exactly one car, in input order.
-3. Each car advances its state: if dwelling, the dwell counter decrements; otherwise it moves one floor toward its next stop, or stays if idle.
-4. At each car's current floor: passengers whose destination is this floor alight; then assigned passengers waiting at this floor board, in request order, while capacity allows. Boarding or alighting starts a dwell if `dwell_ticks > 0`.
-5. Positions of all cars at the end of tick `t` are logged.
+3. At each car's current floor: passengers whose destination is this floor alight; then assigned passengers waiting at this floor board, in request order, while capacity and direction allow. Boarding or alighting starts a dwell if `dwell_ticks > 0`.
+4. Positions of all cars at time `t` are logged. Tick 0 therefore shows the initial positions.
+5. Each car advances toward its state at `t + 1`: if dwelling, the dwell counter decrements and the car stays; otherwise it moves one floor toward its next stop, or stays if idle.
 
-Consequence: a passenger who requests at `t` on the floor where an idle car already stands boards at `t` (step 4 of the same tick) and has wait time 0. A car one floor away arrives at `t + 1`.
+Consequence: a passenger who requests at `t` on the floor where an idle car already stands boards at `t` and has wait time 0. A car one floor away arrives at `t + 1`. With `dwell_ticks = 1`, a car that boards at `t` is still at that floor at `t + 1` and moves at `t + 2`.
+
+*Revision note:* the first draft of this list placed movement before boarding, so tick 0 would have logged positions after a move. The tests written against the consequence above exposed the inconsistency and the order was corrected before the first commit of the engine.
 
 **A4. Metrics.** `wait = board_time − request_time`; `travel = alight_time − board_time`; `total = wait + travel`. All integers in ticks.
 
@@ -38,7 +40,9 @@ Consequence: a passenger who requests at `t` on the floor where an idle car alre
 
 **A11. Assignment is immediate and final.** The brief says the system immediately assigns each passenger to a specific car and that the destination cannot be changed. Assignment to a car is treated as immutable as well, which is how commercial destination-dispatch systems behave (the kiosk displays the car). Consequence: the scheduler must be capacity-aware when assigning, and a passenger is never moved to another car later.
 
-**A12. Direction discipline (LOOK).** A car with pending stops keeps moving in its current direction while any stop lies ahead in that direction, then reverses. A car never reverses with passengers aboard whose destinations lie ahead. A waiting passenger boards only a car that will depart their floor in the passenger's direction, or a car that is idle at that floor (which then adopts the passenger's direction).
+**A12. Direction discipline (LOOK).** A car with pending stops keeps moving in its current direction while any stop lies ahead in that direction, then reverses. A car never reverses with passengers aboard whose destinations lie ahead. A waiting passenger boards only a car that will depart their floor in the passenger's direction, or a car that is idle at that floor (which then adopts the direction of the longest-waiting passenger there).
+
+One refinement, found by a property-based test: a passenger waiting at the car's current floor who wants to travel in the car's current direction counts as a stop ahead. Without it, a single car with two waiting passengers on adjacent floors wanting opposite directions reverses at each floor before either can board and oscillates forever.
 
 **A13. Tie-breaking is deterministic.** When two cars have equal cost, the lower car index wins. Combined with seeded scenario generation this makes every run reproducible byte for byte.
 
