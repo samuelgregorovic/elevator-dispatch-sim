@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+
+# Simulation outputs (example runs are committed explicitly under docs/)
+outputs/*
+!outputs/.gitkeep
+
+# OS
+.DS_Store

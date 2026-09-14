@@ -1,0 +1,63 @@
+# Assumptions and simplifications
+
+Every item here is a place where the brief (`brief.pdf`) leaves a choice open. Each records the decision, the reason, and whether it is configurable. These were fixed before the code that depends on them was written.
+
+## Time
+
+**A1. One tick = one floor of travel.** As specified. A car at floor 3 moving up is at floor 4 one tick later.
+
+**A2. Stops cost time.** The brief does not say whether boarding takes time. Default: a car that stops at a floor to load or unload spends `dwell_ticks = 1` tick stationary there before moving on. Reason: without a stop cost, "fewer stops" — the main benefit of destination dispatch — has no effect on any metric, and every scheduler looks the same. `dwell_ticks = 0` reproduces the literal brief and is supported.
+
+**A3. Order of operations within a tick `t`.**
+
+1. Release all requests with `time == t` to the controller (never any with `time > t`).
+2. The scheduler assigns each new request to exactly one car, in input order.
+3. Each car advances its state: if dwelling, the dwell counter decrements; otherwise it moves one floor toward its next stop, or stays if idle.
+4. At each car's current floor: passengers whose destination is this floor alight; then assigned passengers waiting at this floor board, in request order, while capacity allows. Boarding or alighting starts a dwell if `dwell_ticks > 0`.
+5. Positions of all cars at the end of tick `t` are logged.
+
+Consequence: a passenger who requests at `t` on the floor where an idle car already stands boards at `t` (step 4 of the same tick) and has wait time 0. A car one floor away arrives at `t + 1`.
+
+**A4. Metrics.** `wait = board_time − request_time`; `travel = alight_time − board_time`; `total = wait + travel`. All integers in ticks.
+
+**A5. Termination.** The simulation runs until every request has been released and every passenger has alighted. Positions are logged for every tick from 0 to the final tick inclusive. If the last request time is beyond the current tick, the simulation keeps ticking one unit at a time until it arrives there (it never jumps).
+
+## Building and cars
+
+**A6. Floors are numbered `1..n`.** The sample input uses floors 1, 20, 37 and 51, so the sample building has at least 51 floors. Floor 1 is the lobby.
+
+**A7. Initial state.** All cars start idle at floor 1 at tick 0 (configurable `start_floor`).
+
+**A8. Capacity.** Each car carries at most `capacity` passengers. A car never exceeds it: if a waiting passenger's assigned car arrives full, the passenger stays on the floor and the car keeps the stop until the passenger has boarded.
+
+**A9. Idle behaviour.** An idle car stays where it last stopped. Optional `park_floor` policy sends idle cars to a floor (usually the lobby); off by default.
+
+**A10. Express cars.** A car may have a `served_floors` set. It never stops elsewhere and is never assigned a passenger whose origin or destination it does not serve. Transfers between cars (sky lobbies) are out of scope.
+
+## Dispatch
+
+**A11. Assignment is immediate and final.** The brief says the system immediately assigns each passenger to a specific car and that the destination cannot be changed. Assignment to a car is treated as immutable as well, which is how commercial destination-dispatch systems behave (the kiosk displays the car). Consequence: the scheduler must be capacity-aware when assigning, and a passenger is never moved to another car later.
+
+**A12. Direction discipline (LOOK).** A car with pending stops keeps moving in its current direction while any stop lies ahead in that direction, then reverses. A car never reverses with passengers aboard whose destinations lie ahead. A waiting passenger boards only a car that will depart their floor in the passenger's direction, or a car that is idle at that floor (which then adopts the passenger's direction).
+
+**A13. Tie-breaking is deterministic.** When two cars have equal cost, the lower car index wins. Combined with seeded scenario generation this makes every run reproducible byte for byte.
+
+## Input
+
+**A14. Input format.** CSV with header `time,id,source,dest`, as in the brief. Rows need not be sorted; they are sorted by `time` (stable, preserving file order within a tick) on load. Sorting is not peeking: the controller still only sees a row once the clock reaches its `time`.
+
+**A15. Validation.** The following are rejected with a message naming the row: non-integer fields; `time < 0`; `source == dest`; `source` or `dest` outside `1..n`; duplicate `id`. An empty request list is valid and produces a single log row for tick 0.
+
+**A16. No peek-ahead is structural.** The simulation reads requests through a feed object that only releases rows with `time <= now`. The scheduler receives new requests one tick at a time and has no reference to the feed. A test with a spy feed asserts this.
+
+## Output
+
+**A17. Positions log.** `positions.csv` with header `time,elevator_1,…,elevator_k` and one row per tick.
+
+**A18. Trace.** `trace.json` with per-tick car state (floor, direction, load, dwell) and events (request, assign, board, alight) for the viewer and for debugging. Not required by the brief; it is what makes behaviour inspectable.
+
+**A19. Statistics.** For wait and total time: min, max, mean, p50, p90; plus a short list of generated observations (share of passengers waiting more than twice the median, busiest origin floor, per-car passengers carried and stop counts, idle share).
+
+## Out of scope
+
+Real-time clock synchronisation; acceleration, door and travel physics beyond the one-floor-per-tick model; reassignment after dispatch; sky-lobby transfers; passenger no-shows or group entries; energy.
