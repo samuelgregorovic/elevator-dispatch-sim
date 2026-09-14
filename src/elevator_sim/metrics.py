@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Any
@@ -27,17 +28,17 @@ class Distribution:
             count=len(s),
             min=s[0],
             max=s[-1],
-            mean=round(sum(s) / len(s), 2),
+            mean=sum(s) / len(s),
             p50=percentile(s, 50),
             p90=percentile(s, 90),
         )
 
 
 def percentile(sorted_values: list[int], pct: float) -> float:
-    """Nearest-rank percentile on an already sorted list."""
+    """Nearest-rank percentile on an already sorted list: value at rank ceil(p/100 * n)."""
     if not sorted_values:
         return 0.0
-    rank = max(1, round(pct / 100 * len(sorted_values) + 0.5))
+    rank = max(1, math.ceil(pct / 100 * len(sorted_values)))
     return float(sorted_values[min(rank, len(sorted_values)) - 1])
 
 

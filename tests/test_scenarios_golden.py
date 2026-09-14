@@ -29,6 +29,6 @@ def test_sample_statistics_are_stable(name):
     s = summarize(result)
     ticks, wait, total = GOLDEN[name]
     assert s.ticks == ticks
-    assert (s.wait.min, s.wait.max, s.wait.mean) == wait
-    assert (s.total.min, s.total.max, s.total.mean) == total
+    assert (s.wait.min, s.wait.max, round(s.wait.mean, 2)) == wait
+    assert (s.total.min, s.total.max, round(s.total.mean, 2)) == total
     assert s.passengers == 3

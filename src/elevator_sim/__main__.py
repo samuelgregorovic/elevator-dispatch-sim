@@ -13,7 +13,7 @@ from .io import read_requests, write_positions, write_trace
 from .metrics import format_summary, summarize
 from .schedulers import SCHEDULERS, make_scheduler
 from .simulation import Simulation
-from .validate import InvalidInputError
+from .validate import InvalidInputError, tick_bound, validate_feasibility
 
 
 def _add_config_args(p: argparse.ArgumentParser) -> None:
@@ -56,8 +56,9 @@ def _config_from_args(a: argparse.Namespace) -> SimulationConfig:
 def cmd_run(a: argparse.Namespace) -> int:
     config = _config_from_args(a)
     requests = read_requests(a.requests, config.floors)
+    validate_feasibility(requests, config)
     scheduler = make_scheduler(a.scheduler, fairness=a.fairness)
-    result = Simulation(config, scheduler, requests).run()
+    result = Simulation(config, scheduler, requests).run(max_ticks=tick_bound(requests, config))
     out = a.out
     write_positions(result, out / "positions.csv")
     write_trace(result, out / "trace.json")

@@ -82,6 +82,7 @@ class Elevator:
     waiting: list[Passenger] = field(default_factory=list)
     stops_made: int = 0
     floors_travelled: int = 0
+    stopped_here: bool = False  # a stop (dwell) has already been started at the current floor
 
     # -- queries -----------------------------------------------------------
 
@@ -154,6 +155,8 @@ class Elevator:
         """Tick step 3: dwell, or advance one floor toward the next stop, or park/idle."""
         if self.dwell_remaining > 0:
             self.dwell_remaining -= 1
+            if not self.pending_stops():
+                self.direction = Direction.IDLE
             return
         direction = self._next_direction(self.pending_stops())
         if direction == Direction.IDLE and self.park_floor not in (None, self.floor):
@@ -162,6 +165,9 @@ class Elevator:
         if direction != Direction.IDLE:
             self.floor += int(direction)
             self.floors_travelled += 1
+            self.stopped_here = False
+        else:
+            self.stopped_here = False  # at rest: the next boarding here is a new stop
 
     def serve_floor(self, now: int) -> tuple[list[Passenger], list[Passenger]]:
         """Tick step 4: alight, then board in request order while capacity and direction allow.
@@ -191,7 +197,10 @@ class Elevator:
             self.waiting = [p for p in self.waiting if p.id not in ids]
             self.direction = departure
 
-        if alighted or boarded:
+        if (alighted or boarded) and not self.stopped_here:
+            # One stop per floor visit: doors do not reopen for passengers who arrive
+            # while the car is already dwelling here; they wait for the next pass (A2).
+            self.stopped_here = True
             self.stops_made += 1
             self.dwell_remaining = self.dwell_ticks
         return alighted, boarded

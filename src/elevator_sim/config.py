@@ -37,3 +37,5 @@ class SimulationConfig:
                 raise ValueError(f"served_floors for elevator {idx} outside 1..floors: {bad}")
             if len(floors) < 2:
                 raise ValueError(f"served_floors for elevator {idx} must contain >= 2 floors")
+            if self.park_floor is not None and self.park_floor not in floors:
+                raise ValueError(f"park_floor {self.park_floor} is not served by elevator {idx}")

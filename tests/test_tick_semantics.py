@@ -69,3 +69,32 @@ def test_empty_input_produces_single_tick():
     result = run([])
     assert result.positions == [[1]]
     assert result.passengers == []
+
+
+def test_percentile_is_nearest_rank():
+    from elevator_sim.metrics import percentile
+
+    assert percentile([0, 2], 50) == 0
+    assert percentile(list(range(1, 11)), 50) == 5
+    assert percentile(list(range(1, 21)), 90) == 18
+    assert percentile([7], 90) == 7
+    assert percentile([], 50) == 0.0
+
+
+def test_dwell_is_not_restarted_by_passengers_arriving_mid_stop():
+    # One car, capacity 100, a lobby arrival every tick: without the one-stop-per-visit
+    # rule the car would sit at the lobby for as long as arrivals continue.
+    requests = [req(t, f"p{t}", 1, 5) for t in range(20)] + [req(0, "far", 9, 2)]
+    result = run(requests, floors=10, capacity=100, dwell_ticks=1)
+    car_positions = [row[0] for row in result.positions]
+    first_departure = next(t for t, f in enumerate(car_positions) if f != 1)
+    assert first_departure == 2  # boards at 0, dwells at 1, moves at 2
+    assert result.cars[0].stops_made < 10  # physical stops, not boarding events
+    far = next(p for p in result.passengers if p.id == "far")
+    assert far.wait < 40
+
+
+def test_idle_car_reports_idle_direction_after_its_last_stop():
+    result = run([req(0, "a", 1, 3)])
+    last = result.car_states[-1][0]
+    assert last["dir"] == 0 and last["load"] == 0

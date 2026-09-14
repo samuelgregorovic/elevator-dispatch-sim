@@ -12,7 +12,7 @@ from .validate import parse_row, validate_requests
 
 
 def read_requests(path: Path, floors: int) -> list[Request]:
-    with path.open(newline="") as fh:
+    with path.open(newline="", encoding="utf-8-sig") as fh:
         reader = csv.DictReader(fh)
         rows = [parse_row(row, line) for line, row in enumerate(reader, start=2)]
     return validate_requests(rows, floors)

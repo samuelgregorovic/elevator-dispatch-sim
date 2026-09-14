@@ -12,6 +12,7 @@ from .io import read_requests, write_trace
 from .metrics import summarize
 from .schedulers import make_scheduler
 from .simulation import Simulation
+from .validate import tick_bound, validate_feasibility
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,9 +88,12 @@ def run_matrix(
     for scenario in scenarios:
         requests = read_requests(scenario.file, scenario.floors)
         config = scenario.config(dwell_ticks)
+        validate_feasibility(requests, config)
         for variant in variants:
             scheduler = make_scheduler(variant.scheduler, fairness=variant.fairness)
-            result = Simulation(config, scheduler, requests).run()
+            result = Simulation(config, scheduler, requests).run(
+                max_ticks=tick_bound(requests, config)
+            )
             summary = summarize(result)
             if trace_dir is not None:
                 write_trace(result, trace_dir / f"{scenario.name}__{scheduler.name}.json")

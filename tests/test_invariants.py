@@ -12,20 +12,29 @@ from elevator_sim.model import Request
 
 @st.composite
 def scenarios(draw):
-    floors = draw(st.integers(min_value=2, max_value=12))
-    n = draw(st.integers(min_value=0, max_value=25))
+    floors = draw(st.integers(min_value=2, max_value=24))
+    n = draw(st.integers(min_value=0, max_value=40))
     requests = []
     for i in range(n):
         source = draw(st.integers(min_value=1, max_value=floors))
         dest = draw(st.integers(min_value=1, max_value=floors).filter(lambda d, s=source: d != s))
         time = draw(st.integers(min_value=0, max_value=30))
         requests.append(Request(time=time, id=f"p{i}", source=source, dest=dest))
+    elevators = draw(st.integers(min_value=1, max_value=6))
     config = {
         "floors": floors,
-        "elevators": draw(st.integers(min_value=1, max_value=4)),
+        "elevators": elevators,
         "capacity": draw(st.integers(min_value=1, max_value=6)),
         "dwell_ticks": draw(st.integers(min_value=0, max_value=2)),
+        "start_floor": draw(st.integers(min_value=1, max_value=floors)),
     }
+    # Optional express car: one car restricted to the lobby plus the top half. Car 0 always
+    # serves every floor so every request stays feasible.
+    if elevators > 1 and draw(st.booleans()):
+        top = frozenset({1, *range(max(2, floors // 2), floors + 1)})
+        config["served_floors"] = {elevators - 1: top}
+    if draw(st.booleans()):
+        config["park_floor"] = 1
     return requests, config
 
 
@@ -37,6 +46,11 @@ def test_every_passenger_is_delivered(scheduler_name, scenario):
     result = run(requests, scheduler_name, **config)
     assert all(p.alight_time is not None for p in result.passengers)
     assert all(p.alight_time > p.board_time >= p.request_time for p in result.passengers)
+    # Boarding happens only at the origin and alighting only at the destination.
+    where = {(e["type"], e["id"]): e["floor"] for e in result.events if "floor" in e}
+    for p in result.passengers:
+        assert where[("board", p.id)] == p.source
+        assert where[("alight", p.id)] == p.dest
 
 
 @pytest.mark.parametrize("scheduler_name", ["etd", "nearest_car", "round_robin"])

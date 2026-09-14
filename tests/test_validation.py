@@ -47,6 +47,7 @@ def test_unsorted_input_is_sorted_stably_on_load(tmp_path):
         ("time,id,source,dest\n0,a,x,2\n", "must be integers"),
         ("time,id,source\n0,a,1\n", "missing column"),
         ("time,id,source,dest\n0,,1,2\n", "empty id"),
+        ("time,id,source,dest\n0,a,1\n", "line 2: expected 4 fields"),
     ],
 )
 def test_invalid_rows_are_rejected_with_a_named_reason(tmp_path, body, message):
@@ -81,3 +82,27 @@ def test_validate_requests_passes_valid_rows_through():
 def test_invalid_config_is_rejected(kwargs):
     with pytest.raises(ValueError):
         SimulationConfig(**{"elevators": 2, "floors": 10, **kwargs})
+
+
+def test_utf8_bom_is_tolerated(tmp_path):
+    p = write(tmp_path, "\ufefftime,id,source,dest\n0,a,1,2\n")
+    assert [r.id for r in read_requests(p, floors=5)] == ["a"]
+
+
+def test_feasibility_is_checked_before_the_run_starts():
+    from elevator_sim.validate import validate_feasibility
+
+    cfg = SimulationConfig(elevators=2, floors=10, served_floors={1: frozenset({1, 8, 9, 10})})
+    validate_feasibility([req(0, "ok", 1, 9), req(0, "ok2", 2, 5)], cfg)
+    cfg2 = SimulationConfig(
+        elevators=2,
+        floors=10,
+        served_floors={0: frozenset({1, 2, 3}), 1: frozenset({1, 8, 9, 10})},
+    )
+    with pytest.raises(InvalidInputError, match="no elevator serves both floor 2 and floor 9"):
+        validate_feasibility([req(0, "x", 2, 9)], cfg2)
+
+
+def test_park_floor_must_be_served_by_every_express_car():
+    with pytest.raises(ValueError, match="park_floor 1 is not served by elevator 0"):
+        SimulationConfig(elevators=2, floors=10, park_floor=1, served_floors={0: frozenset({5, 6})})
