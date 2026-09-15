@@ -14,6 +14,7 @@ Discrete-time simulation of a destination-dispatch elevator system, built agains
 ## Looking at the solution on GitHub, without running anything
 
 - **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): traffic patterns for any building, all three rules side by side with a live ranking, add passengers, live traffic, your own CSV. Space to play, ← → to step.
+- **[The presentation](docs/presentation/elevator-dispatch.pdf)** — a sixteen-slide walkthrough with speaker notes ([PowerPoint](docs/presentation/elevator-dispatch.pptx)): the question, the model, the rules, the evidence, which rule for which building, and how the work was done.
 - **[The whitepaper](docs/WHITEPAPER.md)** — the whole story top to bottom for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
 - **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
 - **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps, car usage and balance.
@@ -91,9 +92,9 @@ Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in 
 
 ![Waiting-time distribution on the tall building](docs/charts/wait_distribution_tall_building.png)
 
-## Time spent
+## Time and cost
 
-About one hour of my own time framing the problem, writing the plan and reviewing the outputs, then autonomous execution of the plan by AI tooling, plus follow-up steering for later changes.
+About one hour of my own time framing the problem, writing the plan and reviewing the outputs, then autonomous execution of the plan by AI tooling, plus follow-up steering for later changes. AI usage cost less than €50 in total, across Fable 5.1 at medium effort for the planning, execution, fixes and documentation, with Opus 5 and Sonnet 5 on smaller follow-up tasks; the two design-tool runs (interface and deck) are included.
 
 ## Assumptions, simplifications and trade-offs
 
@@ -113,6 +114,6 @@ Every decision the brief left open — what costs time, the order of operations 
 - `src/elevator_sim/` — the package (stdlib only); `schedulers/` holds the algorithms
 - `tests/` — unit, structural, property-based, golden and CLI tests
 - `scenarios/` — input files, `manifest.json`, and the seeded generator
-- `docs/` — brief, whitepaper, assumptions, design, research, testing, charts, results, the browser simulator (`viewer/`)
+- `docs/` — brief, whitepaper, presentation, assumptions, design, research, testing, charts, results, the browser simulator (`viewer/`)
 
 MIT licence.
