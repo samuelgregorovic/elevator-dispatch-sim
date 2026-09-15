@@ -131,15 +131,18 @@
   .help .rules b { display: block; color: var(--ink); margin-bottom: 2px; }
   .help .leg { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 12.5px; color: var(--ink2); margin-top: 6px; }
   .help kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--soft); }
-  .details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-  .details section { min-width: 0; border-top: 3px solid var(--rc); padding-top: 8px; }
+  .details { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .details section { min-width: 0; border-top: 3px solid var(--rc); padding-top: 8px; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 4px 20px; align-items: start; }
+  .details section > h3, .details section > .note { grid-column: 1 / -1; }
+  .details section .note { margin: 0 0 2px; }
+  .details .col { min-width: 0; }
   .details h3 { margin: 0 0 6px; font-size: 13px; }
   .details h4 { margin: 10px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
   th, td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--line2); }
   th:first-child, td:first-child { text-align: left; white-space: nowrap; }
   th { color: var(--muted); font-weight: 500; font-family: inherit; }
-  ul.log { list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--ink2); font-family: var(--mono); max-height: 220px; overflow: auto; }
+  ul.log { list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--ink2); font-family: var(--mono); max-height: 150px; overflow: auto; }
   ul.log li { padding: 2px 0; border-bottom: 1px dashed var(--line2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .pop { position: fixed; z-index: 50; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.18); font-size: 12.5px; display: none; }
   .pop b { display: block; margin-bottom: 8px; }
@@ -503,7 +506,7 @@ function drawDetails() {
     const usage = carUsage(sim);
     const rows = sim.cars.map((c, i) => `<tr><td>car ${i + 1}</td><td>${c.floor}</td><td>${c.direction > 0 ? 'up' : c.direction < 0 ? 'down' : 'idle'}</td><td>${c.load}/${c.capacity}</td><td>${c.waiting.length}</td><td>${usage[i].carried}</td><td>${c.stopsMade}</td><td>${c.floorsTravelled}</td><td>${Math.round(100 * usage[i].busy_share)}%</td></tr>`).join('');
     const ef = efficiency(sim, usage);
-    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><div class="note">Delivered passengers sat through ${ef.stops_per_trip.toFixed(2)} intermediate stops each and cost ${ef.floors_per_passenger.toFixed(1)} floors of car travel each.</div><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>carried</th><th>stops</th><th>travelled</th><th>busy</th></tr></thead><tbody>${rows}</tbody></table><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
+    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><div class="note">Delivered passengers sat through ${ef.stops_per_trip.toFixed(2)} intermediate stops each and cost ${ef.floors_per_passenger.toFixed(1)} floors of car travel each.</div><div class="col"><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>carried</th><th>stops</th><th>travelled</th><th>busy</th></tr></thead><tbody>${rows}</tbody></table></div><div class="col"><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></div></section>`;
   }).join('');
 }
 
