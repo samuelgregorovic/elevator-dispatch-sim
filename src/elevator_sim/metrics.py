@@ -99,7 +99,7 @@ def summarize(result: SimulationResult) -> Summary:
         travel=Distribution.of(travels),
         total=Distribution.of(totals),
         cars=cars,
-        balance=balance(cars),
+        balance=balance(cars, result.ticks),
         observations=observations(result),
     )
 
@@ -122,13 +122,17 @@ def car_usage(result: SimulationResult) -> list[CarUsage]:
     return out
 
 
-def balance(cars: list[CarUsage]) -> Balance:
+def balance(cars: list[CarUsage], ticks: int) -> Balance:
     if not cars:
         return Balance(0.0, 0.0, 0.0, 0.0)
     shares = [c.busy_share for c in cars]
     carried = sum(c.carried for c in cars)
+    # Integer sum, one division: identical on every Python version and in the JS port.
+    # (Python 3.12 changed float sum() to compensated summation, which moved the last
+    # digit of a mean of floats and broke the golden results on one CI leg.)
+    busy_total = sum(c.busy_ticks for c in cars)
     return Balance(
-        busy_mean=sum(shares) / len(shares),
+        busy_mean=busy_total / (len(cars) * ticks) if ticks else 0.0,
         busy_spread=max(shares) - min(shares),
         carried_max_share=max(c.carried for c in cars) / carried if carried else 0.0,
         fair_share=1 / len(cars),
@@ -172,7 +176,7 @@ def observations(result: SimulationResult) -> list[str]:
             f"floors travelled {c.floors_travelled}, busy {100 * c.busy_share:.0f}% of ticks"
         )
     if len(cars) > 1:
-        b = balance(cars)
+        b = balance(cars, result.ticks)
         busiest = max(cars, key=lambda c: c.carried)
         notes.append(
             f"work balance: elevator {busiest.car} carried {100 * b.carried_max_share:.0f}% "

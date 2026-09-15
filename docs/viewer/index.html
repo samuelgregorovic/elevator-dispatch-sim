@@ -483,7 +483,7 @@ function drawHist(cv, waits, color) {
   ctx.fillText('wait 0', 0, H - 3); ctx.textAlign = 'right'; ctx.fillText(`${max} ticks · ${waits.length} boarded`, W, H - 3); ctx.textAlign = 'left';
 }
 function drawUsage(el, sim) {
-  const cars = carUsage(sim), b = balance(cars), bars = el.querySelector('.usage .bars');
+  const cars = carUsage(sim), b = balance(cars, sim.ticks), bars = el.querySelector('.usage .bars');
   if (bars.children.length !== cars.length) bars.innerHTML = cars.map(c => `<div class="bar" title="car ${c.car}"><i></i></div>`).join('');
   const maxShare = Math.max(...cars.map(c => c.busy_share));
   cars.forEach((c, i) => { const bar = bars.children[i]; bar.firstChild.style.height = `${Math.round(100 * c.busy_share)}%`; bar.classList.toggle('max', cars.length > 1 && c.busy_share === maxShare && maxShare > 0); bar.title = `car ${c.car}: busy ${Math.round(100 * c.busy_share)}% of ticks, carried ${c.carried}`; });

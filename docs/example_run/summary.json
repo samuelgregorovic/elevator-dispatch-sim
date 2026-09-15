@@ -61,7 +61,7 @@
     }
   ],
   "balance": {
-    "busy_mean": 0.6155063291139241,
+    "busy_mean": 0.615506329113924,
     "busy_spread": 0.2974683544303798,
     "carried_max_share": 0.35542168674698793,
     "fair_share": 0.25

@@ -277,11 +277,12 @@ export function carUsage(sim) {
     return { car: i + 1, carried: served.filter(p => p.car === i).length, stops: c.stopsMade, floors_travelled: c.floorsTravelled, busy_ticks: busy, busy_share: sim.ticks ? busy / sim.ticks : 0 };
   });
 }
-export function balance(cars) {
+export function balance(cars, ticks) {
   if (!cars.length) return { busy_mean: 0, busy_spread: 0, carried_max_share: 0, fair_share: 0 };
   const shares = cars.map(c => c.busy_share);
   const carried = cars.reduce((n, c) => n + c.carried, 0);
-  return { busy_mean: shares.reduce((a, b) => a + b, 0) / shares.length, busy_spread: Math.max(...shares) - Math.min(...shares), carried_max_share: carried ? Math.max(...cars.map(c => c.carried)) / carried : 0, fair_share: 1 / cars.length };
+  const busyTotal = cars.reduce((n, c) => n + c.busy_ticks, 0); // integer sum, one division: same as Python
+  return { busy_mean: ticks ? busyTotal / (cars.length * ticks) : 0, busy_spread: Math.max(...shares) - Math.min(...shares), carried_max_share: carried ? Math.max(...cars.map(c => c.carried)) / carried : 0, fair_share: 1 / cars.length };
 }
 export function summarize(sim) {
   const served = sim.passengers.filter(p => p.alightTime !== null);
@@ -289,7 +290,7 @@ export function summarize(sim) {
   return {
     scheduler: sim.scheduler.name, passengers: sim.passengers.length, ticks: sim.ticks,
     wait: distribution(served.map(p => p.wait)), travel: distribution(served.map(p => p.travel)), total: distribution(served.map(p => p.total)),
-    cars, balance: balance(cars),
+    cars, balance: balance(cars, sim.ticks),
   };
 }
 
