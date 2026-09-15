@@ -1,0 +1,705 @@
+{
+  "identities": {
+    "runs": 52,
+    "all_ok": true,
+    "rows": [
+      {
+        "scenario": "sample",
+        "scheduler": "etd",
+        "passengers": 3,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "sample",
+        "scheduler": "nearest_car",
+        "passengers": 3,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "sample",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 3,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "sample",
+        "scheduler": "round_robin",
+        "passengers": 3,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak",
+        "scheduler": "etd",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak",
+        "scheduler": "nearest_car",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak",
+        "scheduler": "round_robin",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "lunch_two_way",
+        "scheduler": "etd",
+        "passengers": 131,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "lunch_two_way",
+        "scheduler": "nearest_car",
+        "passengers": 131,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "lunch_two_way",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 131,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "lunch_two_way",
+        "scheduler": "round_robin",
+        "passengers": 131,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "evening_down_peak",
+        "scheduler": "etd",
+        "passengers": 113,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "evening_down_peak",
+        "scheduler": "nearest_car",
+        "passengers": 113,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "evening_down_peak",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 113,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "evening_down_peak",
+        "scheduler": "round_robin",
+        "passengers": 113,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "interfloor",
+        "scheduler": "etd",
+        "passengers": 85,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "interfloor",
+        "scheduler": "nearest_car",
+        "passengers": 85,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "interfloor",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 85,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "interfloor",
+        "scheduler": "round_robin",
+        "passengers": 85,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "capacity_stress",
+        "scheduler": "etd",
+        "passengers": 76,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "capacity_stress",
+        "scheduler": "nearest_car",
+        "passengers": 76,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "capacity_stress",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 76,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "capacity_stress",
+        "scheduler": "round_robin",
+        "passengers": 76,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_building",
+        "scheduler": "etd",
+        "passengers": 231,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_building",
+        "scheduler": "nearest_car",
+        "passengers": 231,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_building",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 231,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_building",
+        "scheduler": "round_robin",
+        "passengers": 231,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_traffic",
+        "scheduler": "etd",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_traffic",
+        "scheduler": "nearest_car",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_traffic",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_traffic",
+        "scheduler": "round_robin",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day",
+        "scheduler": "etd",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day",
+        "scheduler": "nearest_car",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day",
+        "scheduler": "round_robin",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_parked_lobby",
+        "scheduler": "etd",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_parked_lobby",
+        "scheduler": "nearest_car",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_parked_lobby",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_parked_lobby",
+        "scheduler": "round_robin",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_scheduled",
+        "scheduler": "etd",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_scheduled",
+        "scheduler": "nearest_car",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_scheduled",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "office_day_scheduled",
+        "scheduler": "round_robin",
+        "passengers": 351,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak_parked",
+        "scheduler": "etd",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak_parked",
+        "scheduler": "nearest_car",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak_parked",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "morning_up_peak_parked",
+        "scheduler": "round_robin",
+        "passengers": 166,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_zoned",
+        "scheduler": "etd",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_zoned",
+        "scheduler": "nearest_car",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_zoned",
+        "scheduler": "nearest_car_balanced",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      },
+      {
+        "scenario": "tall_lobby_zoned",
+        "scheduler": "round_robin",
+        "passengers": 198,
+        "little_ok": true,
+        "carried_ok": true,
+        "moves_ok": true,
+        "load_ok": true
+      }
+    ]
+  },
+  "rtt": {
+    "seeds": 20,
+    "passengers": 240,
+    "cases": [
+      {
+        "floors": 10,
+        "capacity": 4,
+        "formula_rtt": 19.707361682670324,
+        "measured_rtt": 19.631666666666668,
+        "measured_sd": 0.33755657961954216,
+        "error_pct": -0.38409512761020226,
+        "S": 3.381344307270234,
+        "H": 7.663008687700046
+      },
+      {
+        "floors": 10,
+        "capacity": 8,
+        "formula_rtt": 23.34542554356231,
+        "measured_rtt": 23.326666666666664,
+        "measured_sd": 0.30542846905225196,
+        "error_pct": -0.08035354446909553,
+        "S": 5.4923009118394885,
+        "H": 8.42656231586141
+      },
+      {
+        "floors": 20,
+        "capacity": 8,
+        "formula_rtt": 42.379391676908135,
+        "measured_rtt": 42.5,
+        "measured_sd": 0.7843498443695721,
+        "error_pct": 0.28459191677728274,
+        "S": 6.671653442888403,
+        "H": 17.353869117009864
+      },
+      {
+        "floors": 20,
+        "capacity": 10,
+        "formula_rtt": 44.393249616931186,
+        "measured_rtt": 44.41666666666667,
+        "measured_sd": 0.8010181751739877,
+        "error_pct": 0.052749122755262896,
+        "S": 7.935223588631142,
+        "H": 17.72901301415002
+      },
+      {
+        "floors": 50,
+        "capacity": 8,
+        "formula_rtt": 96.53521782751385,
+        "measured_rtt": 96.20666666666668,
+        "measured_sd": 1.5085177264434635,
+        "error_pct": -0.34034331536311907,
+        "S": 7.451309669127336,
+        "H": 44.04195407919325
+      },
+      {
+        "floors": 50,
+        "capacity": 10,
+        "formula_rtt": 100.18678231470462,
+        "measured_rtt": 99.9625,
+        "measured_sd": 1.3809943764680062,
+        "error_pct": -0.22386417601485462,
+        "S": 9.129869836596994,
+        "H": 45.02845623905381
+      }
+    ]
+  },
+  "capacity": {
+    "rows": [
+      {
+        "pattern": "morning_up_peak",
+        "cars": 4,
+        "capacity": 8,
+        "rtt": 42.379391676908135,
+        "interval": 10.594847919227034,
+        "handling_capacity": 113.2625979295367,
+        "demand": 52.0,
+        "lobby_demand": 49.4,
+        "utilisation": 0.4361545726748462,
+        "predicted_saturated": false,
+        "backlog_end_of_window": 1,
+        "backlog_peak": 10,
+        "over_30_share": 0.0,
+        "busy_mean": 0.615506329113924
+      },
+      {
+        "pattern": "lunch_two_way",
+        "cars": 4,
+        "capacity": 8,
+        "rtt": 42.379391676908135,
+        "interval": 10.594847919227034,
+        "handling_capacity": 113.2625979295367,
+        "demand": 48.0,
+        "lobby_demand": 43.2,
+        "utilisation": 0.3814145250921732,
+        "predicted_saturated": false,
+        "backlog_end_of_window": 2,
+        "backlog_peak": 4,
+        "over_30_share": 0.0,
+        "busy_mean": 0.6685924369747899
+      },
+      {
+        "pattern": "evening_down_peak",
+        "cars": 4,
+        "capacity": 8,
+        "rtt": 42.379391676908135,
+        "interval": 10.594847919227034,
+        "handling_capacity": 113.2625979295367,
+        "demand": 56.00000000000001,
+        "lobby_demand": 53.2,
+        "utilisation": 0.4697049244190652,
+        "predicted_saturated": false,
+        "backlog_end_of_window": 3,
+        "backlog_peak": 9,
+        "over_30_share": 0.0,
+        "busy_mean": 0.748533724340176
+      },
+      {
+        "pattern": "interfloor",
+        "cars": 4,
+        "capacity": 8,
+        "rtt": 42.379391676908135,
+        "interval": 10.594847919227034,
+        "handling_capacity": 113.2625979295367,
+        "demand": 24.0,
+        "lobby_demand": 0.0,
+        "utilisation": 0.0,
+        "predicted_saturated": false,
+        "backlog_end_of_window": 0,
+        "backlog_peak": 6,
+        "over_30_share": 0.0,
+        "busy_mean": 0.4431072210065646
+      },
+      {
+        "pattern": "capacity_stress",
+        "cars": 2,
+        "capacity": 6,
+        "rtt": 39.782632277627016,
+        "interval": 19.891316138813508,
+        "handling_capacity": 45.24587481890396,
+        "demand": 80.0,
+        "lobby_demand": 80.0,
+        "utilisation": 1.7681169901167564,
+        "predicted_saturated": true,
+        "backlog_end_of_window": 37,
+        "backlog_peak": 37,
+        "over_30_share": 0.8026315789473685,
+        "busy_mean": 0.9275862068965517
+      },
+      {
+        "pattern": "tall_building",
+        "cars": 6,
+        "capacity": 10,
+        "rtt": 102.02213322498152,
+        "interval": 17.003688870830253,
+        "handling_capacity": 88.21615188297422,
+        "demand": 108.0,
+        "lobby_demand": 91.8,
+        "utilisation": 1.0406257588948116,
+        "predicted_saturated": true,
+        "backlog_end_of_window": 11,
+        "backlog_peak": 30,
+        "over_30_share": 0.16017316017316016,
+        "busy_mean": 0.8849955076370171
+      },
+      {
+        "pattern": "tall_lobby_traffic",
+        "cars": 6,
+        "capacity": 10,
+        "rtt": 102.02213322498152,
+        "interval": 17.003688870830253,
+        "handling_capacity": 88.21615188297422,
+        "demand": 108.0,
+        "lobby_demand": 108.0,
+        "utilisation": 1.2242655986997784,
+        "predicted_saturated": true,
+        "backlog_end_of_window": 15,
+        "backlog_peak": 26,
+        "over_30_share": 0.24242424242424243,
+        "busy_mean": 0.8342415985467757
+      }
+    ]
+  },
+  "literature": {
+    "seeds": 10,
+    "rows": [
+      {
+        "pattern": "morning_up_peak",
+        "rate": 0.13,
+        "ttd_gain_pct_mean": 15.723174203759054,
+        "ttd_gain_pct_sd": 6.297079345238742
+      },
+      {
+        "pattern": "lunch_two_way",
+        "rate": 0.12,
+        "ttd_gain_pct_mean": 23.155156790365115,
+        "ttd_gain_pct_sd": 4.990872308281069
+      },
+      {
+        "pattern": "evening_down_peak",
+        "rate": 0.14,
+        "ttd_gain_pct_mean": 13.1651934857933,
+        "ttd_gain_pct_sd": 6.943951066683829
+      },
+      {
+        "pattern": "interfloor",
+        "rate": 0.06,
+        "ttd_gain_pct_mean": 6.15162339866855,
+        "ttd_gain_pct_sd": 5.1493818934067255
+      },
+      {
+        "pattern": "capacity_stress",
+        "rate": 0.2,
+        "ttd_gain_pct_mean": 7.704501408202314,
+        "ttd_gain_pct_sd": 7.773806624719274
+      },
+      {
+        "pattern": "tall_building",
+        "rate": 0.12,
+        "ttd_gain_pct_mean": 39.04897504534178,
+        "ttd_gain_pct_sd": 11.625450070248638
+      },
+      {
+        "pattern": "tall_lobby_traffic",
+        "rate": 0.12,
+        "ttd_gain_pct_mean": 40.51062668450366,
+        "ttd_gain_pct_sd": 4.558611278211423
+      }
+    ]
+  }
+}

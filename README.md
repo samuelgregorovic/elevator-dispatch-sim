@@ -15,7 +15,7 @@ Also readable on GitHub:
 
 - **[The whitepaper](docs/WHITEPAPER.md)** — the whole story for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
 - **[The presentation](docs/presentation/elevator-dispatch.pdf)** — nineteen slides with speaker notes ([PowerPoint](docs/presentation/elevator-dispatch.pptx)).
-- **[Results](docs/results/)** — [`comparison.md`](docs/results/comparison.md) (every scheduler on every scenario), [`robustness.md`](docs/results/robustness.md) (twenty fresh seeds per pattern), [`studies.md`](docs/results/studies.md) (stop cost, load, cars, bursts, the office day); discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
+- **[Results](docs/results/)** — [`comparison.md`](docs/results/comparison.md) (every scheduler on every scenario), [`robustness.md`](docs/results/robustness.md) (twenty fresh seeds per pattern), [`studies.md`](docs/results/studies.md) (stop cost, load, cars, bursts, the office day), [`theory.md`](docs/results/theory.md) (the engine against the classical round-trip-time formula and exact identities); discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
 - **[Charts](docs/charts/)** and **[an example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak.
 - **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
 
@@ -85,8 +85,9 @@ uv run python -m elevator_sim compare --fairness 0.5 --out docs/results   # ever
 uv run python scenarios/generate.py                      # the scenario CSVs (seeded)
 uv run python scenarios/robustness.py                    # twenty fresh seeds per pattern -> docs/results/robustness.md (~2 min)
 uv run python scenarios/studies.py                       # stop cost, load, cars, bursts, office day -> docs/results/studies.md + charts (~3 min)
+uv run python scenarios/theory.py                        # the engine against elevator-traffic theory -> docs/results/theory.md (~10 min)
 uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # the PNG charts
-uv run pytest                                            # 225 tests (65 are the JS/Python conformance matrix; need Node)
+uv run pytest                                            # 228 tests (65 are the JS/Python conformance matrix; need Node)
 uv run ruff check . && uv run ruff format --check .
 ```
 
@@ -100,7 +101,7 @@ uv run ruff check . && uv run ruff format --check .
 | **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature; a capacity burst; two 51-floor cases; a whole office day; policy variants for parking and zoning. |
 | **Analysis** | A comparison table; a twenty-seed robustness study; five sensitivity studies (stop cost, load, car count, a burst, the day); PNG charts; the interactive explorer. |
 | **Outputs** | Positions log, JSON trace, statistics with p50/p90, the share of long waits, per-car usage and balance, efficiency per trip, generated observations; the browser simulator (JavaScript port of the engine, conformance-tested against Python). |
-| **Tests** | 225 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics for every committed result, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz, malformed inputs, and twenty fresh seeds per pattern. |
+| **Tests** | 228 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics for every committed result, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing (a 400-seed fuzz, malformed inputs, twenty fresh seeds per pattern) and a check against theory: the engine reproduces the classical up-peak round-trip-time formula within 0.5%. |
 
 ## Assumptions, simplifications and trade-offs
 

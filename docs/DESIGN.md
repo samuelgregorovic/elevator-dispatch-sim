@@ -175,6 +175,8 @@ The three right-hand columns of `results/comparison.md` (`busy`, `spread`, `max 
 
 Two further charts from the committed traces: [backlog over time](charts/backlog_morning_up_peak.png) on the morning peak and the tower, and [who waits](charts/wait_by_floor_tall_building.png) — average wait by origin floor — which shows nearest-car's failure on the tower is at the lobby (82 ticks against ETD's 19), where it keeps loading whichever car is nearest.
 
+The model behind all of this is checked against theory in [`results/theory.md`](results/theory.md): the engine reproduces the classical up-peak round-trip-time formula within 0.4% without the formula being in the code, and the formula's handling capacity predicts which patterns saturate — the lobby burst and the two 51-floor cases — which is the first-principles reason the rule barely matters there.
+
 ## Policies: fairness weight, parking, zoning
 
 Three configuration-level policies were added after the baseline comparison. Each is one flag; the table above already includes them.

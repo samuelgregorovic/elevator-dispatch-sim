@@ -58,7 +58,7 @@
   <span class="links"><a href="../viewer/">live simulator</a> · <a href="../WHITEPAPER.md">whitepaper</a> · <a href="../../README.md">source</a></span>
 </header>
 <main id="main"><section><p class="lede">Loading the committed results…</p></section></main>
-<footer>Every number on this page is read from <code>docs/results/comparison.json</code>, <code>robustness.json</code> and <code>studies.json</code>, which regenerate byte for byte from the commands in the README. Ticks throughout; one tick is one floor of travel, about two seconds.</footer>
+<footer>Every number on this page is read from <code>docs/results/comparison.json</code>, <code>robustness.json</code>, <code>studies.json</code> and <code>theory.json</code>, which regenerate byte for byte from the commands in the README. Ticks throughout; one tick is one floor of travel, about two seconds.</footer>
 <script>
 const RULES = { etd: ['Smart dispatch (ETD)', 'var(--etd)'], nearest_car: ['Nearest car', 'var(--nearest)'], nearest_car_balanced: ['Nearest car, balanced ties', 'var(--nearestb)'], round_robin: ['Take turns (round robin)', 'var(--rr)'], 'etd_f0.5': ['Smart dispatch + fairness 0.5', 'var(--fair)'] };
 const NICE = { morning_up_peak: 'Morning up-peak', lunch_two_way: 'Lunch two-way', evening_down_peak: 'Evening down-peak', interfloor: 'Quiet interfloor', capacity_stress: 'Lobby burst', tall_building: 'Tall tower', tall_lobby_traffic: 'Tall lobby traffic', office_day: 'Office day', morning_up_peak_parked: 'Morning, parked at lobby', tall_lobby_zoned: 'Tall lobby, zoned', office_day_parked_lobby: 'Office day, lobby park', office_day_scheduled: 'Office day, park by clock', sample: 'The brief’s sample' };
@@ -142,6 +142,7 @@ const SECTIONS = [
   ['cars', 'How many cars', renderCars],
   ['burst', 'A burst', renderBurst],
   ['day', 'An office day', renderDay],
+  ['theory', 'Against theory', renderTheory],
 ];
 function section(id, title, lede) { const s = document.createElement('section'); s.id = id; s.innerHTML = `<h2>${title}</h2><p class="lede">${lede}</p>`; return s; }
 
@@ -250,6 +251,24 @@ function renderDay() {
   return s;
 }
 
+function renderTheory() {
+  const T = DATA.theory, cases = T.rtt.cases, cap = T.capacity.rows, idn = T.identities;
+  const s = section('theory', 'Does the engine match the textbook?', `A check of the model itself, not of the rules. One car parked at the lobby, everyone waiting there at tick 0 with random destinations, capacity P: elevator-traffic theory (Barney &amp; Al-Sharif) gives the expected round-trip time in closed form — 2H + S + 1, with S the expected stops and H the expected highest floor reached. The formula is nowhere in the engine; the engine is run and its round trips measured over ${T.rtt.passengers} passengers and ${T.rtt.seeds} seeds.`);
+  const colors = { 'Formula (Barney & Al-Sharif)': 'var(--ink2)', 'Measured in the engine': 'var(--etd)' };
+  s.appendChild(legend(Object.keys(colors), colors));
+  const series = Object.keys(colors).map((label, i) => ({ label, color: colors[label], values: cases.map(c => i ? c.measured_rtt : c.formula_rtt), err: i ? cases.map(c => c.measured_sd) : undefined }));
+  s.appendChild(groupedBars(cases.map(c => ({ label: `${c.floors} floors, ${c.capacity} per car` })), series, '', { bottom: 40, height: 260 }));
+  const worst = Math.max(...cases.map(c => Math.abs(c.error_pct)));
+  const sat = cap.filter(c => c.predicted_saturated).length, stable = cap.length - sat;
+  s.insertAdjacentHTML('beforeend', `<div class="callout">
+    <div><b>${worst.toFixed(1)}%</b><span>largest gap between the engine's round-trip time and the formula, across ${cases.length} building sizes</span></div>
+    <div><b>${idn.runs} / ${idn.runs}</b><span>committed runs on which Little's law and the conservation identities hold exactly${idn.all_ok ? '' : ' — FAILURES, see theory.json'}</span></div>
+    <div><b>${sat} + ${stable}</b><span>patterns the handling-capacity formula predicts as saturated and stable — the engine agrees on every one</span></div>
+  </div>
+  <p class="note">The same formula gives each bank's five-minute handling capacity. Where lobby demand exceeds it (the lobby burst at ${Math.round(100 * cap.find(c => c.pattern === 'capacity_stress').utilisation)}% of capacity, the two 51-floor cases at ${cap.filter(c => c.pattern.startsWith('tall')).map(c => Math.round(100 * c.utilisation) + '%').join(' and ')}) the run saturates; the office patterns sit at ${cap.filter(c => !c.predicted_saturated && c.utilisation > 0).map(c => Math.round(100 * c.utilisation) + '%').join(', ')} and stay stable. Published figures for destination dispatch put trip times about 25% shorter than conventional control, with the gains concentrated at peaks; measured here, smart dispatch's time-to-destination gain over nearest car is ${T.literature.rows.filter(r => ['morning_up_peak', 'lunch_two_way', 'evening_down_peak'].includes(r.pattern)).map(r => Math.round(r.ttd_gain_pct_mean) + '%').join(' / ')} on the office peaks, ${Math.round(T.literature.rows.find(r => r.pattern === 'interfloor').ttd_gain_pct_mean)}% on quiet traffic and ${T.literature.rows.filter(r => r.pattern.startsWith('tall')).map(r => Math.round(r.ttd_gain_pct_mean) + '%').join(' / ')} on the tower. Full tables in <a href="theory.md">theory.md</a>.</p>`);
+  return s;
+}
+
 // ---- render ---------------------------------------------------------------------
 function render() {
   const main = $('main'); const y = window.scrollY; main.innerHTML = '';
@@ -258,8 +277,8 @@ function render() {
 }
 function nav() { const n = $('nav'); n.innerHTML = SECTIONS.map(([id, t]) => `<a href="#${id}">${t}</a>`).join(''); }
 async function load() {
-  const [c, r, s] = await Promise.all(['comparison.json', 'robustness.json', 'studies.json'].map(f => fetch(f).then(x => { if (!x.ok) throw new Error(`${f}: ${x.status}`); return x.json(); })));
-  DATA = { comparison: c, robustness: r, studies: s }; nav(); render();
+  const [c, r, s, t] = await Promise.all(['comparison.json', 'robustness.json', 'studies.json', 'theory.json'].map(f => fetch(f).then(x => { if (!x.ok) throw new Error(`${f}: ${x.status}`); return x.json(); })));
+  DATA = { comparison: c, robustness: r, studies: s, theory: t }; nav(); render();
 }
 load().catch(e => { $('main').innerHTML = `<section><h2>Could not load the results</h2><p class="lede">${e.message}. This page reads the JSON files beside it; open it from the repository’s GitHub Pages site or serve <code>docs/</code> with any static server.</p></section>`; });
 </script>

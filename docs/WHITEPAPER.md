@@ -150,9 +150,9 @@ None of these would reverse the headline: a rule that accounts for queued stops 
 
 ## How the numbers were assured
 
-The engine is covered by 225 tests at six levels: unit tests for every observable assumption; a structural test that the scheduler never sees a future request; property-based invariants over random buildings, cars, capacities, express zones and parking (every passenger delivered, one floor per tick, capacity never exceeded, boarding only at origin and alighting only at destination, deterministic re-runs); golden statistics — the brief's sample, every row of the committed comparison table, and the empirical findings that also held across seeds; and a conformance matrix that runs the JavaScript port with Node on all 65 scenario × scheduler combinations and asserts positions, events, passenger lifecycles and per-car usage identical to Python. The scenario generator is re-run inside the suite and compared byte for byte with the committed files.
+The engine is covered by 228 tests at six levels: unit tests for every observable assumption; a structural test that the scheduler never sees a future request; property-based invariants over random buildings, cars, capacities, express zones and parking (every passenger delivered, one floor per tick, capacity never exceeded, boarding only at origin and alighting only at destination, deterministic re-runs); golden statistics — the brief's sample, every row of the committed comparison table, and the empirical findings that also held across seeds; and a conformance matrix that runs the JavaScript port with Node on all 65 scenario × scheduler combinations and asserts positions, events, passenger lifecycles and per-car usage identical to Python. The scenario generator is re-run inside the suite and compared byte for byte with the committed files.
 
-Separately, the finished system was reviewed end to end — requirements against the brief, research sourcing, code, tests, the browser page and the documents — with a 400-seed fuzz, malformed and adversarial inputs, and a re-run of every pattern with twenty fresh seeds. The dwell-restart correction above, the double-rounding of the published means, the research sentences that outran their sources, and the distinction this document draws between findings that held across seeds and findings that were one draw all came from that review.
+Separately, the finished system was reviewed end to end — requirements against the brief, research sourcing, code, tests, the browser page and the documents — with a 400-seed fuzz, malformed and adversarial inputs, and a re-run of every pattern with twenty fresh seeds. The model itself was checked against theory: with one car and a lobby full of passengers, the engine's round-trip time matches the classical Barney & Al-Sharif formula within 0.4% on six building sizes, and the formula's handling capacity predicts exactly which committed patterns saturate ([`results/theory.md`](results/theory.md)). The dwell-restart correction above, the double-rounding of the published means, the research sentences that outran their sources, and the distinction this document draws between findings that held across seeds and findings that were one draw all came from that review.
 
 ## How the work was done
 
@@ -166,9 +166,10 @@ uv sync --group dev
 uv run python -m elevator_sim compare --fairness 0.5          # the table above
 uv run python scenarios/robustness.py                            # twenty fresh seeds per pattern (about two minutes)
 uv run python scenarios/studies.py                               # stop cost, load, cars, bursts, the day (about three minutes)
+uv run python scenarios/theory.py                                # the engine against elevator-traffic theory (about ten minutes)
 uv sync --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # the charts
 uv run python scenarios/generate.py                              # the scenario files, byte-identical
-uv run pytest                                                    # 225 tests
+uv run pytest                                                    # 228 tests
 ```
 
 Or open the [browser simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) and set any building and traffic pattern; it runs the same rules, verified identical to the Python engine.
