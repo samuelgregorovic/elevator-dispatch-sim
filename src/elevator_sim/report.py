@@ -195,6 +195,67 @@ def chart_balance_by_scenario(rows: list[dict[str, Any]], out: Path) -> Path:
     return path
 
 
+def chart_backlog(traces: dict[str, dict[str, Any]], scenario: str, out: Path) -> Path:
+    """People waiting per tick, one line per scheduler, from the committed traces."""
+    plt = _plt()
+    fig, ax = plt.subplots(figsize=(10, 3.8))
+    for sched in ORDER:
+        tr = traces[f"{scenario}__{sched}"]
+        delta = [0] * (tr["ticks"] + 1)
+        for p in tr["passengers"]:
+            delta[p["t"]] += 1
+            if p["board"] is not None:
+                delta[min(p["board"], tr["ticks"])] -= 1
+        series, cur = [], 0
+        for t in range(tr["ticks"]):
+            cur += delta[t]
+            series.append(cur)
+        ax.plot(series, color=COLORS[sched], label=sched, linewidth=1.2)
+    ax.set_xlabel("tick")
+    ax.set_ylabel("people waiting")
+    ax.set_title(f"Backlog over time — {scenario}", loc="left", color=INK)
+    ax.legend(frameon=False, fontsize=9)
+    fig.tight_layout()
+    path = out / f"backlog_{scenario}.png"
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
+def chart_wait_by_floor(traces: dict[str, dict[str, Any]], scenario: str, out: Path) -> Path:
+    """Average wait by origin band (lobby, then ten-floor bands), one bar per scheduler."""
+    plt = _plt()
+    floors = traces[f"{scenario}__{ORDER[0]}"]["config"]["floors"]
+    bands = [(1, 1), *[(lo, min(lo + 9, floors)) for lo in range(2, floors + 1, 10)]]
+    labels = ["lobby"] + [f"{lo}-{hi}" for lo, hi in bands[1:]]
+    fig, ax = plt.subplots(figsize=(10, 3.8))
+    width = 0.26
+    for i, sched in enumerate(ORDER):
+        tr = traces[f"{scenario}__{sched}"]
+        vals = []
+        for lo, hi in bands:
+            w = [
+                p["board"] - p["t"]
+                for p in tr["passengers"]
+                if p["board"] is not None and lo <= p["source"] <= hi
+            ]
+            vals.append(sum(w) / len(w) if w else 0.0)
+        xs = [x + (i - 1) * (width + 0.02) for x in range(len(bands))]
+        ax.bar(xs, vals, width=width, color=COLORS[sched], label=sched, linewidth=0)
+    ax.set_xticks(range(len(bands)))
+    ax.set_xticklabels(labels)
+    ax.set_xlabel("origin floor")
+    ax.set_ylabel("average wait (ticks)")
+    ax.set_title(f"Who waits: average wait by origin floor — {scenario}", loc="left", color=INK)
+    ax.legend(frameon=False, fontsize=9)
+    ax.grid(axis="x", visible=False)
+    fig.tight_layout()
+    path = out / f"wait_by_floor_{scenario}.png"
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
 def chart_fairness_sweep(rows: list[dict[str, Any]], scenario: str, out: Path) -> Path | None:
     """Max wait vs average total time as the ETD fairness weight increases."""
     pts = [r for r in rows if r["scenario"] == scenario and r["scheduler"].startswith("etd")]
@@ -237,6 +298,10 @@ def build_report(manifest: Path, out: Path, fairness: list[float], dwell: int = 
     for name in ("morning_up_peak", "tall_lobby_traffic"):
         if any(r["scenario"] == name for r in rows):
             written.append(chart_car_usage(rows, name, out))
+    for name in ("morning_up_peak", "tall_building"):
+        if f"{name}__etd" in traces:
+            written.append(chart_backlog(traces, name, out))
+            written.append(chart_wait_by_floor(traces, name, out))
     for name in ("morning_up_peak", "tall_building"):
         p = chart_fairness_sweep(rows, name, out)
         if p:

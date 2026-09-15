@@ -16,7 +16,7 @@ import pytest
 
 from elevator_sim.compare import Variant, load_manifest
 from elevator_sim.io import read_requests
-from elevator_sim.metrics import car_usage
+from elevator_sim.metrics import car_usage, efficiency, service
 from elevator_sim.schedulers import make_scheduler
 from elevator_sim.simulation import Simulation
 
@@ -41,6 +41,7 @@ def run_js(csv: Path, config, variant: Variant) -> dict:
         "dwell_ticks": config.dwell_ticks,
         "start_floor": config.start_floor,
         "park_floor": config.park_floor,
+        "park_schedule": [list(e) for e in config.park_schedule],
         "served_floors": {str(k): sorted(v) for k, v in config.served_floors.items()},
     }
     out = subprocess.run(
@@ -91,3 +92,8 @@ def test_js_engine_matches_python(scenario, variant):
         for c in car_usage(py)
     ]
     assert js["cars"] == py_cars
+    assert js["service_over"] == service(py).over
+    served = [p for p in py.passengers if p.alight_time is not None]
+    assert js["intermediate_stops"] == round(
+        efficiency(py, car_usage(py)).stops_per_trip * len(served)
+    )

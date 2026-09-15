@@ -24,6 +24,7 @@ class Scenario:
     capacity: int
     description: str = ""
     park_floor: int | None = None
+    park_schedule: tuple[tuple[int, int], ...] = ()
     served_floors: dict[int, frozenset[int]] = field(default_factory=dict)
 
     def config(self, dwell_ticks: int = 1) -> SimulationConfig:
@@ -33,6 +34,7 @@ class Scenario:
             capacity=self.capacity,
             dwell_ticks=dwell_ticks,
             park_floor=self.park_floor,
+            park_schedule=self.park_schedule,
             served_floors=self.served_floors,
         )
 
@@ -48,6 +50,9 @@ def load_manifest(path: Path) -> list[Scenario]:
             capacity=e["capacity"],
             description=e.get("description", ""),
             park_floor=e.get("park_floor"),
+            park_schedule=tuple(
+                sorted((int(t), int(f)) for t, f in e.get("park_schedule", {}).items())
+            ),
             served_floors={
                 int(car) - 1: frozenset(parse_floors(spec))
                 for car, spec in e.get("express", {}).items()
@@ -107,6 +112,8 @@ def run_matrix(
                     "total": _d(summary.total),
                     "cars": [asdict(c) for c in summary.cars],
                     "balance": asdict(summary.balance),
+                    "service": asdict(summary.service),
+                    "efficiency": asdict(summary.efficiency),
                     "observations": summary.observations,
                 }
             )
@@ -122,7 +129,7 @@ def format_table(rows: list[dict[str, Any]]) -> str:
         f"{'scenario':18} {'scheduler':12} {'n':>4} {'ticks':>6} "
         f"{'wait avg':>9} {'wait p90':>9} {'wait max':>9} "
         f"{'total avg':>10} {'total p90':>10} {'total max':>10} "
-        f"{'busy':>6} {'spread':>7} {'max car':>8}"
+        f"{'busy':>6} {'spread':>7} {'max car':>8} {'>30':>5} {'stops':>6} {'fl/px':>6}"
     )
     lines = [header, "-" * len(header)]
     last = None
@@ -130,13 +137,15 @@ def format_table(rows: list[dict[str, Any]]) -> str:
         if last is not None and r["scenario"] != last:
             lines.append("")
         last = r["scenario"]
-        w, t, b = r["wait"], r["total"], r["balance"]
+        w, t, b, sv, ef = r["wait"], r["total"], r["balance"], r["service"], r["efficiency"]
         lines.append(
             f"{r['scenario']:18} {r['scheduler']:12} {r['passengers']:>4} {r['ticks']:>6} "
             f"{w['mean']:>9.1f} {w['p90']:>9.0f} {w['max']:>9.0f} "
             f"{t['mean']:>10.1f} {t['p90']:>10.0f} {t['max']:>10.0f} "
             f"{100 * b['busy_mean']:>5.0f}% {100 * b['busy_spread']:>6.0f}% "
-            f"{100 * b['carried_max_share']:>7.0f}%"
+            f"{100 * b['carried_max_share']:>7.0f}% "
+            f"{100 * sv['over_share']:>4.0f}% {ef['stops_per_trip']:>6.2f} "
+            f"{ef['floors_per_passenger']:>6.1f}"
         )
     return "\n".join(lines)
 
@@ -144,16 +153,18 @@ def format_table(rows: list[dict[str, Any]]) -> str:
 def format_markdown(rows: list[dict[str, Any]]) -> str:
     lines = [
         "| scenario | scheduler | n | ticks | wait avg | wait p90 | wait max "
-        "| total avg | total p90 | total max | busy | spread | max car |",
-        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+        "| total avg | total p90 | total max | busy | spread | max car "
+        "| wait >30 | stops/trip | floors/pax |",
+        "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
     ]
     for r in rows:
-        w, t, b = r["wait"], r["total"], r["balance"]
+        w, t, b, sv, ef = r["wait"], r["total"], r["balance"], r["service"], r["efficiency"]
         lines.append(
             f"| {r['scenario']} | {r['scheduler']} | {r['passengers']} | {r['ticks']} | "
             f"{w['mean']:.1f} | {w['p90']:.0f} | {w['max']:.0f} | "
             f"{t['mean']:.1f} | {t['p90']:.0f} | {t['max']:.0f} | "
             f"{100 * b['busy_mean']:.0f}% | {100 * b['busy_spread']:.0f}% | "
-            f"{100 * b['carried_max_share']:.0f}% |"
+            f"{100 * b['carried_max_share']:.0f}% | {100 * sv['over_share']:.0f}% | "
+            f"{ef['stops_per_trip']:.2f} | {ef['floors_per_passenger']:.1f} |"
         )
     return "\n".join(lines)

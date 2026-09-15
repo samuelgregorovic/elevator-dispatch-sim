@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from conftest import req, run
 from elevator_sim.metrics import balance, car_usage, summarize
 
@@ -56,3 +58,42 @@ def test_summary_carries_cars_and_balance():
     assert [c["car"] for c in d["cars"]] == [1, 2]
     assert set(d["balance"]) == {"busy_mean", "busy_spread", "carried_max_share", "fair_share"}
     assert any(note.startswith("work balance:") for note in s.observations)
+
+
+def test_service_level_counts_long_waits():
+    from elevator_sim.metrics import service
+
+    # one car at the lobby, ten passengers wanting floor 10 one at a time: waits grow past 30
+    reqs = [req(0, f"p{i}", 1, 10) for i in range(6)]
+    result = run(reqs, capacity=1)
+    sv = service(result)
+    assert sv.threshold == 30
+    waits = sorted(p.wait for p in result.passengers)
+    assert sv.over == sum(1 for w in waits if w > 30)
+    assert sv.over_share == sv.over / len(waits)
+    assert service(result, threshold=10_000).over == 0
+
+
+def test_efficiency_counts_intermediate_stops_and_travel():
+    from elevator_sim.metrics import efficiency
+
+    # a boards at 1 going to 6; b boards at 3 going to 5: a sits through b's boarding stop and
+    # b's alighting stop; b sits through none.
+    result = run([req(0, "a", 1, 6), req(0, "b", 3, 5)])
+    ef = efficiency(result, car_usage(result))
+    assert ef.stops_per_trip == (2 + 0) / 2
+    assert ef.floors_per_passenger == 5 / 2
+
+
+def test_park_schedule_moves_the_park_floor_with_time():
+    from elevator_sim.config import SimulationConfig
+
+    cfg = SimulationConfig(elevators=1, floors=10, capacity=4, park_schedule=((0, 1), (50, 8)))
+    assert cfg.park_floor_at(0) == 1 and cfg.park_floor_at(49) == 1 and cfg.park_floor_at(50) == 8
+    result = run([req(0, "a", 1, 3)], park_schedule=((0, 1), (5, 8)))
+    # after delivering at tick 3 the schedule says floor 8 from tick 5: the car ends parked there
+    assert result.positions[-1] == [8]
+    with pytest.raises(ValueError):
+        SimulationConfig(elevators=1, floors=10, park_schedule=((10, 1), (5, 2)))
+    with pytest.raises(ValueError):
+        SimulationConfig(elevators=1, floors=10, park_schedule=((0, 11),))

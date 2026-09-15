@@ -13,6 +13,7 @@ Seeds 101 to 120, none of them the committed one. Mean ± standard deviation ove
 | capacity_stress | 55.4 ± 20.5 | 61.4 ± 20.0 | 62.0 ± 19.3 | 59.4 ± 19.1 | 53.9 ± 19.7 | 12/20 |
 | tall_building | 22.6 ± 4.6 | 57.3 ± 10.5 | 52.6 ± 9.0 | 51.8 ± 3.0 | 29.2 ± 7.0 | 20/20 |
 | tall_lobby_traffic | 24.8 ± 6.0 | 60.4 ± 12.1 | 58.8 ± 9.3 | 51.5 ± 3.1 | 25.0 ± 4.7 | 20/20 |
+| office_day | 5.7 ± 0.4 | 9.0 ± 0.9 | 9.3 ± 1.0 | 13.8 ± 0.8 | 6.4 ± 0.4 | 20/20 |
 
 ## Ratios of average wait to ETD
 
@@ -25,6 +26,7 @@ Seeds 101 to 120, none of them the committed one. Mean ± standard deviation ove
 | capacity_stress | 1.15 ± 0.16 | 1.17 ± 0.22 | 1.11 ± 0.15 |
 | tall_building | 2.62 ± 0.75 | 2.42 ± 0.70 | 2.37 ± 0.45 |
 | tall_lobby_traffic | 2.51 ± 0.54 | 2.46 ± 0.56 | 2.18 ± 0.49 |
+| office_day | 1.57 ± 0.19 | 1.63 ± 0.19 | 2.41 ± 0.20 |
 
 ## Fairness weight 0.5 against plain ETD (seeds out of 20 in which the weight …)
 
@@ -37,6 +39,7 @@ Seeds 101 to 120, none of them the committed one. Mean ± standard deviation ove
 | capacity_stress | 14 | 14 | 3 | 14 |
 | tall_building | 4 | 2 | 18 | 14 |
 | tall_lobby_traffic | 3 | 8 | 10 | 15 |
+| office_day | 5 | 1 | 20 | 15 |
 
 ## Policies
 
@@ -54,3 +57,4 @@ Seeds 101 to 120, none of them the committed one. Mean ± standard deviation ove
 | capacity_stress | 117.1 ± 36.7 | 112.5 ± 34.3 | 144.6 ± 38.6 | 128.8 ± 37.4 |
 | tall_building | 65.0 ± 13.2 | 74.5 ± 15.8 | 252.1 ± 84.5 | 141.8 ± 46.2 |
 | tall_lobby_traffic | 58.5 ± 12.7 | 64.2 ± 8.8 | 248.7 ± 71.6 | 126.0 ± 13.7 |
+| office_day | 26.4 ± 3.5 | 30.6 ± 5.3 | 44.4 ± 3.5 | 41.1 ± 1.3 |

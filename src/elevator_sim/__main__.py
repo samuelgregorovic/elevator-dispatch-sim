@@ -29,12 +29,33 @@ def _add_config_args(p: argparse.ArgumentParser) -> None:
         help="send idle cars to this floor (default: stay put)",
     )
     p.add_argument(
+        "--park-schedule",
+        default=None,
+        metavar="TICK:FLOOR,...",
+        help="time-of-day parking, e.g. 0:1,900:16 (floor 1 from tick 0, floor 16 from tick 900)",
+    )
+    p.add_argument(
         "--express",
         action="append",
         default=[],
         metavar="CAR:FLOORS",
         help="restrict a car to floors, e.g. 3:1,30-51 (1-based car index)",
     )
+
+
+def _parse_schedule(spec: str | None) -> tuple[tuple[int, int], ...]:
+    """``"0:1,900:16"`` -> ((0, 1), (900, 16))."""
+    if not spec:
+        return ()
+    out = []
+    for part in spec.split(","):
+        tick, sep, floor = part.partition(":")
+        if not sep or not tick.strip().isdigit() or not floor.strip().isdigit():
+            raise ValueError(
+                f"--park-schedule expects TICK:FLOOR pairs such as 0:1,900:16, got {part!r}"
+            )
+        out.append((int(tick), int(floor)))
+    return tuple(out)
 
 
 def _config_from_args(a: argparse.Namespace) -> SimulationConfig:
@@ -56,6 +77,7 @@ def _config_from_args(a: argparse.Namespace) -> SimulationConfig:
         dwell_ticks=a.dwell,
         start_floor=a.start_floor,
         park_floor=a.park_floor,
+        park_schedule=_parse_schedule(a.park_schedule),
         served_floors=served,
     )
 

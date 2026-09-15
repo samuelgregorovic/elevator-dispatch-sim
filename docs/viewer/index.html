@@ -71,7 +71,7 @@
   .bld .name i { width: 10px; height: 10px; border-radius: 3px; background: var(--rc); }
   .bld .done { margin-left: auto; color: var(--muted); font-size: 12px; width: 12ch; text-align: right; }
   .bld .desc { padding: 2px 14px 0; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .stats { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: end; padding: 6px 14px 10px; border-bottom: 1px solid var(--line2); }
+  .stats { display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: end; padding: 6px 14px 10px; border-bottom: 1px solid var(--line2); }
   .stats .big { font-size: 30px; line-height: 1; font-weight: 500; letter-spacing: -.02em; transition: color .3s; min-width: 4ch; }
   .stats .sm { font-size: 16px; line-height: 1; font-weight: 500; text-align: right; transition: color .3s; min-width: 3ch; }
   .stats .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
@@ -162,7 +162,8 @@
   <input class="field s" type="number" id="cars" min="1" max="10" value="4"><span>cars ·</span>
   <input class="field m" type="number" id="floors" min="2" max="80" value="20"><span>floors ·</span>
   <input class="field s" type="number" id="cap" min="1" max="30" value="8"><span>per car</span>
-  <label><input type="checkbox" id="park">park at lobby</label>
+  <label><input type="checkbox" id="park">park at lobby</label><span>·</span>
+  <select class="field" id="dwell" title="ticks a car spends at each stop; 0 is the brief's literal model"><option value="0">stops free</option><option value="1" selected>stop 1 tick</option><option value="2">stop 2 ticks</option></select>
   <button class="btn primary apply" id="apply">Apply &amp; restart</button>
   <span class="pdesc" id="pdesc"></span>
   <span class="csv" id="csv-link">Upload a CSV</span>
@@ -223,11 +224,11 @@
       <i style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--want)"></i><span>Hollow violet dots on the right: people who want to reach that floor, waiting or already riding.</span>
       <i style="display:inline-block;width:12px;height:8px;border-radius:2px;border:1.5px solid var(--etd)"></i><span>A car, coloured by its rule. It fills up as people board; the number is how many are aboard. An amber ring means the doors are open.</span>
     </div>
-    <p style="margin-top:10px">The big number is the average wait so far in ticks; beside it, how many are waiting right now and the longest anyone has waited. Green marks the best of the three, red the worst. One tick is one floor of travel, and each stop costs one tick.</p>
+    <p style="margin-top:10px">The big number is the average wait so far in ticks; beside it, how many are waiting right now, the longest anyone has waited, and how many have waited more than 30 ticks — about a minute, at the two seconds per floor a real car manages. Green marks the best of the three, red the worst. One tick is one floor of travel; the setup line sets what a stop costs (one tick by default; “stops free” is the brief's literal model).</p>
     <p><b>Car usage</b>, under each building, shows one bar per car: how much of the run that car has been busy — carrying someone, or on its way to someone assigned to it. The caption gives the average across cars (how much car-time the rule spends) and the gap between the busiest and least busy car (how evenly it spreads the work). A rule can win on waiting time while working one car much harder than the others; take turns is even by construction but spends the most car-time. The Details view has the per-car numbers.</p>
     <h3>Trying things</h3>
     <p>Set the traffic and the building at the top, then <b>Apply &amp; restart</b>. While it runs, add people from the right or click a floor to place someone with a destination. “Keep traffic flowing” keeps people arriving. Adding people after everyone is delivered resumes the run. <kbd>Space</kbd> plays and pauses, <kbd>←</kbd> <kbd>→</kbd> step one tick.</p>
-    <p style="color:var(--muted);font-size:12.5px">The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario. <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">Full results</a> · <a href="../../README.md" target="_blank">Source</a></p>
+    <p style="color:var(--muted);font-size:12.5px">The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario. <a href="../results/" target="_blank">Analysis explorer</a> · <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">Full results</a> · <a href="../../README.md" target="_blank">Source</a></p>
   </div>
 </div>
 
@@ -242,7 +243,7 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import { Simulation, makeScheduler, parseCsv, distribution, mulberry32, poisson, PATTERNS, makeTrip, generateTraffic, carUsage, balance } from './engine.js';
+import { Simulation, makeScheduler, parseCsv, distribution, mulberry32, poisson, PATTERNS, makeTrip, generateTraffic, carUsage, balance, efficiency, LONG_WAIT_TICKS } from './engine.js';
 
 const $ = (id) => document.getElementById(id);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -265,7 +266,7 @@ const SAMPLE = [{ time: 0, id: 'passenger1', source: 1, dest: 51 }, { time: 0, i
 const ORDINAL = ['1st', '2nd', '3rd'];
 
 let scenario = SCENARIOS[0];
-let building = { elevators: 4, floors: 20, capacity: 8, parkFloor: null };
+let building = { elevators: 4, floors: 20, capacity: 8, parkFloor: null, dwellTicks: 1 };
 let baseRequests = [], injected = [], customName = null;
 let view = 'all', sims = [];
 let playing = false, timer = null, flowOn = false, rng = mulberry32(7), liveCount = 0, clickCount = 0;
@@ -279,8 +280,9 @@ $('theme-btn').onclick = () => setTheme(document.documentElement.dataset.theme =
 function setDefaults(sc) { const d = sc.defaults; $('people').value = d.people; $('cars').value = d.cars; $('floors').value = d.floors; $('cap').value = d.cap; $('park').checked = false; $('people').disabled = !!sc.fixed; }
 function describe(msg) {
   const el = $('pdesc');
-  if (msg) { el.innerHTML = `<b>${msg}</b>`; return; }
+  if (msg) { el.innerHTML = `<b>${msg}</b>`; if (el.scrollWidth > el.clientWidth) toast(msg, 3500); return; }
   el.textContent = customName ? `${baseRequests.length} requests from ${customName}.` : scenario.desc;
+  $('scenarios').title = el.textContent; el.title = el.scrollWidth > el.clientWidth ? el.textContent : '';
 }
 function readSetup() {
   const people = +$('people').value, cars = +$('cars').value, floors = +$('floors').value, cap = +$('cap').value;
@@ -288,11 +290,11 @@ function readSetup() {
   if (customName) { const need = Math.max(2, ...baseRequests.flatMap(r => [r.source, r.dest])); if (floors < need) { describe(`your file uses floor ${need}`); return null; } }
   else if (scenario.fixed && floors < 51) { describe('the brief\u2019s sample needs 51 floors'); return null; }
   describe();
-  return { people, cars, floors, cap, park: $('park').checked };
+  return { people, cars, floors, cap, park: $('park').checked, dwell: +$('dwell').value };
 }
 function applySetup() {
   const su = readSetup(); if (!su) return false;
-  building = { elevators: su.cars, floors: su.floors, capacity: su.cap, parkFloor: su.park ? 1 : null };
+  building = { elevators: su.cars, floors: su.floors, capacity: su.cap, parkFloor: su.park ? 1 : null, dwellTicks: su.dwell };
   if (customName) { /* keep uploaded requests */ }
   else if (scenario.fixed) baseRequests = SAMPLE.map(r => ({ ...r }));
   else baseRequests = generateTraffic({ floors: su.floors, people: su.people, mix: scenario.mix, rate: scenario.rate, seed: 1 });
@@ -300,7 +302,7 @@ function applySetup() {
 }
 
 // ---- simulations: all three, always in step --------------------------------------
-function makeSims(requests) { const cfg = { ...building, dwellTicks: 1, startFloor: 1, servedFloors: {} }; return ORDER.map(rule => ({ rule, sim: new Simulation(cfg, makeScheduler(rule), requests.map(r => ({ ...r }))) })); }
+function makeSims(requests) { const cfg = { dwellTicks: 1, ...building, startFloor: 1, servedFloors: {} }; return ORDER.map(rule => ({ rule, sim: new Simulation(cfg, makeScheduler(rule), requests.map(r => ({ ...r }))) })); }
 function reset() { pause(); injected = []; clickCount = 0; liveCount = 0; rng = mulberry32(7); sims = makeSims(baseRequests); buildStage(); draw(true); }
 function rebuild(to) { sims = makeSims([...baseRequests, ...injected]); for (let i = 0; i < to; i++) advance(); draw(true); }
 const currentTick = () => sims[0].sim.now;
@@ -347,7 +349,7 @@ function buildStage() {
     const r = RULES[s.rule], el = document.createElement('section');
     el.className = 'bld'; el.dataset.rule = s.rule; el.style.setProperty('--rc', `var(${r.color})`);
     el.innerHTML = `<div class="head"><span class="rank" data-k="rank"></span><span class="name"><i></i>${r.name}</span><span class="done" data-k="done"></span></div>
-      <div><div class="desc">${r.desc}</div><div class="stats"><div><div class="big" data-k="typ">–</div><div class="lbl">avg wait, ticks</div></div><div class="col"><div class="sm" data-k="now">–</div><div class="lbl">waiting</div></div><div class="col"><div class="sm" data-k="worst">–</div><div class="lbl">longest</div></div></div></div>
+      <div><div class="desc">${r.desc}</div><div class="stats"><div><div class="big" data-k="typ">–</div><div class="lbl">avg wait, ticks</div></div><div class="col"><div class="sm" data-k="now">–</div><div class="lbl">waiting</div></div><div class="col"><div class="sm" data-k="worst">–</div><div class="lbl">longest</div></div><div class="col"><div class="sm" data-k="over">–</div><div class="lbl">over 30</div></div></div></div>
       <div class="shaftbox"><svg class="shaft" role="img" aria-label="${r.name} building"></svg></div>
       <div class="usage"><div class="cap"><span>car usage · <b data-k="busy">–</b> busy</span><span data-k="bal">–</span></div><div class="bars"></div></div>
       <div class="hist"><canvas></canvas></div>`;
@@ -423,7 +425,8 @@ let histMax = 1;
 function stats(sim) {
   const now = sim.now, boarded = sim.passengers.filter(p => p.boardTime !== null).map(p => p.wait), waitingNow = sim.passengers.filter(p => p.boardTime === null).map(p => now - p.requestTime);
   const all = [...boarded, ...waitingNow]; // wait so far of those still standing counts
-  return { typ: all.length ? distribution(all).mean : null, now: waitingNow.length, worst: Math.max(0, ...all), done: sim.passengers.filter(p => p.alightTime !== null).length, total: sim.passengers.length, waits: boarded };
+  const over = all.filter(w => w > LONG_WAIT_TICKS).length;
+  return { typ: all.length ? distribution(all).mean : null, now: waitingNow.length, worst: Math.max(0, ...all), over: all.length ? over : null, done: sim.passengers.filter(p => p.alightTime !== null).length, total: sim.passengers.length, waits: boarded };
 }
 function ranking(all) {
   const key = (x) => [x.st.typ, x.st.worst, x.st.now];
@@ -438,15 +441,16 @@ function draw(force = false) {
   histMax = Math.max(1, ...all.flatMap(x => x.st.waits));
   const { rank, shared } = ranking(all);
   const ext = {};
-  for (const k of ['typ', 'now', 'worst']) { const vals = all.map(x => x.st[k]).filter(v => v !== null); ext[k] = vals.length === 3 && Math.min(...vals) !== Math.max(...vals) ? { best: Math.min(...vals), worst: Math.max(...vals) } : null; }
+  for (const k of ['typ', 'now', 'worst', 'over']) { const vals = all.map(x => x.st[k]).filter(v => v !== null); ext[k] = vals.length === 3 && Math.min(...vals) !== Math.max(...vals) ? { best: Math.min(...vals), worst: Math.max(...vals) } : null; }
   for (const el of document.querySelectorAll('.bld')) {
     const x = all.find(a => a.rule === el.dataset.rule), st = x.st, svg = el.querySelector('svg');
     el.querySelector('[data-k=typ]').textContent = st.typ === null ? '–' : st.typ.toFixed(1);
     el.querySelector('[data-k=now]').textContent = st.total ? st.now : '–';
     el.querySelector('[data-k=worst]').textContent = st.total ? st.worst : '–';
+    el.querySelector('[data-k=over]').textContent = st.over === null ? '–' : st.over;
     el.querySelector('[data-k=done]').textContent = st.total ? `${st.done} of ${st.total}` : '';
     const rk = el.querySelector('[data-k=rank]'); rk.textContent = rank[x.rule] !== undefined ? ORDINAL[rank[x.rule]] : '·'; rk.className = `rank r${(rank[x.rule] ?? -1) + 1}${shared[x.rule] ? ' tie' : ''}`;
-    for (const k of ['typ', 'now', 'worst']) { const n = el.querySelector(`[data-k=${k}]`); n.classList.remove('best', 'worst'); if (ext[k] && st[k] !== null) { if (st[k] === ext[k].best) n.classList.add('best'); else if (st[k] === ext[k].worst) n.classList.add('worst'); } }
+    for (const k of ['typ', 'now', 'worst', 'over']) { const n = el.querySelector(`[data-k=${k}]`); n.classList.remove('best', 'worst'); if (ext[k] && st[k] !== null) { if (st[k] === ext[k].best) n.classList.add('best'); else if (st[k] === ext[k].worst) n.classList.add('worst'); } }
     const box = svg.parentElement, key = `${Math.max(200, box.clientWidth)}x${Math.max(120, box.clientHeight)}:${building.floors}:${x.sim.cars.length}`;
     if (force || svg.dataset.key !== key) buildShaft(svg, x.sim);
     updateShaft(svg, x.sim, x.rule); if (!force) boardFx(svg, x.sim, x.rule);
@@ -498,7 +502,8 @@ function drawDetails() {
       if (e.type === 'board') return `t=${e.t} ${e.id} boards ${car} at ${e.floor}`; return `t=${e.t} ${e.id} leaves ${car} at ${e.floor}`; });
     const usage = carUsage(sim);
     const rows = sim.cars.map((c, i) => `<tr><td>car ${i + 1}</td><td>${c.floor}</td><td>${c.direction > 0 ? 'up' : c.direction < 0 ? 'down' : 'idle'}</td><td>${c.load}/${c.capacity}</td><td>${c.waiting.length}</td><td>${usage[i].carried}</td><td>${c.stopsMade}</td><td>${c.floorsTravelled}</td><td>${Math.round(100 * usage[i].busy_share)}%</td></tr>`).join('');
-    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>carried</th><th>stops</th><th>travelled</th><th>busy</th></tr></thead><tbody>${rows}</tbody></table><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
+    const ef = efficiency(sim, usage);
+    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><div class="note">Delivered passengers sat through ${ef.stops_per_trip.toFixed(2)} intermediate stops each and cost ${ef.floors_per_passenger.toFixed(1)} floors of car travel each.</div><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>carried</th><th>stops</th><th>travelled</th><th>busy</th></tr></thead><tbody>${rows}</tbody></table><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
   }).join('');
 }
 

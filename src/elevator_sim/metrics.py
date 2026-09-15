@@ -69,6 +69,31 @@ class Balance:
     fair_share: float
 
 
+LONG_WAIT_TICKS = 30  # service-level threshold: about a minute at two seconds per floor (A21)
+
+
+@dataclass(frozen=True, slots=True)
+class Service:
+    """Share of passengers whose wait exceeded the threshold (A21)."""
+
+    threshold: int
+    over: int
+    over_share: float
+
+
+@dataclass(frozen=True, slots=True)
+class Efficiency:
+    """What a delivered passenger cost the system (A21).
+
+    ``stops_per_trip`` is the mean number of intermediate stops a passenger sat through
+    between boarding and alighting; ``floors_per_passenger`` is total car travel divided
+    by passengers delivered.
+    """
+
+    stops_per_trip: float
+    floors_per_passenger: float
+
+
 @dataclass(frozen=True, slots=True)
 class Summary:
     scheduler: str
@@ -79,6 +104,8 @@ class Summary:
     total: Distribution
     cars: list[CarUsage]
     balance: Balance
+    service: Service
+    efficiency: Efficiency
     observations: list[str]
 
     def to_dict(self) -> dict[str, Any]:
@@ -100,7 +127,39 @@ def summarize(result: SimulationResult) -> Summary:
         total=Distribution.of(totals),
         cars=cars,
         balance=balance(cars, result.ticks),
+        service=service(result),
+        efficiency=efficiency(result, cars),
         observations=observations(result),
+    )
+
+
+def service(result: SimulationResult, threshold: int = LONG_WAIT_TICKS) -> Service:
+    waits = [p.wait for p in result.passengers if p.wait is not None]
+    over = sum(1 for w in waits if w > threshold)
+    return Service(threshold, over, over / len(waits) if waits else 0.0)
+
+
+def stop_ticks(result: SimulationResult) -> dict[int, set[int]]:
+    """Per car, the ticks at which it stopped (anyone boarded or alighted)."""
+    out: dict[int, set[int]] = {}
+    for e in result.events:
+        if e["type"] in ("board", "alight"):
+            out.setdefault(e["car"], set()).add(e["t"])
+    return out
+
+
+def efficiency(result: SimulationResult, cars: list[CarUsage]) -> Efficiency:
+    served = [p for p in result.passengers if p.alight_time is not None]
+    if not served:
+        return Efficiency(0.0, 0.0)
+    stops = stop_ticks(result)
+    intermediate = 0
+    for p in served:
+        ticks = stops.get(p.car, set())
+        intermediate += sum(1 for t in ticks if p.board_time < t < p.alight_time)
+    return Efficiency(
+        stops_per_trip=intermediate / len(served),
+        floors_per_passenger=sum(c.floors_travelled for c in cars) / len(served),
     )
 
 
@@ -175,6 +234,19 @@ def observations(result: SimulationResult) -> list[str]:
             f"elevator {c.car}: carried {c.carried}, stops {c.stops}, "
             f"floors travelled {c.floors_travelled}, busy {100 * c.busy_share:.0f}% of ticks"
         )
+    sv = service(result)
+    if sv.over:
+        notes.append(
+            f"{sv.over} of {len(served)} passengers ({100 * sv.over_share:.0f}%) waited more "
+            f"than {sv.threshold} ticks"
+        )
+    else:
+        notes.append(f"nobody waited more than {sv.threshold} ticks")
+    ef = efficiency(result, cars)
+    notes.append(
+        f"a delivered passenger sat through {ef.stops_per_trip:.1f} intermediate stops on "
+        f"average and cost {ef.floors_per_passenger:.1f} floors of car travel"
+    )
     if len(cars) > 1:
         b = balance(cars, result.ticks)
         busiest = max(cars, key=lambda c: c.carried)
@@ -195,6 +267,13 @@ def format_summary(summary: Summary) -> str:
     ]
     for label, d in (("wait", summary.wait), ("travel", summary.travel), ("total", summary.total)):
         lines.append(f"{label:8}{d.min:>6}{d.max:>6}{d.mean:>8.2f}{d.p50:>7g}{d.p90:>7g}")
+    lines.append("")
+    sv, ef = summary.service, summary.efficiency
+    lines.append(
+        f"waited over {sv.threshold} ticks: {sv.over} ({100 * sv.over_share:.0f}%)   "
+        f"stops per trip: {ef.stops_per_trip:.2f}   floors per passenger: "
+        f"{ef.floors_per_passenger:.1f}"
+    )
     lines.append("")
     lines.append(f"{'car':8}{'carried':>8}{'stops':>7}{'floors':>8}{'busy':>7}")
     for c in summary.cars:

@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Elevator dispatch — analysis explorer</title>
+<style>
+  :root { --bg:#f6f5f2; --panel:#fff; --panel2:#fbfaf8; --ink:#1c1b19; --ink2:#4c4a44; --muted:#7a786f; --line:#e1dfd9; --line2:#eeede8; --soft:#ecebe6;
+    --etd:#2f6fd0; --nearest:#d9762b; --nearestb:#e8a86a; --rr:#2a9d74; --fair:#8fb3e8; --sched:#1f3f80; --good:#1f8a5a; --bad:#c43d3a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+  header { position: sticky; top: 0; z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line); padding: 10px 24px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
+  header h1 span { color: var(--muted); font-weight: 400; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav a { color: var(--ink2); text-decoration: none; font-size: 12.5px; padding: 5px 10px; border-radius: 6px; }
+  nav a:hover, nav a.on { background: var(--soft); color: var(--ink); }
+  header .links { margin-left: auto; font-size: 12.5px; color: var(--muted); }
+  header .links a { color: var(--ink2); }
+  main { max-width: 1180px; margin: 0 auto; padding: 18px 24px 60px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 22px; margin: 0 0 18px; }
+  section h2 { font-size: 17px; margin: 0 0 4px; letter-spacing: -.01em; }
+  section p.lede { color: var(--ink2); margin: 0 0 12px; max-width: 900px; }
+  .ctl { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 6px 0 12px; font-size: 13px; color: var(--ink2); }
+  .ctl select, .ctl button { font: inherit; border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 4px 8px; color: var(--ink); }
+  .seg { display: inline-flex; background: var(--soft); border-radius: 8px; padding: 2px; }
+  .seg button { border: 0; background: transparent; padding: 4px 10px; border-radius: 6px; color: var(--ink2); }
+  .seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .chips { display: inline-flex; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; cursor: pointer; user-select: none; background: var(--panel); }
+  .chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .chip.off { opacity: .4; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .axis text { font-size: 11px; fill: var(--muted); }
+  .axis line, .axis path { stroke: var(--line); }
+  .grid line { stroke: var(--line2); }
+  .lbl { font-size: 11px; fill: var(--ink2); }
+  .callout { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 8px 0 14px; }
+  .callout div { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .callout b { display: block; font-size: 22px; font-weight: 500; letter-spacing: -.02em; line-height: 1.1; }
+  .callout span { color: var(--muted); font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; margin-top: 8px; }
+  th, td { text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--line2); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 500; }
+  th:first-child, td:first-child { text-align: left; }
+  td.best { color: var(--good); font-weight: 600; } td.worst { color: var(--bad); }
+  .note { color: var(--muted); font-size: 12px; }
+  .wrap { overflow-x: auto; }
+  footer { color: var(--muted); font-size: 12px; max-width: 1180px; margin: 0 auto; padding: 0 24px 30px; }
+  footer a { color: var(--ink2); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Elevator dispatch <span>· analysis explorer</span></h1>
+  <nav id="nav"></nav>
+  <span class="links"><a href="../viewer/">live simulator</a> · <a href="../WHITEPAPER.md">whitepaper</a> · <a href="../../README.md">source</a></span>
+</header>
+<main id="main"><section><p class="lede">Loading the committed results…</p></section></main>
+<footer>Every number on this page is read from <code>docs/results/comparison.json</code>, <code>robustness.json</code> and <code>studies.json</code>, which regenerate byte for byte from the commands in the README. Ticks throughout; one tick is one floor of travel, about two seconds.</footer>
+<script>
+const RULES = { etd: ['Smart dispatch (ETD)', 'var(--etd)'], nearest_car: ['Nearest car', 'var(--nearest)'], nearest_car_balanced: ['Nearest car, balanced ties', 'var(--nearestb)'], round_robin: ['Take turns (round robin)', 'var(--rr)'], 'etd_f0.5': ['Smart dispatch + fairness 0.5', 'var(--fair)'] };
+const NICE = { morning_up_peak: 'Morning up-peak', lunch_two_way: 'Lunch two-way', evening_down_peak: 'Evening down-peak', interfloor: 'Quiet interfloor', capacity_stress: 'Lobby burst', tall_building: 'Tall tower', tall_lobby_traffic: 'Tall lobby traffic', office_day: 'Office day', morning_up_peak_parked: 'Morning, parked at lobby', tall_lobby_zoned: 'Tall lobby, zoned', office_day_parked_lobby: 'Office day, lobby park', office_day_scheduled: 'Office day, park by clock', sample: 'The brief’s sample' };
+const METRICS = {
+  'wait.mean': ['Average wait', 'ticks', 'low'], 'wait.p90': ['p90 wait', 'ticks', 'low'], 'wait.max': ['Longest wait', 'ticks', 'low'],
+  'total.mean': ['Average total time', 'ticks', 'low'], 'service.over_share': ['Waited over 30 ticks', '%', 'low'],
+  'balance.busy_mean': ['Car-time used (busy share)', '%', 'low'], 'balance.busy_spread': ['Unevenness (busiest − least busy)', 'pts', 'low'],
+  'efficiency.stops_per_trip': ['Intermediate stops per trip', 'stops', 'low'], 'efficiency.floors_per_passenger': ['Car travel per passenger', 'floors', 'low'],
+};
+const $ = (id) => document.getElementById(id);
+const get = (o, path) => path.split('.').reduce((a, k) => a?.[k], o);
+const pct = (m) => m.endsWith('share') || m.endsWith('busy_mean') || m.endsWith('spread');
+const fmt = (v, m) => pct(m) ? `${Math.round(100 * v)}${m.endsWith('spread') ? ' pts' : '%'}` : (Number.isInteger(v) ? v : v.toFixed(m.includes('stops') ? 2 : 1));
+const state = { metric: 'wait.mean', rules: new Set(['etd', 'nearest_car', 'round_robin']), loadPattern: 'morning_up_peak', carsPattern: 'morning_up_peak', seedMetric: 'wait_avg' };
+let DATA = {};
+
+// ---- tiny SVG chart helpers -----------------------------------------------------
+function svg(w, h) { const el = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); el.setAttribute('viewBox', `0 0 ${w} ${h}`); el.setAttribute('class', 'chart'); return el; }
+function el(tag, attrs, text) { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) n.setAttribute(k, attrs[k]); if (text !== undefined) n.textContent = text; return n; }
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v / p; const m = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10; return m * p; }
+function yAxis(g, x0, y0, h, max, unit) {
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) { const v = max * i / ticks, y = y0 + h - h * i / ticks;
+    g.appendChild(el('line', { x1: x0, x2: x0 + 2000, y1: y, y2: y, class: 'grid' }));
+    g.appendChild(el('text', { x: x0 - 6, y: y + 4, 'text-anchor': 'end', class: 'lbl' }, unit === '%' ? `${Math.round(100 * v)}%` : (max >= 10 ? Math.round(v) : v.toFixed(1)))); }
+}
+function groupedBars(groups, series, unit, opts = {}) {
+  // groups: [{label}], series: [{key, color, values:[...], err:[...]}]
+  const W = 1100, H = opts.height || 300, L = 52, R = 10, T = 14, B = opts.bottom || 46;
+  const s = svg(W, H); const g = el('g', {}); s.appendChild(g);
+  const maxV = niceMax(Math.max(...series.flatMap(sr => sr.values.map((v, i) => v + (sr.err?.[i] || 0)))));
+  const ih = H - T - B, iw = W - L - R, gw = iw / groups.length, bw = Math.min(28, (gw * 0.8) / series.length);
+  yAxis(g, L, T, ih, maxV, unit);
+  groups.forEach((gr, gi) => {
+    const cx = L + gw * gi + gw / 2;
+    series.forEach((sr, si) => {
+      const v = sr.values[gi]; if (v === undefined || v === null) return;
+      const x = cx - (series.length * bw) / 2 + si * bw, h = ih * v / maxV, y = T + ih - h;
+      const r = el('rect', { x: x + 1, y, width: bw - 2, height: h, fill: sr.color, rx: 2 }); r.appendChild(el('title', {}, `${sr.label}: ${unit === '%' ? Math.round(100 * v) + '%' : v.toFixed(2)}${sr.err ? ' ± ' + sr.err[gi].toFixed(1) : ''}`)); g.appendChild(r);
+      if (sr.err) { const e = ih * sr.err[gi] / maxV; g.appendChild(el('line', { x1: x + bw / 2, x2: x + bw / 2, y1: y - e, y2: Math.min(T + ih, y + e), stroke: 'var(--ink2)', 'stroke-width': 1 })); }
+    });
+    const t = el('text', { x: cx, y: H - B + 16, 'text-anchor': 'middle', class: 'lbl' }, gr.label); g.appendChild(t);
+    if (gr.sub) g.appendChild(el('text', { x: cx, y: H - B + 30, 'text-anchor': 'middle', class: 'lbl', fill: 'var(--muted)' }, gr.sub));
+  });
+  return s;
+}
+function lines(xs, series, unit, xlabel, opts = {}) {
+  const W = 1100, H = opts.height || 300, L = 52, R = 14, T = 14, B = 44;
+  const s = svg(W, H); const g = el('g', {}); s.appendChild(g);
+  const maxV = niceMax(Math.max(...series.flatMap(sr => sr.values.map((v, i) => v + (sr.err?.[i] || 0)))));
+  const ih = H - T - B, iw = W - L - R, xmin = Math.min(...xs), xmax = Math.max(...xs);
+  const X = (x) => L + iw * (x - xmin) / (xmax - xmin || 1), Y = (v) => T + ih - ih * v / maxV;
+  yAxis(g, L, T, ih, maxV, unit);
+  for (const x of opts.xticks || xs) { g.appendChild(el('text', { x: X(x), y: H - B + 16, 'text-anchor': 'middle', class: 'lbl' }, opts.xfmt ? opts.xfmt(x) : x)); }
+  g.appendChild(el('text', { x: L + iw / 2, y: H - 6, 'text-anchor': 'middle', class: 'lbl', fill: 'var(--muted)' }, xlabel));
+  if (opts.hline !== undefined) g.appendChild(el('line', { x1: L, x2: L + iw, y1: Y(opts.hline), y2: Y(opts.hline), stroke: 'var(--ink2)', 'stroke-dasharray': '4 3' }));
+  if (opts.vline !== undefined) g.appendChild(el('line', { x1: X(opts.vline), x2: X(opts.vline), y1: T, y2: T + ih, stroke: 'var(--ink2)', 'stroke-dasharray': '4 3' }));
+  for (const sr of series) {
+    const d = sr.values.map((v, i) => `${i ? 'L' : 'M'}${X(xs[i]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    g.appendChild(el('path', { d, fill: 'none', stroke: sr.color, 'stroke-width': sr.width || 2, opacity: sr.opacity ?? 1 }));
+    if (sr.err) sr.values.forEach((v, i) => g.appendChild(el('line', { x1: X(xs[i]), x2: X(xs[i]), y1: Y(v + sr.err[i]), y2: Y(Math.max(0, v - sr.err[i])), stroke: sr.color, 'stroke-width': 1 })));
+    if (!opts.nodots) sr.values.forEach((v, i) => { const c = el('circle', { cx: X(xs[i]), cy: Y(v), r: 3, fill: sr.color }); c.appendChild(el('title', {}, `${sr.label} at ${xs[i]}: ${v.toFixed(1)}${sr.err ? ' ± ' + sr.err[i].toFixed(1) : ''}`)); g.appendChild(c); });
+  }
+  return s;
+}
+function legend(keys, extra = {}) {
+  const d = document.createElement('div'); d.className = 'chips';
+  for (const k of keys) { const [name, color] = RULES[k] || [k, extra[k]]; const c = document.createElement('span'); c.className = 'chip' + (state.rules.has(k) || !RULES[k] ? '' : ' off'); c.innerHTML = `<i style="background:${color}"></i>${name}`;
+    if (RULES[k]) c.onclick = () => { if (state.rules.has(k)) { if (state.rules.size > 1) state.rules.delete(k); } else state.rules.add(k); render(); };
+    d.appendChild(c); }
+  return d;
+}
+function best(vals, dir) { const v = vals.filter(x => x !== null && x !== undefined); if (v.length < 2 || Math.min(...v) === Math.max(...v)) return [null, null]; return dir === 'low' ? [Math.min(...v), Math.max(...v)] : [Math.max(...v), Math.min(...v)]; }
+
+// ---- sections -------------------------------------------------------------------
+const SECTIONS = [
+  ['comparison', 'Comparison', renderComparison],
+  ['seeds', 'Across seeds', renderSeeds],
+  ['dwell', 'Stop cost', renderDwell],
+  ['load', 'Load', renderLoad],
+  ['cars', 'How many cars', renderCars],
+  ['burst', 'A burst', renderBurst],
+  ['day', 'An office day', renderDay],
+];
+function section(id, title, lede) { const s = document.createElement('section'); s.id = id; s.innerHTML = `<h2>${title}</h2><p class="lede">${lede}</p>`; return s; }
+
+function renderComparison() {
+  const rows = DATA.comparison.filter(r => r.scenario !== 'sample');
+  const s = section('comparison', 'The committed comparison', 'Every rule on every committed scenario, one seed each. Pick a metric; click a rule to hide or show it. Lower is better for every metric shown.');
+  const ctl = document.createElement('div'); ctl.className = 'ctl';
+  const sel = document.createElement('select'); for (const k in METRICS) { const o = document.createElement('option'); o.value = k; o.textContent = METRICS[k][0]; if (k === state.metric) o.selected = true; sel.appendChild(o); }
+  sel.onchange = () => { state.metric = sel.value; render(); }; ctl.append('Metric ', sel, legend(Object.keys(RULES))); s.appendChild(ctl);
+  const scen = [...new Set(rows.map(r => r.scenario))];
+  const series = [...state.rules].map(k => ({ key: k, label: RULES[k][0], color: RULES[k][1], values: scen.map(sc => { const r = rows.find(x => x.scenario === sc && x.scheduler === k); return r ? get(r, state.metric) : null; }) }));
+  s.appendChild(groupedBars(scen.map(sc => ({ label: NICE[sc] || sc })), series, METRICS[state.metric][1] === '%' ? '%' : '', { bottom: 40 }));
+  const wrap = document.createElement('div'); wrap.className = 'wrap';
+  const t = document.createElement('table'); t.innerHTML = `<thead><tr><th>scenario</th>${[...state.rules].map(k => `<th>${RULES[k][0]}</th>`).join('')}</tr></thead>`;
+  const tb = document.createElement('tbody');
+  for (const sc of scen) { const vals = [...state.rules].map(k => { const r = rows.find(x => x.scenario === sc && x.scheduler === k); return r ? get(r, state.metric) : null; }); const [b, w] = best(vals, 'low');
+    tb.innerHTML += `<tr><td>${NICE[sc] || sc}</td>${vals.map(v => `<td class="${v === b ? 'best' : v === w ? 'worst' : ''}">${v === null ? '–' : fmt(v, state.metric)}</td>`).join('')}</tr>`; }
+  t.appendChild(tb); wrap.appendChild(t); s.appendChild(wrap);
+  const sample = DATA.comparison.filter(r => r.scenario === 'sample');
+  s.insertAdjacentHTML('beforeend', `<p class="note">The brief’s three-request sample, kept out of the chart: average wait ${sample.map(r => `${RULES[r.scheduler]?.[0] || r.scheduler} ${r.wait.mean.toFixed(1)}`).join(' · ')}. Nearest car wins it: smart dispatch splits the two lobby passengers across both cars to save a stop, leaving no idle car for the third request — a greedy rule can lose on tiny inputs, which is why the scenarios, not the sample, are the basis for judgement.</p>`);
+  return s;
+}
+
+function renderSeeds() {
+  const R = DATA.robustness, pats = Object.keys(R.patterns);
+  const s = section('seeds', 'Does it hold on fresh traffic?', `Every pattern re-drawn with ${R.seeds.length} fresh seeds (${R.seeds[0]}–${R.seeds[R.seeds.length - 1]}), none of them the committed one. Bars are the mean, whiskers one standard deviation. The committed seed fixed the direction; this fixes the size.`);
+  const ctl = document.createElement('div'); ctl.className = 'ctl';
+  const seg = document.createElement('div'); seg.className = 'seg';
+  for (const [k, n] of [['wait_avg', 'Average wait'], ['wait_p90', 'p90 wait'], ['wait_max', 'Longest wait'], ['busy_spread', 'Unevenness']]) { const b = document.createElement('button'); b.textContent = n; b.className = k === state.seedMetric ? 'on' : ''; b.onclick = () => { state.seedMetric = k; render(); }; seg.appendChild(b); }
+  ctl.append(seg, legend(Object.keys(RULES))); s.appendChild(ctl);
+  const m = state.seedMetric, unit = m === 'busy_spread' ? '%' : '';
+  const series = [...state.rules].map(k => ({ label: RULES[k][0], color: RULES[k][1], values: pats.map(p => R.patterns[p].variants[k][m].mean), err: pats.map(p => R.patterns[p].variants[k][m].sd) }));
+  s.appendChild(groupedBars(pats.map(p => ({ label: NICE[p] || p, sub: `ETD lowest in ${R.patterns[p].etd_lowest_avg_wait}/${R.seeds.length}` })), series, unit, { bottom: 52 }));
+  const win = pats.filter(p => p !== 'capacity_stress' && p !== 'office_day').reduce((a, p) => a + R.patterns[p].etd_lowest_avg_wait, 0), tot = pats.filter(p => p !== 'capacity_stress' && p !== 'office_day').length * R.seeds.length;
+  const f = R.patterns.tall_building['fairness_0.5'], z = R.patterns.tall_lobby_traffic.zoning, pk = R.patterns.morning_up_peak.parking;
+  s.insertAdjacentHTML('beforeend', `<div class="callout">
+    <div><b>${win} of ${tot}</b><span>runs on the non-saturated patterns where smart dispatch had the lowest average wait</span></div>
+    <div><b>${R.patterns.tall_building.ratio_nearest_over_etd.mean.toFixed(1)}×</b><span>nearest-car ÷ smart dispatch on the tower across seeds (3.7× on the committed draw)</span></div>
+    <div><b>${f.max_lower} of ${R.seeds.length}</b><span>tower seeds where the fairness weight lowered the longest wait — it raised the average in ${f.avg_higher}</span></div>
+    <div><b>${z.avg_worse} of ${R.seeds.length}</b><span>seeds where zoning made the tall lobby traffic worse: a null result (${z.zoned_avg.mean.toFixed(1)} vs ${z.free_avg.mean.toFixed(1)})</span></div>
+    <div><b>−${pk.avg_reduction_pct.mean.toFixed(0)}%</b><span>morning up-peak wait with idle cars parked at the lobby, lower in ${pk.avg_lower} of ${R.seeds.length} seeds</span></div>
+  </div>`);
+  return s;
+}
+
+function renderDwell() {
+  const D = DATA.studies.dwell, pats = Object.keys(D);
+  const s = section('dwell', 'Does the stop cost decide the result?', 'The brief says one tick per floor and nothing about stops. The model charges one tick per stop; here every pattern is re-run with stops free (the brief’s literal model), one tick and two. Bars are the baseline’s average wait divided by smart dispatch’s at the same stop cost: above 1 means smart dispatch is ahead.');
+  const series = [];
+  for (const rule of ['nearest_car', 'round_robin']) for (const [i, d] of ['0', '1', '2'].entries()) series.push({ label: `${RULES[rule][0]}, stop ${d}`, color: RULES[rule][1], values: pats.map(p => D[p][d][rule].wait_avg / D[p][d].etd.wait_avg) });
+  const chart = groupedBars(pats.map(p => ({ label: NICE[p] || p })), series, '', { bottom: 40 });
+  chart.querySelectorAll('rect').forEach((r, i) => r.setAttribute('opacity', 0.45 + 0.27 * (i % 3)));
+  s.appendChild(chart);
+  s.insertAdjacentHTML('beforeend', `<p class="note">Three shades per rule: light = stops free, medium = one tick, dark = two. The ranking holds at every stop cost; what smart dispatch accounts for is queued work, not stops. A dearer stop narrows its lead on the office patterns, because its bundled riders sit through more intermediate stops (see the efficiency metrics in the comparison).</p>`);
+  return s;
+}
+
+function renderLoad() {
+  const L = DATA.studies.load, pats = Object.keys(L), rateKeys = Object.keys(L[pats[0]]), rates = rateKeys.map(Number);
+  const s = section('load', 'Where does each rule break down?', 'Each pattern’s arrival rate scaled from half to double, five fresh seeds per point. Average wait with one-standard-deviation whiskers; hover a point for the share waiting over 30 ticks.');
+  const ctl = document.createElement('div'); ctl.className = 'ctl';
+  const sel = document.createElement('select'); for (const p of pats) { const o = document.createElement('option'); o.value = p; o.textContent = NICE[p] || p; if (p === state.loadPattern) o.selected = true; sel.appendChild(o); }
+  sel.onchange = () => { state.loadPattern = sel.value; render(); }; ctl.append('Pattern ', sel, legend(['etd', 'nearest_car', 'round_robin'])); s.appendChild(ctl);
+  const P = L[state.loadPattern];
+  const series = ['etd', 'nearest_car', 'round_robin'].filter(k => state.rules.has(k)).map(k => ({ label: RULES[k][0], color: RULES[k][1], values: rateKeys.map(r => P[r][k].wait_avg.mean), err: rateKeys.map(r => P[r][k].wait_avg.sd) }));
+  s.appendChild(lines(rates, series, '', 'arrival rate, as a multiple of the committed rate', { xfmt: (x) => `×${x}` }));
+  const at = (k, r) => P[r][k], lo = rateKeys[0], hi = rateKeys[rateKeys.length - 1];
+  s.insertAdjacentHTML('beforeend', `<div class="callout">${['etd', 'nearest_car', 'round_robin'].map(k => `<div><b>${at(k, lo).wait_avg.mean.toFixed(0)} → ${at(k, hi).wait_avg.mean.toFixed(0)}</b><span>${RULES[k][0]}: average wait from half to double load; ${Math.round(100 * at(k, hi).over_share.mean)}% wait over 30 ticks at double</span></div>`).join('')}</div>`);
+  return s;
+}
+
+function renderCars() {
+  const C = DATA.studies.cars, pats = Object.keys(C);
+  const s = section('cars', 'How many cars does each rule need?', 'The sizing question. For a service level of at most one passenger in ten waiting more than 30 ticks — about a minute — the share of long waits as the number of cars grows, five fresh seeds per point. The dashed line is the target.');
+  const ctl = document.createElement('div'); ctl.className = 'ctl';
+  const sel = document.createElement('select'); for (const p of pats) { const o = document.createElement('option'); o.value = p; o.textContent = NICE[p] || p; if (p === state.carsPattern) o.selected = true; sel.appendChild(o); }
+  sel.onchange = () => { state.carsPattern = sel.value; render(); }; ctl.append('Building ', sel, legend(['etd', 'nearest_car', 'round_robin'])); s.appendChild(ctl);
+  const P = C[state.carsPattern], ns = Object.keys(P.by_cars).map(Number);
+  const series = ['etd', 'nearest_car', 'round_robin'].filter(k => state.rules.has(k)).map(k => ({ label: RULES[k][0], color: RULES[k][1], values: ns.map(n => P.by_cars[String(n)][k].over_share.mean) }));
+  s.appendChild(lines(ns, series, '%', 'cars', { hline: 0.10 }));
+  s.insertAdjacentHTML('beforeend', `<div class="callout">${['etd', 'nearest_car', 'round_robin'].map(k => `<div><b>${P.cars_needed[k] ?? `> ${Math.max(...ns)}`}</b><span>cars for ${RULES[k][0]} to keep long waits under 10%</span></div>`).join('')}</div>`);
+  return s;
+}
+
+function renderBurst() {
+  const B = DATA.studies.resilience, sp = B.spike;
+  const s = section('burst', 'What happens after a burst?', `A normal morning up-peak, plus ${sp.people} people arriving at floor ${sp.floor} at tick ${sp.tick} — a meeting lets out. People waiting, tick by tick, on the committed seed; the faint line is the same morning without the burst.`);
+  s.appendChild(legend(['etd', 'nearest_car', 'round_robin']));
+  const n = Math.min(400, ...Object.values(B.series).map(r => r.spike.length)); const xs = Array.from({ length: n }, (_, i) => i);
+  const series = [];
+  for (const k of ['etd', 'nearest_car', 'round_robin']) if (state.rules.has(k)) { series.push({ label: `${RULES[k][0]}, without the burst`, color: RULES[k][1], values: B.series[k].base.slice(0, n), opacity: 0.3, width: 1 }); series.push({ label: `${RULES[k][0]}, with the burst`, color: RULES[k][1], values: B.series[k].spike.slice(0, n) }); }
+  s.appendChild(lines(xs, series, '', 'tick', { nodots: true, vline: sp.tick, xticks: [0, 100, 200, 300, 399] }));
+  s.insertAdjacentHTML('beforeend', `<div class="callout">${['etd', 'nearest_car', 'round_robin'].map(k => { const r = B.seeds[k]; return `<div><b>${r.recovery_ticks.mean.toFixed(0)} ticks</b><span>${RULES[k][0]}: back to the no-burst backlog (± ${r.recovery_ticks.sd.toFixed(0)} across seeds); the burst itself waited ${r.spike_wait_avg.mean.toFixed(0)} ticks on average</span></div>`; }).join('')}</div>`);
+  return s;
+}
+
+function renderDay() {
+  const D = DATA.studies.day, segs = D.segments, labels = Object.keys(D.variants);
+  const colors = { etd: 'var(--etd)', nearest_car: 'var(--nearest)', round_robin: 'var(--rr)', 'etd + park lobby all day': 'var(--fair)', 'etd + park by time of day': 'var(--sched)' };
+  const s = section('day', 'Across a whole office day', `Morning up-peak, a quiet mid-morning, lunch, a quiet afternoon and the evening down-peak in one 1,500-tick run, six seeds. Average wait by segment. The park schedule moves idle cars with the traffic: ${D.schedule.map(([t, f]) => `floor ${f} from tick ${t}`).join(', ')}.`);
+  const series = labels.map(l => ({ label: l, color: colors[l], values: segs.map(g => D.variants[l].by_segment[g].mean), err: segs.map(g => D.variants[l].by_segment[g].sd) }));
+  s.appendChild(legend(labels, colors));
+  s.appendChild(groupedBars(segs.map(g => ({ label: g })), series, '', { bottom: 36 }));
+  s.insertAdjacentHTML('beforeend', `<div class="callout">${labels.map(l => `<div><b>${D.variants[l].whole.wait_avg.mean.toFixed(1)}</b><span>${l}: average wait over the day (${D.variants[l].whole.floors_per_passenger.mean.toFixed(1)} floors of car travel per passenger)</span></div>`).join('')}</div>
+  <p class="note">Parking at the lobby all day wins the morning and loses the afternoon and evening — neutral over the day at 30% more car travel. A schedule that follows the traffic keeps the morning gain and adds an evening one. Park by the clock or not at all.</p>`);
+  return s;
+}
+
+// ---- render ---------------------------------------------------------------------
+function render() {
+  const main = $('main'); const y = window.scrollY; main.innerHTML = '';
+  for (const [, , fn] of SECTIONS) main.appendChild(fn());
+  window.scrollTo(0, y);
+}
+function nav() { const n = $('nav'); n.innerHTML = SECTIONS.map(([id, t]) => `<a href="#${id}">${t}</a>`).join(''); }
+async function load() {
+  const [c, r, s] = await Promise.all(['comparison.json', 'robustness.json', 'studies.json'].map(f => fetch(f).then(x => { if (!x.ok) throw new Error(`${f}: ${x.status}`); return x.json(); })));
+  DATA = { comparison: c, robustness: r, studies: s }; nav(); render();
+}
+load().catch(e => { $('main').innerHTML = `<section><h2>Could not load the results</h2><p class="lede">${e.message}. This page reads the JSON files beside it; open it from the repository’s GitHub Pages site or serve <code>docs/</code> with any static server.</p></section>`; });
+</script>
+</body>
+</html>

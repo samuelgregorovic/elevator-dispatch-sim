@@ -63,6 +63,10 @@ class Simulation:
     def _tick(self, now: int) -> bool:
         """Run one tick; return True when the simulation is complete at this tick."""
         res = self.result
+        if self.config.park_schedule:
+            park = self.config.park_floor_at(now)
+            for car in self.cars:
+                car.park_floor = park
         for request in self.feed.release(now):
             self._request_count += 1
             res.events.append(

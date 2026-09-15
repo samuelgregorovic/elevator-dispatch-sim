@@ -39,6 +39,7 @@ def write_trace(result: SimulationResult, path: Path) -> None:
             "dwell_ticks": cfg.dwell_ticks,
             "start_floor": cfg.start_floor,
             "park_floor": cfg.park_floor,
+            "park_schedule": [list(e) for e in cfg.park_schedule],
             "served_floors": {str(k): sorted(v) for k, v in cfg.served_floors.items()},
         },
         "ticks": result.ticks,

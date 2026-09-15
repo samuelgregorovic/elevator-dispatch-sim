@@ -66,6 +66,15 @@
     "carried_max_share": 0.35542168674698793,
     "fair_share": 0.25
   },
+  "service": {
+    "threshold": 30,
+    "over": 0,
+    "over_share": 0.0
+  },
+  "efficiency": {
+    "stops_per_trip": 1.7590361445783131,
+    "floors_per_passenger": 6.096385542168675
+  },
   "observations": [
     "30 of 166 passengers (18%) waited more than twice the median wait of 6 ticks",
     "15 passengers boarded in the tick they requested (wait 0)",
@@ -75,6 +84,8 @@
     "elevator 2: carried 39, stops 47, floors travelled 230, busy 57% of ticks",
     "elevator 3: carried 59, stops 63, floors travelled 315, busy 78% of ticks",
     "elevator 4: carried 36, stops 45, floors travelled 267, busy 64% of ticks",
+    "nobody waited more than 30 ticks",
+    "a delivered passenger sat through 1.8 intermediate stops on average and cost 6.1 floors of car travel",
     "work balance: elevator 3 carried 36% of passengers (fair share 25%); busy share ranges over 30 points"
   ]
 }

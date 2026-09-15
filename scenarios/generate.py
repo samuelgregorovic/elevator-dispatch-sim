@@ -26,6 +26,16 @@ LOBBY = 1
 
 
 @dataclass(frozen=True)
+class Segment:
+    """One stretch of a composite day: a rate and a mix held for ``windows`` windows."""
+
+    name: str
+    rate: float
+    windows: int
+    mix: tuple[float, float, float]
+
+
+@dataclass(frozen=True)
 class Traffic:
     name: str
     floors: int
@@ -37,6 +47,10 @@ class Traffic:
     mix: tuple[float, float, float]  # up from lobby, down to lobby, interfloor
     seed: int
     description: str
+    segments: tuple[Segment, ...] = ()  # when set, rate/windows/mix come from the segments
+
+    def timeline(self) -> list[Segment]:
+        return list(self.segments) or [Segment("all", self.rate, self.windows, self.mix)]
 
 
 SCENARIOS: list[Traffic] = [
@@ -124,24 +138,58 @@ SCENARIOS: list[Traffic] = [
         7,
         "51 floors, lobby-only trips (no interfloor), so a zoned bank can serve every request.",
     ),
+    Traffic(
+        "office_day",
+        20,
+        4,
+        8,
+        400,
+        0.0,
+        0,
+        (0.0, 0.0, 0.0),
+        8,
+        "One office day in ten windows: morning up-peak, quiet, lunch two-way, quiet, evening "
+        "down-peak.",
+        segments=(
+            Segment("morning", 0.13, 2, (0.85, 0.10, 0.05)),
+            Segment("midmorning", 0.04, 2, (0.10, 0.10, 0.80)),
+            Segment("lunch", 0.12, 2, (0.45, 0.45, 0.10)),
+            Segment("afternoon", 0.04, 2, (0.10, 0.10, 0.80)),
+            Segment("evening", 0.14, 2, (0.10, 0.85, 0.05)),
+        ),
+    ),
 ]
 
 
 def generate(t: Traffic) -> list[tuple[int, str, int, int]]:
     rng = random.Random(t.seed)
-    per_tick = t.population * t.rate / WINDOW_TICKS
     rows: list[tuple[int, str, int, int]] = []
     n = 0
-    for tick in range(t.windows * WINDOW_TICKS):
-        for _ in range(poisson(rng, per_tick)):
-            n += 1
-            source, dest = trip(rng, t)
-            rows.append((tick, f"p{n:04d}", source, dest))
+    tick = 0
+    for seg in t.timeline():
+        per_tick = t.population * seg.rate / WINDOW_TICKS
+        for _ in range(seg.windows * WINDOW_TICKS):
+            for _ in range(poisson(rng, per_tick)):
+                n += 1
+                source, dest = trip(rng, t, seg.mix)
+                rows.append((tick, f"p{n:04d}", source, dest))
+            tick += 1
     return rows
 
 
-def trip(rng: random.Random, t: Traffic) -> tuple[int, int]:
-    up, down, _ = t.mix
+def segment_bounds(t: Traffic) -> list[tuple[str, int, int]]:
+    """``(name, first_tick, last_tick_exclusive)`` per segment, for time-of-day reporting."""
+    out, tick = [], 0
+    for seg in t.timeline():
+        out.append((seg.name, tick, tick + seg.windows * WINDOW_TICKS))
+        tick += seg.windows * WINDOW_TICKS
+    return out
+
+
+def trip(
+    rng: random.Random, t: Traffic, mix: tuple[float, float, float] | None = None
+) -> tuple[int, int]:
+    up, down, _ = mix or t.mix
     r = rng.random()
     upper = range(2, t.floors + 1)
     if r < up:
@@ -185,6 +233,29 @@ def write_all() -> None:
             }
         )
     manifest += [
+        {
+            "name": "office_day_parked_lobby",
+            "file": "office_day.csv",
+            "floors": 20,
+            "elevators": 4,
+            "capacity": 8,
+            "park_floor": 1,
+            "description": "The office day with idle cars always returning to the lobby.",
+            "seed": 8,
+        },
+        {
+            "name": "office_day_scheduled",
+            "file": "office_day.csv",
+            "floors": 20,
+            "elevators": 4,
+            "capacity": 8,
+            "park_schedule": {"0": 1, "300": 10, "600": 1, "900": 10, "1200": 16},
+            "description": (
+                "The office day with parking that follows the time of day: "
+                "lobby in the morning and at lunch, mid-building when quiet, high in the evening."
+            ),
+            "seed": 8,
+        },
         {
             "name": "morning_up_peak_parked",
             "file": "morning_up_peak.csv",

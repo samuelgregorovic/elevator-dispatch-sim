@@ -184,9 +184,9 @@ export function makeScheduler(name, fairness = 0) {
 // ---- simulation ---------------------------------------------------------------
 
 export class Simulation {
-  /** config: {elevators, floors, capacity, dwellTicks, startFloor, parkFloor, servedFloors: {index: Set}} */
+  /** config: {elevators, floors, capacity, dwellTicks, startFloor, parkFloor, parkSchedule: [[tick, floor], ...], servedFloors: {index: Set}} */
   constructor(config, scheduler, requests = []) {
-    this.config = { dwellTicks: 1, startFloor: 1, parkFloor: null, servedFloors: {}, ...config };
+    this.config = { dwellTicks: 1, startFloor: 1, parkFloor: null, parkSchedule: [], servedFloors: {}, ...config };
     this.scheduler = scheduler;
     this.pending = [...requests].sort((a, b) => a.time - b.time); // stable
     this.cursor = 0;
@@ -208,6 +208,7 @@ export class Simulation {
   /** Run one tick (state at this.now), then advance. Returns true when complete at this tick. */
   step() {
     const now = this.now;
+    if (this.config.parkSchedule.length) { let park = this.config.parkFloor; for (const [t, f] of this.config.parkSchedule) if (t <= now) park = f; for (const car of this.cars) car.parkFloor = park; }
     for (const request of this.release(now)) {
       this.events.push({ t: now, type: 'request', id: request.id, floor: request.source, dest: request.dest });
       const p = new Passenger(request.id, request.time, request.source, request.dest);
@@ -284,13 +285,30 @@ export function balance(cars, ticks) {
   const busyTotal = cars.reduce((n, c) => n + c.busy_ticks, 0); // integer sum, one division: same as Python
   return { busy_mean: ticks ? busyTotal / (cars.length * ticks) : 0, busy_spread: Math.max(...shares) - Math.min(...shares), carried_max_share: carried ? Math.max(...cars.map(c => c.carried)) / carried : 0, fair_share: 1 / cars.length };
 }
+export const LONG_WAIT_TICKS = 30; // service-level threshold, mirrors metrics.LONG_WAIT_TICKS
+export function service(sim, threshold = LONG_WAIT_TICKS) {
+  const waits = sim.passengers.filter(p => p.boardTime !== null).map(p => p.wait);
+  const over = waits.filter(w => w > threshold).length;
+  return { threshold, over, over_share: waits.length ? over / waits.length : 0 };
+}
+export function efficiency(sim, cars) {
+  // Mirrors metrics.efficiency: intermediate stops sat through per delivered passenger, floors per passenger.
+  const served = sim.passengers.filter(p => p.alightTime !== null);
+  if (!served.length) return { stops_per_trip: 0, floors_per_passenger: 0, intermediate: 0 };
+  const stops = new Map();
+  for (const e of sim.events) if (e.type === 'board' || e.type === 'alight') { if (!stops.has(e.car)) stops.set(e.car, new Set()); stops.get(e.car).add(e.t); }
+  let intermediate = 0;
+  for (const p of served) for (const t of stops.get(p.car) ?? []) if (p.boardTime < t && t < p.alightTime) intermediate += 1;
+  const floors = cars.reduce((n, c) => n + c.floors_travelled, 0);
+  return { stops_per_trip: intermediate / served.length, floors_per_passenger: floors / served.length, intermediate };
+}
 export function summarize(sim) {
   const served = sim.passengers.filter(p => p.alightTime !== null);
   const cars = carUsage(sim);
   return {
     scheduler: sim.scheduler.name, passengers: sim.passengers.length, ticks: sim.ticks,
     wait: distribution(served.map(p => p.wait)), travel: distribution(served.map(p => p.travel)), total: distribution(served.map(p => p.total)),
-    cars, balance: balance(cars, sim.ticks),
+    cars, balance: balance(cars, sim.ticks), service: service(sim), efficiency: efficiency(sim, cars),
   };
 }
 

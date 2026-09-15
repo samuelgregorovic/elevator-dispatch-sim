@@ -72,6 +72,41 @@
     "seed": 7
   },
   {
+    "name": "office_day",
+    "file": "office_day.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "description": "One office day in ten windows: morning up-peak, quiet, lunch two-way, quiet, evening down-peak.",
+    "seed": 8
+  },
+  {
+    "name": "office_day_parked_lobby",
+    "file": "office_day.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "park_floor": 1,
+    "description": "The office day with idle cars always returning to the lobby.",
+    "seed": 8
+  },
+  {
+    "name": "office_day_scheduled",
+    "file": "office_day.csv",
+    "floors": 20,
+    "elevators": 4,
+    "capacity": 8,
+    "park_schedule": {
+      "0": 1,
+      "300": 10,
+      "600": 1,
+      "900": 10,
+      "1200": 16
+    },
+    "description": "The office day with parking that follows the time of day: lobby in the morning and at lunch, mid-building when quiet, high in the evening.",
+    "seed": 8
+  },
+  {
     "name": "morning_up_peak_parked",
     "file": "morning_up_peak.csv",
     "floors": 20,
