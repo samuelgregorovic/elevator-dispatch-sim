@@ -134,6 +134,67 @@ def chart_positions(trace: dict[str, Any], scenario: str, out: Path, ticks: int 
     return path
 
 
+def chart_car_usage(rows: list[dict[str, Any]], scenario: str, out: Path) -> Path:
+    """Busy share per car, one bar group per car, one bar per scheduler."""
+    plt = _plt()
+    sel = {r["scheduler"]: r for r in rows if r["scenario"] == scenario}
+    fig, ax = plt.subplots(figsize=(7.5, 4.2))
+    cars = sel[ORDER[0]]["cars"]
+    width = 0.26
+    for i, sched in enumerate(ORDER):
+        vals = [100 * c["busy_share"] for c in sel[sched]["cars"]]
+        xs = [x + (i - 1) * (width + 0.02) for x in range(len(cars))]
+        ax.bar(xs, vals, width=width, color=COLORS[sched], label=sched, linewidth=0)
+    ax.set_xticks(range(len(cars)))
+    ax.set_xticklabels([f"car {c['car']}" for c in cars])
+    ax.set_ylim(0, 100)
+    ax.set_ylabel("busy (% of ticks with a passenger aboard or assigned)")
+    ax.set_title(f"Car usage — {scenario}", loc="left", color=INK)
+    ax.grid(axis="x", visible=False)
+    ax.legend(frameon=False, fontsize=9)
+    fig.tight_layout()
+    path = out / f"car_usage_{scenario}.png"
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
+def chart_balance_by_scenario(rows: list[dict[str, Any]], out: Path) -> Path:
+    """Two panels: mean busy share (car-time spent) and busy spread (unevenness) per scenario."""
+    plt = _plt()
+    scenarios = [s for s in dict.fromkeys(r["scenario"] for r in rows) if s != "sample"]
+    fig, axes = plt.subplots(1, 2, figsize=(14, 4.6))
+    panels = (
+        ("busy_mean", "Car-time used (mean busy share, %)"),
+        ("busy_spread", "Unevenness (busiest minus least busy car, points)"),
+    )
+    for ax, (key, title) in zip(axes, panels, strict=True):
+        width = 0.26
+        for i, sched in enumerate(ORDER):
+            vals = [
+                100
+                * next(
+                    r["balance"][key]
+                    for r in rows
+                    if r["scenario"] == s and r["scheduler"] == sched
+                )
+                for s in scenarios
+            ]
+            xs = [x + (i - 1) * (width + 0.02) for x in range(len(scenarios))]
+            ax.bar(xs, vals, width=width, color=COLORS[sched], label=sched, linewidth=0)
+        ax.set_xticks(range(len(scenarios)))
+        ax.set_xticklabels([s.replace("_", "\n") for s in scenarios], fontsize=7.5)
+        ax.set_title(title, loc="left", color=INK, fontsize=11)
+        ax.grid(axis="x", visible=False)
+    axes[0].set_ylim(0, 100)
+    axes[0].legend(frameon=False, fontsize=9)
+    fig.tight_layout()
+    path = out / "car_balance_by_scenario.png"
+    fig.savefig(path)
+    plt.close(fig)
+    return path
+
+
 def chart_fairness_sweep(rows: list[dict[str, Any]], scenario: str, out: Path) -> Path | None:
     """Max wait vs average total time as the ETD fairness weight increases."""
     pts = [r for r in rows if r["scenario"] == scenario and r["scheduler"].startswith("etd")]
@@ -172,6 +233,10 @@ def build_report(manifest: Path, out: Path, fairness: list[float], dwell: int = 
             written.append(chart_wait_distribution(traces, name, out))
     if "morning_up_peak__etd" in traces:
         written.append(chart_positions(traces["morning_up_peak__etd"], "morning_up_peak", out))
+    written.append(chart_balance_by_scenario(rows, out))
+    for name in ("morning_up_peak", "tall_lobby_traffic"):
+        if any(r["scenario"] == name for r in rows):
+            written.append(chart_car_usage(rows, name, out))
     for name in ("morning_up_peak", "tall_building"):
         p = chart_fairness_sweep(rows, name, out)
         if p:

@@ -62,7 +62,9 @@ One refinement, found by a property-based test: a passenger waiting at the car's
 
 **A18. Trace.** `trace.json` with per-tick car state (floor, direction, load, dwell) and events (request, assign, board, alight) for inspection and debugging. Not required by the brief; it is what makes behaviour inspectable. (The first browser viewer replayed this file; the current simulator runs its own port of the engine instead, so the trace is now for the `run` command's users.)
 
-**A19. Statistics.** For wait and total time: min, max, mean, p50, p90; plus a short list of generated observations (share of passengers waiting more than twice the median, busiest origin floor, per-car passengers carried and stop counts, idle share).
+**A19. Statistics.** For wait and total time: min, max, mean, p50, p90; plus a short list of generated observations (share of passengers waiting more than twice the median, busiest origin floor, per-car usage and balance).
+
+**A20. Car usage and balance.** Per car: passengers carried, stops, floors travelled, and *busy ticks* — ticks in which the car has a passenger aboard or a passenger assigned and still waiting; *busy share* is busy ticks over ticks simulated. A car moving to park is not busy. Balance across cars: the mean busy share (how much car-time the rule spends), the *spread* (busiest minus least busy car's share, in points), and the busiest car's share of delivered passengers against the fair share 1/cars. Reason: waiting time says how the passengers fared; these say how the cars were used — the same result achieved with less car-time is cheaper to run, and work concentrated on one car is uneven wear. Both are reported by `run`, `compare`, the charts and the browser simulator, and the browser port is held to the Python definition by the conformance test.
 
 ## Out of scope
 

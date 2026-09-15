@@ -24,7 +24,7 @@ Seven small modules, one responsibility each:
 | `feed.py` | `RequestFeed`: the only source of requests; releases rows with `time <= now` (A16). |
 | `simulation.py` | The tick loop in the fixed order of A3; produces positions, per-tick car states and events. |
 | `schedulers/` | `Scheduler` protocol plus three implementations behind one interface. |
-| `metrics.py` | Distributions (min, max, mean, p50, p90) and generated observations. |
+| `metrics.py` | Distributions (min, max, mean, p50, p90), per-car usage and balance (A20), and generated observations. |
 | `validate.py`, `io.py` | Fail-fast input checks; CSV/JSON readers and writers. |
 | `compare.py` | Runs a scheduler × scenario matrix from `scenarios/manifest.json`. |
 | `docs/viewer/engine.js` | JavaScript port of the engine for the browser simulator; `tests/test_js_conformance.py` proves it identical to the Python engine on every scenario. |
@@ -114,6 +114,19 @@ Observations:
 - On `capacity_stress` (two small cars, everyone at the lobby at once) ETD and round robin are equal (60.3 vs 60.1). When every request has the same origin and the system is saturated, the only lever is spreading load evenly, and round robin does that by construction. Nearest-car is worst here because it keeps piling passengers onto whichever car is nearest the lobby.
 - On the three-request sample from the brief nearest-car happens to beat ETD (6.3 vs 15.0 average wait). ETD spreads the two lobby passengers over both cars to avoid the extra stop, which leaves no idle car for the third request; nearest-car puts both on car 1 and the idle car 2 collects the third. Greedy assignment with no knowledge of future demand can lose on tiny inputs; the scenarios are what the algorithm should be judged on.
 - Round robin's maximum wait is often *lower* than nearest-car's (tall building: 115 vs 230). Ignoring position is bad on average but it never starves anyone, which is the fairness-versus-efficiency tension the brief asks about; the ETD fairness weight is the deliberate version of that trade.
+
+### How the cars are used
+
+The three right-hand columns of `results/comparison.md` (`busy`, `spread`, `max car`; definitions in A20) say how the cars were used rather than how the passengers fared.
+
+![Car-time used and unevenness per scenario](charts/car_balance_by_scenario.png)
+
+- **ETD does the same job with the least car-time.** On the office patterns its cars are busy 62% of ticks in the morning peak against 89% for nearest-car and 95% for round robin; lunch 67% / 75% / 89%; interfloor 44% / 45% / 60%. It delivers everyone sooner *and* leaves the cars idle more, because fewer stops per trip means less car-time per passenger. Round robin's cars are the busiest everywhere (89–98% on the peaks), which is inefficiency, not throughput: they travel further to do the same work.
+- **ETD spreads the work least evenly.** In the morning peak the busiest ETD car is busy 78% of ticks and the least 48% (spread 30 points), and it carries 36% of the passengers against a fair share of 25%. Round robin is even by construction (spread 7–12 points on the office patterns); nearest-car sits between (8–17). On the tall lobby traffic ETD runs two of six cars at 65–71% while three others run at 97–98%.
+- **The fairness weight evens the cars as a side effect.** `etd_f0.5` cuts the spread from 30 to 18 points in the morning peak, 21 to 5 at lunch, 33 to 10 on the tall lobby traffic and 16 to 10 on the tower, at the cost in average wait discussed under policies. Delaying a car's long-waiting passengers less means pulling in the cars that were sitting out. Parking has the same effect in the up-peak (30 to 13 points).
+- **Zoning breaks round robin's evenness.** With three local and three express cars, rotation ignores which cars can serve a request, so one local car is busy 32% of ticks while an express car is at 99% (spread 67 points) — the largest imbalance in the table.
+
+![Busy share per car — morning up-peak](charts/car_usage_morning_up_peak.png)
 
 ## Policies: fairness weight, parking, zoning
 

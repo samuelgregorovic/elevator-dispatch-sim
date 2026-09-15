@@ -61,7 +61,7 @@
   .verdict .lead { color: var(--ink); font-weight: 600; }
   .stage { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 14px; min-height: 0; padding-right: 20px; }
 
-  .bld { display: grid; grid-template-rows: auto auto minmax(0, 1fr) 46px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-height: 0; min-width: 0; overflow: hidden; }
+  .bld { display: grid; grid-template-rows: auto auto minmax(0, 1fr) 52px 46px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-height: 0; min-width: 0; overflow: hidden; }
   .bld > div { min-width: 0; }
   .bld .head { display: flex; align-items: center; gap: 10px; padding: 10px 14px 0; }
   .rank { width: 44px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 600; font-family: var(--mono); background: var(--soft); color: var(--ink2); transition: background .3s, color .3s; }
@@ -87,6 +87,13 @@
   @keyframes ping { from { opacity: .9; r: 4; } to { opacity: 0; r: 20; } }
   .shaft .board { animation: board .5s ease-out forwards; }
   @keyframes board { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
+  .usage { position: relative; margin: 0 14px; border-top: 1px solid var(--line2); padding-top: 5px; }
+  .usage .cap { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); white-space: nowrap; height: 14px; }
+  .usage .cap b { font-weight: 500; color: var(--ink2); }
+  .usage .bars { display: flex; gap: 4px; align-items: flex-end; height: 26px; margin-top: 3px; }
+  .usage .bar { flex: 1 1 0; min-width: 0; height: 100%; position: relative; background: var(--soft); border-radius: 2px; overflow: hidden; }
+  .usage .bar i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--rc); opacity: .85; transition: height .3s ease; }
+  .usage .bar.max i { opacity: 1; }
   .hist { position: relative; margin: 0 14px; border-top: 1px solid var(--line2); }
   .hist canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
@@ -216,6 +223,7 @@
       <i style="display:inline-block;width:12px;height:8px;border-radius:2px;border:1.5px solid var(--etd)"></i><span>A car, coloured by its rule. It fills up as people board; the number is how many are aboard. An amber ring means the doors are open.</span>
     </div>
     <p style="margin-top:10px">The big number is the average wait so far in ticks; beside it, how many are waiting right now and the longest anyone has waited. Green marks the best of the three, red the worst. One tick is one floor of travel, and each stop costs one tick.</p>
+    <p><b>Car usage</b>, under each building, shows one bar per car: how much of the run that car has been busy — carrying someone, or on its way to someone assigned to it. The caption gives the average across cars (how much car-time the rule spends) and the gap between the busiest and least busy car (how evenly it spreads the work). A rule can win on waiting time while working one car much harder than the others; take turns is even by construction but spends the most car-time. The Details view has the per-car numbers.</p>
     <h3>Trying things</h3>
     <p>Set the traffic and the building at the top, then <b>Apply &amp; restart</b>. While it runs, add people from the right or click a floor to place someone with a destination. “Keep traffic flowing” keeps people arriving. Adding people after everyone is delivered resumes the run. <kbd>Space</kbd> plays and pauses, <kbd>←</kbd> <kbd>→</kbd> step one tick.</p>
     <p style="color:var(--muted);font-size:12.5px">The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario. <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">Full results</a> · <a href="../../README.md" target="_blank">Source</a></p>
@@ -233,7 +241,7 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-import { Simulation, makeScheduler, parseCsv, distribution, mulberry32, poisson, PATTERNS, makeTrip, generateTraffic } from './engine.js';
+import { Simulation, makeScheduler, parseCsv, distribution, mulberry32, poisson, PATTERNS, makeTrip, generateTraffic, carUsage, balance } from './engine.js';
 
 const $ = (id) => document.getElementById(id);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -340,6 +348,7 @@ function buildStage() {
     el.innerHTML = `<div class="head"><span class="rank" data-k="rank"></span><span class="name"><i></i>${r.name}</span><span class="done" data-k="done"></span></div>
       <div><div class="desc">${r.desc}</div><div class="stats"><div><div class="big" data-k="typ">–</div><div class="lbl">avg wait, ticks</div></div><div class="col"><div class="sm" data-k="now">–</div><div class="lbl">waiting</div></div><div class="col"><div class="sm" data-k="worst">–</div><div class="lbl">longest</div></div></div></div>
       <div class="shaftbox"><svg class="shaft" role="img" aria-label="${r.name} building"></svg></div>
+      <div class="usage"><div class="cap"><span>car usage · <b data-k="busy">–</b> busy</span><span data-k="bal">–</span></div><div class="bars"></div></div>
       <div class="hist"><canvas></canvas></div>`;
     stage.appendChild(el); el.querySelector('svg').addEventListener('click', onShaftClick);
   }
@@ -441,6 +450,7 @@ function draw(force = false) {
     if (force || svg.dataset.key !== key) buildShaft(svg, x.sim);
     updateShaft(svg, x.sim, x.rule); if (!force) boardFx(svg, x.sim, x.rule);
     drawHist(el.querySelector('canvas'), st.waits, css(RULES[x.rule].color));
+    drawUsage(el, x.sim);
   }
   drawVerdict(all, rank); drawDetails();
 }
@@ -471,14 +481,23 @@ function drawHist(cv, waits, color) {
   ctx.globalAlpha = 1; ctx.fillStyle = css('--label');
   ctx.fillText('wait 0', 0, H - 3); ctx.textAlign = 'right'; ctx.fillText(`${max} ticks · ${waits.length} boarded`, W, H - 3); ctx.textAlign = 'left';
 }
+function drawUsage(el, sim) {
+  const cars = carUsage(sim), b = balance(cars), bars = el.querySelector('.usage .bars');
+  if (bars.children.length !== cars.length) bars.innerHTML = cars.map(c => `<div class="bar" title="car ${c.car}"><i></i></div>`).join('');
+  const maxShare = Math.max(...cars.map(c => c.busy_share));
+  cars.forEach((c, i) => { const bar = bars.children[i]; bar.firstChild.style.height = `${Math.round(100 * c.busy_share)}%`; bar.classList.toggle('max', cars.length > 1 && c.busy_share === maxShare && maxShare > 0); bar.title = `car ${c.car}: busy ${Math.round(100 * c.busy_share)}% of ticks, carried ${c.carried}`; });
+  el.querySelector('[data-k=busy]').textContent = sim.ticks ? `${Math.round(100 * b.busy_mean)}%` : '–';
+  el.querySelector('[data-k=bal]').textContent = cars.length > 1 && sim.ticks ? `busiest car ${Math.round(100 * b.busy_spread)} pts above the least` : '';
+}
 function drawDetails() {
   if ($('overlay').hidden) return;
   $('details').innerHTML = sims.map(({ sim, rule }) => {
     const ev = sim.events.slice(-10).reverse().map(e => { const car = e.car !== undefined ? `car ${e.car + 1}` : '';
       if (e.type === 'request') return `t=${e.t} ${e.id} requests ${e.floor} → ${e.dest}`; if (e.type === 'assign') return `t=${e.t} ${e.id} assigned to ${car}`;
       if (e.type === 'board') return `t=${e.t} ${e.id} boards ${car} at ${e.floor}`; return `t=${e.t} ${e.id} leaves ${car} at ${e.floor}`; });
-    const rows = sim.cars.map((c, i) => `<tr><td>car ${i + 1}</td><td>${c.floor}</td><td>${c.direction > 0 ? 'up' : c.direction < 0 ? 'down' : 'idle'}</td><td>${c.load}/${c.capacity}</td><td>${c.waiting.length}</td><td>${c.stopsMade}</td><td>${c.floorsTravelled}</td></tr>`).join('');
-    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>stops</th><th>travelled</th></tr></thead><tbody>${rows}</tbody></table><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
+    const usage = carUsage(sim);
+    const rows = sim.cars.map((c, i) => `<tr><td>car ${i + 1}</td><td>${c.floor}</td><td>${c.direction > 0 ? 'up' : c.direction < 0 ? 'down' : 'idle'}</td><td>${c.load}/${c.capacity}</td><td>${c.waiting.length}</td><td>${usage[i].carried}</td><td>${c.stopsMade}</td><td>${c.floorsTravelled}</td><td>${Math.round(100 * usage[i].busy_share)}%</td></tr>`).join('');
+    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>carried</th><th>stops</th><th>travelled</th><th>busy</th></tr></thead><tbody>${rows}</tbody></table><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
   }).join('');
 }
 

@@ -16,6 +16,7 @@ import pytest
 
 from elevator_sim.compare import Variant, load_manifest
 from elevator_sim.io import read_requests
+from elevator_sim.metrics import car_usage
 from elevator_sim.schedulers import make_scheduler
 from elevator_sim.simulation import Simulation
 
@@ -73,3 +74,14 @@ def test_js_engine_matches_python(scenario, variant):
         for p in py.passengers
     ]
     assert js["passengers"] == py_passengers
+    py_cars = [
+        {
+            "car": c.car,
+            "carried": c.carried,
+            "stops": c.stops,
+            "floors_travelled": c.floors_travelled,
+            "busy_ticks": c.busy_ticks,
+        }
+        for c in car_usage(py)
+    ]
+    assert js["cars"] == py_cars

@@ -6,12 +6,19 @@ wait         0    19    7.13      6     16
 travel       2    27   13.44     14     23
 total        2    44   20.57     20     33
 
+car      carried  stops  floors   busy
+1             32     33     200    48%
+2             39     47     230    57%
+3             59     63     315    78%
+4             36     45     267    64%
+
 observations:
   - 30 of 166 passengers (18%) waited more than twice the median wait of 6 ticks
   - 15 passengers boarded in the tick they requested (wait 0)
   - busiest origin floor: 1 (142 of 166 requests)
   - direction mix: 144 up, 22 down
-  - elevator 1: carried 32, stops 33, floors travelled 200, idle 52% of ticks
-  - elevator 2: carried 39, stops 47, floors travelled 230, idle 43% of ticks
-  - elevator 3: carried 59, stops 63, floors travelled 315, idle 22% of ticks
-  - elevator 4: carried 36, stops 45, floors travelled 267, idle 36% of ticks
+  - elevator 1: carried 32, stops 33, floors travelled 200, busy 48% of ticks
+  - elevator 2: carried 39, stops 47, floors travelled 230, busy 57% of ticks
+  - elevator 3: carried 59, stops 63, floors travelled 315, busy 78% of ticks
+  - elevator 4: carried 36, stops 45, floors travelled 267, busy 64% of ticks
+  - work balance: elevator 3 carried 36% of passengers (fair share 25%); busy share ranges over 30 points

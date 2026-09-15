@@ -267,11 +267,27 @@ export function distribution(values) {
   const s = [...values].sort((a, b) => a - b);
   return { count: s.length, min: s[0], max: s[s.length - 1], mean: s.reduce((a, b) => a + b, 0) / s.length, p50: percentile(s, 50), p90: percentile(s, 90) };
 }
+export function carUsage(sim) {
+  // Mirrors metrics.car_usage: busy = a passenger aboard or assigned and waiting.
+  const served = sim.passengers.filter(p => p.alightTime !== null);
+  return sim.cars.map((c, i) => {
+    const busy = sim.carStates.reduce((n, t) => n + ((t[i].load || t[i].waiting) ? 1 : 0), 0);
+    return { car: i + 1, carried: served.filter(p => p.car === i).length, stops: c.stopsMade, floors_travelled: c.floorsTravelled, busy_ticks: busy, busy_share: sim.ticks ? busy / sim.ticks : 0 };
+  });
+}
+export function balance(cars) {
+  if (!cars.length) return { busy_mean: 0, busy_spread: 0, carried_max_share: 0, fair_share: 0 };
+  const shares = cars.map(c => c.busy_share);
+  const carried = cars.reduce((n, c) => n + c.carried, 0);
+  return { busy_mean: shares.reduce((a, b) => a + b, 0) / shares.length, busy_spread: Math.max(...shares) - Math.min(...shares), carried_max_share: carried ? Math.max(...cars.map(c => c.carried)) / carried : 0, fair_share: 1 / cars.length };
+}
 export function summarize(sim) {
   const served = sim.passengers.filter(p => p.alightTime !== null);
+  const cars = carUsage(sim);
   return {
     scheduler: sim.scheduler.name, passengers: sim.passengers.length, ticks: sim.ticks,
     wait: distribution(served.map(p => p.wait)), travel: distribution(served.map(p => p.travel)), total: distribution(served.map(p => p.total)),
+    cars, balance: balance(cars),
   };
 }
 

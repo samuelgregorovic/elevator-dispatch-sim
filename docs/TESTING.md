@@ -1,14 +1,14 @@
 # Testing approach
 
-`uv run pytest` — 124 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix.
+`uv run pytest` — 131 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix.
 
 The suite is organised by what kind of mistake it would catch, not by module.
 
 ## 1. Unit tests: the rules of the model
 
-`test_tick_semantics.py`, `test_capacity_and_direction.py`, `test_validation.py`
+`test_tick_semantics.py`, `test_capacity_and_direction.py`, `test_validation.py`, `test_car_usage.py`
 
-Each assumption in `ASSUMPTIONS.md` that has an observable consequence has a test that pins it: the idle-car-on-the-floor case gives wait 0 and the one-floor-away case gives wait 1 (A3); dwell adds exactly one tick per stop and `dwell_ticks = 0` reproduces the literal brief (A2); tick 0 logs the initial positions and the simulation ticks through idle gaps instead of jumping (A5); capacity is never exceeded and a passenger left behind boards the same car on a later pass (A8, A11); a car going up does not pick up a down passenger it passes (A12); an idle car adopts the direction of the longest-waiting passenger at its floor; an express car is only ever assigned feasible passengers, an infeasible request is rejected before the run starts, and a park floor must lie inside every express zone (A10); a stop is one dwell per floor visit and passengers arriving mid-dwell do not extend it (A2); an idle car reports an idle direction; `percentile` is nearest-rank; every invalid-input case in A15 is rejected with a message that names the row and the reason, and a UTF-8 BOM is tolerated.
+Each assumption in `ASSUMPTIONS.md` that has an observable consequence has a test that pins it: the idle-car-on-the-floor case gives wait 0 and the one-floor-away case gives wait 1 (A3); dwell adds exactly one tick per stop and `dwell_ticks = 0` reproduces the literal brief (A2); tick 0 logs the initial positions and the simulation ticks through idle gaps instead of jumping (A5); capacity is never exceeded and a passenger left behind boards the same car on a later pass (A8, A11); a car going up does not pick up a down passenger it passes (A12); an idle car adopts the direction of the longest-waiting passenger at its floor; an express car is only ever assigned feasible passengers, an infeasible request is rejected before the run starts, and a park floor must lie inside every express zone (A10); a stop is one dwell per floor visit and passengers arriving mid-dwell do not extend it (A2); an idle car reports an idle direction; `percentile` is nearest-rank; a car is busy from assignment until its last passenger alights, an idle car counts as unused, round robin's carried counts are equal by construction, and the balance figures are in the summary (A20); every invalid-input case in A15 is rejected with a message that names the row and the reason, and a UTF-8 BOM is tolerated.
 
 These tests are deliberately tiny — one to four requests, one or two cars — so that when one fails the reason is obvious.
 
@@ -48,7 +48,7 @@ The scenario generator is re-run inside the test and its output compared byte fo
 
 `test_js_conformance.py`
 
-The interactive simulator on GitHub Pages runs a JavaScript port of the engine (`docs/viewer/engine.js`). Two implementations of the same rules will drift unless something stops them, so the suite runs the port with Node (`docs/viewer/conform.mjs`) on every committed scenario with every scheduler — 40 combinations — and asserts that positions per tick, the full event list, and every passenger's assignment, boarding and alighting ticks are identical to Python's. Skipped when Node is absent; CI installs it.
+The interactive simulator on GitHub Pages runs a JavaScript port of the engine (`docs/viewer/engine.js`). Two implementations of the same rules will drift unless something stops them, so the suite runs the port with Node (`docs/viewer/conform.mjs`) on every committed scenario with every scheduler — 40 combinations — and asserts that positions per tick, the full event list, every passenger's assignment, boarding and alighting ticks, and every car's carried, stops, floors and busy ticks are identical to Python's. Skipped when Node is absent; CI installs it.
 
 ## What is not tested, and why
 

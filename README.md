@@ -16,7 +16,7 @@ Discrete-time simulation of a destination-dispatch elevator system, built agains
 - **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): traffic patterns for any building, all three rules side by side with a live ranking, add passengers, live traffic, your own CSV. Space to play, ← → to step.
 - **[The whitepaper](docs/WHITEPAPER.md)** — the whole story top to bottom for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
 - **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
-- **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps.
+- **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps, car usage and balance.
 - **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).
 - **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
 
@@ -65,7 +65,7 @@ uv run python -m elevator_sim compare                    # every scheduler × ev
 uv run python -m elevator_sim compare --fairness 0.5 --out docs/results          # regenerate the committed tables
 uv run python scenarios/generate.py                      # regenerate the scenario CSVs (seeded, byte-identical)
 uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # PNG charts as committed
-uv run pytest                                            # 124 tests (40 are the JS/Python conformance matrix; need Node)
+uv run pytest                                            # 131 tests (40 are the JS/Python conformance matrix; need Node)
 uv run ruff check . && uv run ruff format --check .
 ```
 
@@ -77,7 +77,7 @@ uv run ruff check . && uv run ruff format --check .
 | **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` and `round_robin` as baselines. |
 | **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature, plus a capacity burst and two 51-floor cases chosen as stress tests; policy variants for parking at the lobby and zoned express cars. |
 | **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and an interactive browser simulator on GitHub Pages (JavaScript port of the engine, conformance-tested against Python). |
-| **Tests** | 124 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
+| **Tests** | 131 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
 
 ## Results in brief
 
@@ -85,6 +85,7 @@ Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in 
 
 - ETD has the lowest average and p90 wait on every realistic traffic pattern: 1.2× (quiet interfloor) to 3.7× (tall building) lower average wait than nearest-car, and 2–3.3× lower than round robin.
 - Under a single-origin capacity burst ETD and round robin tie: when the system is saturated the only lever is spreading load evenly.
+- ETD also uses the least car-time (cars busy 62% of the morning peak against 89% nearest-car and 95% round robin) but shares the work least evenly (one car in four carries 36% of the passengers); the fairness weight evens the cars as a side effect. Per-car usage is reported by every command and shown live in the simulator.
 - Parking idle cars at the lobby cuts ETD's up-peak average wait by ~40%. A fairness weight of 0.5 halves the tall building's maximum wait at a ~25% cost in average wait, improves everything under the capacity burst, and is close to neutral on the 20-floor patterns — a per-building tuning knob, not a free improvement.
 - Splitting six cars into local and express zones is worse than six free cars at moderate load: zoning trades flexibility for stop reduction and only pays off under saturation.
 

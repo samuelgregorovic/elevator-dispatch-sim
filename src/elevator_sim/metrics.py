@@ -43,6 +43,33 @@ def percentile(sorted_values: list[int], pct: float) -> float:
 
 
 @dataclass(frozen=True, slots=True)
+class CarUsage:
+    """How much work one car did (docs/ASSUMPTIONS.md A20)."""
+
+    car: int  # 1-based, as printed everywhere else
+    carried: int  # passengers delivered by this car
+    stops: int
+    floors_travelled: int
+    busy_ticks: int  # ticks with a passenger aboard or assigned and waiting
+    busy_share: float  # busy_ticks / ticks simulated
+
+
+@dataclass(frozen=True, slots=True)
+class Balance:
+    """How evenly the work was spread across cars (A20).
+
+    ``busy_spread`` is the gap between the busiest and the least busy car's share of
+    ticks; ``carried_max_share`` is the busiest car's share of delivered passengers,
+    to be read against ``fair_share`` = 1 / cars. Both are 0 for a single car.
+    """
+
+    busy_mean: float
+    busy_spread: float
+    carried_max_share: float
+    fair_share: float
+
+
+@dataclass(frozen=True, slots=True)
 class Summary:
     scheduler: str
     passengers: int
@@ -50,6 +77,8 @@ class Summary:
     wait: Distribution
     travel: Distribution
     total: Distribution
+    cars: list[CarUsage]
+    balance: Balance
     observations: list[str]
 
     def to_dict(self) -> dict[str, Any]:
@@ -61,6 +90,7 @@ def summarize(result: SimulationResult) -> Summary:
     waits = [p.wait for p in served if p.wait is not None]
     travels = [p.travel for p in served if p.travel is not None]
     totals = [p.total for p in served if p.total is not None]
+    cars = car_usage(result)
     return Summary(
         scheduler=result.scheduler,
         passengers=len(result.passengers),
@@ -68,7 +98,40 @@ def summarize(result: SimulationResult) -> Summary:
         wait=Distribution.of(waits),
         travel=Distribution.of(travels),
         total=Distribution.of(totals),
+        cars=cars,
+        balance=balance(cars),
         observations=observations(result),
+    )
+
+
+def car_usage(result: SimulationResult) -> list[CarUsage]:
+    served = [p for p in result.passengers if p.alight_time is not None]
+    out: list[CarUsage] = []
+    for car in result.cars:
+        busy = sum(1 for t in result.car_states if t[car.index]["load"] or t[car.index]["waiting"])
+        out.append(
+            CarUsage(
+                car=car.index + 1,
+                carried=sum(1 for p in served if p.car == car.index),
+                stops=car.stops_made,
+                floors_travelled=car.floors_travelled,
+                busy_ticks=busy,
+                busy_share=busy / result.ticks if result.ticks else 0.0,
+            )
+        )
+    return out
+
+
+def balance(cars: list[CarUsage]) -> Balance:
+    if not cars:
+        return Balance(0.0, 0.0, 0.0, 0.0)
+    shares = [c.busy_share for c in cars]
+    carried = sum(c.carried for c in cars)
+    return Balance(
+        busy_mean=sum(shares) / len(shares),
+        busy_spread=max(shares) - min(shares),
+        carried_max_share=max(c.carried for c in cars) / carried if carried else 0.0,
+        fair_share=1 / len(cars),
     )
 
 
@@ -102,17 +165,19 @@ def observations(result: SimulationResult) -> list[str]:
     up = sum(1 for p in served if p.dest > p.source)
     notes.append(f"direction mix: {up} up, {len(served) - up} down")
 
-    for car in result.cars:
-        carried = sum(1 for p in served if p.car == car.index)
-        idle = sum(
-            1
-            for t in result.car_states
-            if t[car.index]["load"] == 0 and t[car.index]["waiting"] == 0
-        )
+    cars = car_usage(result)
+    for c in cars:
         notes.append(
-            f"elevator {car.index + 1}: carried {carried}, stops {car.stops_made}, "
-            f"floors travelled {car.floors_travelled}, "
-            f"idle {100 * idle / result.ticks:.0f}% of ticks"
+            f"elevator {c.car}: carried {c.carried}, stops {c.stops}, "
+            f"floors travelled {c.floors_travelled}, busy {100 * c.busy_share:.0f}% of ticks"
+        )
+    if len(cars) > 1:
+        b = balance(cars)
+        busiest = max(cars, key=lambda c: c.carried)
+        notes.append(
+            f"work balance: elevator {busiest.car} carried {100 * b.carried_max_share:.0f}% "
+            f"of passengers (fair share {100 * b.fair_share:.0f}%); "
+            f"busy share ranges over {100 * b.busy_spread:.0f} points"
         )
     return notes
 
@@ -126,6 +191,11 @@ def format_summary(summary: Summary) -> str:
     ]
     for label, d in (("wait", summary.wait), ("travel", summary.travel), ("total", summary.total)):
         lines.append(f"{label:8}{d.min:>6}{d.max:>6}{d.mean:>8.2f}{d.p50:>7g}{d.p90:>7g}")
+    lines.append("")
+    lines.append(f"{'car':8}{'carried':>8}{'stops':>7}{'floors':>8}{'busy':>7}")
+    for c in summary.cars:
+        busy = f"{100 * c.busy_share:.0f}%"
+        lines.append(f"{c.car:<8}{c.carried:>8}{c.stops:>7}{c.floors_travelled:>8}{busy:>7}")
     lines.append("")
     lines.append("observations:")
     lines.extend(f"  - {note}" for note in summary.observations)
