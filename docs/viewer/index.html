@@ -3,235 +3,229 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Elevator dispatch, simulated</title>
+<title>Elevator dispatch — three rules, one building</title>
 <link rel="icon" href="data:,">
 <style>
   :root {
-    color-scheme: light dark;
-    --bg: #f3f3f1; --panel: #ffffff; --ink: #141413; --muted: #66655f; --line: #e2e1dd; --soft: #f1f0ec;
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --wait: #eda100; --want: #8a8983; --good: #178a5f; --bad: #d93d3c; --gold: #d29a00;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.04);
-    --tick: 220ms;
+    --bg: #f6f5f2; --panel: #fff; --panel2: #fbfaf8; --ink: #1c1b19; --ink2: #4c4a44; --muted: #7a786f; --faint: #9d9b92;
+    --line: #e1dfd9; --line2: #eeede8; --soft: #ecebe6; --field: #fff; --label: #6f6d64;
+    --etd: #2f6fd0; --nearest: #d9762b; --rr: #2a9d74;
+    --wait: #e09a00; --wait-ink: #9a6a00; --want: #7c6fd6; --good: #1f8a5a; --bad: #c43d3a;
+    --tick: 220ms; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #161615; --panel: #1f1f1e; --ink: #f4f4f1; --muted: #b8b7b0; --line: #34342f; --soft: #262624;
-      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --wait: #c98500; --want: #8f8e87; --good: #2fbf86; --bad: #e66767; --gold: #e0a800; --shadow: none; }
+  [data-theme="dark"] {
+    --bg: #171716; --panel: #1f1f1e; --panel2: #1b1b1a; --ink: #f2f1ed; --ink2: #c9c7c0; --muted: #9b998f; --faint: #77756c;
+    --line: #34332f; --line2: #2a2927; --soft: #2a2927; --field: #262624; --label: #a8a69c;
+    --etd: #5b8fe0; --nearest: #e0873f; --rr: #3cb287; --wait: #f0ac1e; --wait-ink: #f0ac1e; --want: #9d93e6; --good: #47b384; --bad: #e0625f;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
   html, body { height: 100%; }
-  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.4 -apple-system, "Segoe UI", system-ui, Inter, sans-serif; display: flex; flex-direction: column; overflow: hidden; }
-  a { color: inherit; }
-  h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -.01em; }
-  button { font: inherit; color: inherit; }
-
-  /* header */
-  .top { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 9px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
-  .top .seg { justify-self: center; }
-  .top h1 { font-size: 17px; white-space: nowrap; }
-  .top .sub { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
-  .tb { border: 0; background: var(--panel); color: var(--ink); border-radius: 999px; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer; font-size: 15px; box-shadow: var(--shadow); }
-  .tb:hover { background: var(--line); }
-  .tb.play { width: 74px; background: var(--s1); color: #fff; font-weight: 700; font-size: 14px; }
-  .tb.play:hover { filter: brightness(1.08); background: var(--s1); }
-  .speed { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding-left: 6px; }
-  .speed input { flex: 1; min-width: 60px; accent-color: var(--s1); }
-  .speed { width: 100%; padding-left: 0; }
-  .top nav { display: flex; gap: 8px; justify-content: flex-end; font-size: 12.5px; color: var(--muted); align-items: center; }
-  .btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 5px 10px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; overflow: hidden; display: grid; grid-template-rows: 48px 44px minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); min-width: 1280px; }
+  a { color: var(--ink); } a:hover { color: var(--etd); }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  .btn { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 4px 10px; font-size: 12.5px; white-space: nowrap; }
   .btn:hover { border-color: var(--muted); }
-  .btn.icon { min-width: 30px; padding-inline: 8px; }
-  .btn.accent { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 500; }
+  .btn.primary:hover { opacity: .9; }
+  .btn.icon { width: 28px; padding: 4px 0; text-align: center; color: var(--muted); }
+  .field { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; background: var(--field); text-align: center; }
+  select.field { text-align: left; font-weight: 500; }
+  input[type=range] { accent-color: var(--ink); }
+  .kicker { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 
-  /* view switch */
-  .seg { display: inline-flex; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
-  .seg button { border: 0; background: transparent; border-radius: 999px; padding: 5px 10px; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
-  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-  .seg button.rule[aria-pressed="true"] { background: var(--rc); color: #fff; }
-  .seg button i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--rc); margin-right: 6px; }
-  .seg button[aria-pressed="true"] i { background: #fff; }
-  select { font: inherit; font-size: 13px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; max-width: 220px; }
-  .scdesc { font-size: 12.5px; color: var(--muted); line-height: 1.35; min-height: 2.7em; margin: 7px 0 4px !important; }
-  .fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
-  .fields label { display: flex; flex-direction: column; gap: 2px; font-size: 11px; color: var(--muted); }
-  .num { width: 100%; font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
-  label.f { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--muted); white-space: nowrap; }
-  .bldmsg { font-size: 12px; color: var(--bad); min-height: 1.3em; margin-top: 4px; }
-  .card select { width: 100%; max-width: none; }
+  header.top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--bg); }
+  .title { font-weight: 600; font-size: 14px; letter-spacing: -.01em; white-space: nowrap; }
+  .title span { color: var(--muted); font-weight: 400; }
+  .seg { display: flex; background: var(--soft); border-radius: 8px; padding: 2px; gap: 2px; }
+  .seg button { border: 0; border-radius: 6px; padding: 5px 12px; font-size: 12.5px; font-weight: 500; background: transparent; color: var(--ink2); display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+  .seg button i { width: 8px; height: 8px; border-radius: 50%; background: var(--rc, var(--ink)); }
+  .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  header nav { display: flex; justify-content: flex-end; gap: 6px; }
 
-  /* main */
-  .main { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; padding: 10px 18px 12px; }
-  .stage { flex: 1; }
-  .transport { display: flex; flex-direction: column; gap: 8px; }
-  .transport .tline { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-  .transport .time { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; min-width: 6ch; }
-  /* setup sentence */
-  .setup { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 9px 18px; background: var(--panel); border-bottom: 1px solid var(--line); font-size: 14px; }
-  .setup .w { color: var(--muted); }
-  .setup select { width: auto; max-width: 180px; padding: 4px 8px; font-size: 14px; border-radius: 8px; }
-  .setup .num { width: 58px; font-size: 14px; padding: 4px 6px; text-align: center; }
-  .setup label.f { font-size: 14px; color: var(--ink); gap: 6px; }
+  .setup { display: flex; align-items: center; gap: 8px; padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--panel2); color: var(--ink2); white-space: nowrap; }
+  .setup .field.n { width: 50px; } .setup .field.s { width: 38px; } .setup .field.m { width: 42px; }
+  .setup input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+  .setup input[type=number]::-webkit-inner-spin-button, .setup input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .setup label { display: flex; align-items: center; gap: 5px; margin-left: 6px; }
   .setup .apply { margin-left: 6px; }
-  .setup .grow { flex: 1; }
-  .setup .msg2 { font-size: 12.5px; color: var(--bad); min-height: 1.3em; }
-  .setup .pdesc { font-size: 12.5px; color: var(--muted); flex-basis: 100%; min-height: 1.3em; margin-top: -2px; }
-  .status { font-size: 13px; line-height: 1.4; min-height: 1.4em; margin: 0 0 8px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .status b { color: var(--good); }
-  .stagewrap { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
-  .stage { display: grid; gap: 12px; min-height: 0; grid-template-columns: repeat(var(--n, 1), minmax(0, 1fr)); }
-  .bld { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px 8px; box-shadow: var(--shadow); display: flex; flex-direction: column; min-height: 0; min-width: 0; border-top: 3px solid var(--rc); }
-  .bld header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .bld h2 { font-size: 15px; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
-  .rank { font-size: 11px; font-weight: 700; padding: 2px 0; width: 34px; text-align: center; border-radius: 999px; background: var(--soft); color: var(--muted); letter-spacing: .02em; min-height: 1.5em; }
-  .rank.r1 { background: var(--gold); color: #fff; }
-  .rank.r2 { background: #b3b2ad; color: #fff; }
-  .rank.r3 { background: #c98b5a; color: #fff; }
-  .bld .desc { color: var(--muted); font-size: 12px; margin: 1px 0 7px; line-height: 1.35; min-height: 2.7em; }
-  .bld .done { color: var(--muted); font-size: 11.5px; white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 13ch; text-align: right; }
-  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 6px; }
-  .kpi { background: var(--soft); border-radius: 9px; padding: 5px 9px; }
-  .kpi b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; line-height: 1.15; transition: color .3s; }
-  .kpi small { color: var(--muted); font-size: 11px; white-space: nowrap; }
-  .kpi.best b { color: var(--good); }
-  .kpi.worst b { color: var(--bad); }
-  .shaftbox { flex: 1; min-height: 120px; position: relative; }
+  .setup .pdesc { color: var(--muted); margin-left: 10px; flex: 1 1 0; width: 0; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .setup .pdesc b { color: var(--bad); font-weight: 500; }
+  .setup .csv { font-size: 12px; color: var(--muted); text-decoration: underline; cursor: pointer; }
+
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 228px; min-height: 0; }
+  .stagewrap { display: grid; grid-template-rows: 30px minmax(0, 1fr); padding: 12px 0 14px 20px; min-height: 0; }
+  .verdict { font-size: 13px; color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 20px; }
+  .verdict b { color: var(--ink); font-weight: 600; }
+  .verdict .lead { color: var(--ink); font-weight: 600; }
+  .stage { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 14px; min-height: 0; padding-right: 20px; }
+
+  .bld { display: grid; grid-template-rows: auto auto minmax(0, 1fr) 46px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; min-height: 0; min-width: 0; overflow: hidden; }
+  .bld > div { min-width: 0; }
+  .bld .head { display: flex; align-items: center; gap: 10px; padding: 10px 14px 0; }
+  .rank { width: 44px; height: 24px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; font-weight: 600; font-family: var(--mono); background: var(--soft); color: var(--ink2); transition: background .3s, color .3s; }
+  .rank.r1 { background: var(--ink); color: var(--bg); }
+  .rank.tie::after { content: "="; opacity: .6; }
+  .bld .name { display: flex; align-items: center; gap: 7px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+  .bld .name i { width: 10px; height: 10px; border-radius: 3px; background: var(--rc); }
+  .bld .done { margin-left: auto; color: var(--muted); font-size: 12px; width: 12ch; text-align: right; }
+  .bld .desc { padding: 2px 14px 0; color: var(--muted); font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stats { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: end; padding: 6px 14px 10px; border-bottom: 1px solid var(--line2); }
+  .stats .big { font-size: 30px; line-height: 1; font-weight: 500; letter-spacing: -.02em; transition: color .3s; min-width: 4ch; }
+  .stats .sm { font-size: 16px; line-height: 1; font-weight: 500; text-align: right; transition: color .3s; min-width: 3ch; }
+  .stats .lbl { font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+  .stats .col { text-align: right; }
+  .stats .best { color: var(--good); } .stats .worst { color: var(--bad); }
+  .shaftbox { position: relative; min-height: 80px; }
   svg.shaft { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  .shaft .floor-hit { cursor: pointer; }
-  .shaft .floor-hit:hover { fill: rgba(42,120,214,.08); }
+  .shaft .hit { cursor: pointer; }
+  .shaft .hit:hover { fill: color-mix(in srgb, var(--wait) 12%, transparent); }
   .shaft .car { transition: transform var(--tick) linear; }
-  .shaft .ping { animation: ping .7s ease-out forwards; transform-origin: center; }
-  @keyframes ping { from { opacity: .9; r: 4; } to { opacity: 0; r: 22; } }
-  canvas.hist { width: 100%; height: 50px; display: block; margin-top: 4px; flex: none; }
+  .shaft .fill { transition: height .25s ease, y .25s ease; }
+  .shaft .ping { animation: ping .7s ease-out forwards; }
+  @keyframes ping { from { opacity: .9; r: 4; } to { opacity: 0; r: 20; } }
+  .shaft .board { animation: board .5s ease-out forwards; }
+  @keyframes board { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
+  .hist { position: relative; margin: 0 14px; border-top: 1px solid var(--line2); }
+  .hist canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-  /* sidebar */
-  .side { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; box-shadow: var(--shadow); }
-  .card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 7px; }
-  .card p { margin: 0 0 6px; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
-  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .grid2b { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .grid2b .btn { text-align: center; }
-  .msg { font-size: 12px; color: var(--muted); min-height: 2.7em; margin-top: 5px; line-height: 1.35; }
-  input[type=range] { accent-color: var(--s1); }
-  .legend { font-size: 11.5px; color: var(--muted); line-height: 1.55; }
-  .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
-  .legend i.w { background: var(--wait); }
-  .legend i.d { background: transparent; border: 1.5px solid var(--want); }
-  .legend i.o { background: transparent; border: 2px solid var(--wait); width: 6px; height: 6px; }
-  .quiet { font-size: 12px; color: var(--muted); }
-  .quiet a { cursor: pointer; text-decoration: underline; }
+  aside { border-left: 1px solid var(--line); background: var(--panel2); padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; font-size: 12.5px; min-height: 0; overflow: hidden; }
+  .time { font-family: var(--mono); font-size: 26px; font-weight: 500; letter-spacing: -.02em; min-width: 8ch; }
+  .transport { display: flex; gap: 6px; margin-top: 8px; }
+  .transport .btn { height: 34px; flex: 0 0 34px; padding: 0; text-align: center; font-size: 15px; }
+  .transport .play { flex: 1; font-size: 13px; }
+  .speed { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--muted); }
+  .speed input { flex: 1; min-width: 0; }
+  .speed .v { width: 5ch; text-align: right; font-family: var(--mono); font-size: 11.5px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .grid2 .btn { padding: 7px 4px; text-align: center; }
+  .note { color: var(--muted); margin-top: 8px; line-height: 1.4; min-height: 2.8em; }
+  .rowb { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .switch { position: relative; width: 30px; height: 17px; border-radius: 9px; background: var(--line); border: 0; padding: 0; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; border-radius: 50%; background: var(--panel); transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+  .switch[aria-checked="true"] { background: var(--ink); }
+  .switch[aria-checked="true"]::after { transform: translateX(13px); }
+  .flow { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+  .flow input { flex: 1; min-width: 0; }
+  .legend { margin-top: auto; color: var(--muted); line-height: 1.7; font-size: 11.5px; }
+  .legend div { display: flex; align-items: center; gap: 7px; }
+  .legend i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 
-  /* overlays */
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: grid; place-items: center; z-index: 40; padding: 20px; }
-  .overlay > div { background: var(--panel); border-radius: 14px; padding: 16px 18px; max-width: 1100px; width: 100%; max-height: 90vh; overflow: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-  .overlay h2 { font-size: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-  .rules3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .rules3 > section { border-top: 3px solid var(--rc); background: var(--soft); border-radius: 10px; padding: 10px 12px; min-width: 0; }
-  .rules3 h3 { font-size: 13px; margin-bottom: 6px; }
-  .rules3 h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 8px 0 4px; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
-  th, td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--line); }
-  th:first-child, td:first-child { text-align: left; }
-  th { color: var(--muted); font-weight: 600; }
-  ul.log { list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--muted); max-height: 200px; overflow: auto; }
-  ul.log li { padding: 2px 0; border-bottom: 1px dashed var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .help p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.5; }
-  .pop { position: fixed; z-index: 50; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; box-shadow: 0 8px 30px rgba(0,0,0,.18); font-size: 13px; display: none; }
-  .pop .row { margin-top: 6px; }
-  .toast { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 12.5px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+  .overlay { position: fixed; inset: 0; background: rgba(20,20,18,.42); display: grid; place-items: center; z-index: 40; padding: 24px; }
+  .sheet { background: var(--panel); border-radius: 12px; padding: 18px 22px 20px; width: min(1100px, 100%); max-height: 92vh; overflow: auto; box-shadow: 0 24px 70px rgba(0,0,0,.3); }
+  .sheet h2 { margin: 0 0 12px; font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+  .help { width: min(720px, 100%); }
+  .help h3 { margin: 16px 0 6px; font-size: 13px; }
+  .help p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.55; color: var(--ink2); }
+  .help .rules { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 4px; }
+  .help .rules div { border-top: 3px solid var(--rc); padding-top: 8px; font-size: 12.5px; line-height: 1.45; color: var(--ink2); }
+  .help .rules b { display: block; color: var(--ink); margin-bottom: 2px; }
+  .help .leg { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 12.5px; color: var(--ink2); margin-top: 6px; }
+  .help kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--soft); }
+  .details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .details section { min-width: 0; border-top: 3px solid var(--rc); padding-top: 8px; }
+  .details h3 { margin: 0 0 6px; font-size: 13px; }
+  .details h4 { margin: 10px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+  th, td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--line2); }
+  th:first-child, td:first-child { text-align: left; white-space: nowrap; }
+  th { color: var(--muted); font-weight: 500; font-family: inherit; }
+  ul.log { list-style: none; margin: 0; padding: 0; font-size: 12px; color: var(--ink2); font-family: var(--mono); max-height: 220px; overflow: auto; }
+  ul.log li { padding: 2px 0; border-bottom: 1px dashed var(--line2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pop { position: fixed; z-index: 50; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; box-shadow: 0 10px 30px rgba(0,0,0,.18); font-size: 12.5px; display: none; }
+  .pop b { display: block; margin-bottom: 8px; }
+  .pop .row { display: flex; gap: 6px; align-items: center; }
+  .toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 12.5px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
   .toast.show { opacity: 1; }
-
-  @media (max-width: 1360px) {
-    .top h1 { font-size: 15px; }
-    .seg button { padding: 5px 8px; font-size: 12px; }
-    .seg button i { display: none; }
-  }
-  @media (max-width: 1100px) {
-    body { overflow: auto; }
-    .top { grid-template-columns: 1fr; justify-items: start; }
-    .top nav { justify-content: flex-start; }
-    .main { grid-template-columns: 1fr; }
-    .stage { grid-template-columns: 1fr; }
-    .shaftbox { min-height: 380px; }
-    .side { overflow: visible; }
-    .rules3 { grid-template-columns: 1fr; }
-  }
 </style>
 </head>
 <body>
 
 <header class="top">
-  <h1>Elevator dispatch, simulated</h1>
-  <div class="seg" id="view"></div>
-  <nav><button class="btn icon" id="help-btn" title="how it works">?</button><button class="btn" id="details-btn">Details</button><a href="https://github.com/samuelgregorovic/elevator-dispatch-sim" target="_blank" rel="noopener">Source</a></nav>
+  <div class="title">Elevator dispatch <span>· three rules, one building</span></div>
+  <div class="seg" id="view" role="group" aria-label="Show"></div>
+  <nav><button class="btn" id="help-btn">Help</button><button class="btn" id="details-btn">Details</button><button class="btn icon" id="theme-btn" title="Toggle dark theme" aria-label="Toggle dark theme">◐</button></nav>
 </header>
 
 <div class="setup">
-  <select id="scenarios"></select>
-  <span class="w">with</span> <input class="num" type="number" id="people" min="1" max="2000" value="160"> <span class="w">people,</span>
-  <span class="w">in a building with</span> <input class="num" type="number" id="cars" min="1" max="10" value="4"> <span class="w">cars,</span>
-  <input class="num" type="number" id="floors" min="2" max="80" value="20"> <span class="w">floors and capacity</span>
-  <input class="num" type="number" id="cap" min="1" max="30" value="8"><span class="w">.</span>
-  <label class="f"><input type="checkbox" id="park"> park idle cars at the lobby</label>
-  <button class="btn accent apply" id="apply">Apply &amp; restart</button>
-  <span class="msg2" id="bldmsg"></span>
-  <span class="grow"></span>
-  <span class="quiet">Own data? <a id="csv-link">Upload a CSV</a></span>
+  <select class="field" id="scenarios"></select><span>·</span>
+  <input class="field n" type="number" id="people" min="1" max="2000" value="160"><span>people ·</span>
+  <input class="field s" type="number" id="cars" min="1" max="10" value="4"><span>cars ·</span>
+  <input class="field m" type="number" id="floors" min="2" max="80" value="20"><span>floors ·</span>
+  <input class="field s" type="number" id="cap" min="1" max="30" value="8"><span>per car</span>
+  <label><input type="checkbox" id="park">park at lobby</label>
+  <button class="btn primary apply" id="apply">Apply &amp; restart</button>
+  <span class="pdesc" id="pdesc"></span>
+  <span class="csv" id="csv-link">Upload a CSV</span>
   <input id="csv" type="file" accept=".csv,text/csv" hidden>
-  <span class="pdesc" id="scdesc"></span>
 </div>
 
-<div class="main">
+<main>
   <div class="stagewrap">
-    <div class="status" id="result"></div>
-    <section class="stage" id="stage"></section>
+    <div class="verdict" id="verdict"></div>
+    <div class="stage" id="stage"></div>
   </div>
-  <aside class="side">
-    <div class="card transport">
-      <div class="tline">
-        <span class="time" id="time">t 0</span>
-        <span style="display:inline-flex;gap:6px"><button class="tb" id="back" title="step back">‹</button><button class="tb play" id="play">Play</button><button class="tb" id="fwd" title="step forward">›</button></span>
+  <aside>
+    <div>
+      <div class="time" id="time">t 0</div>
+      <div class="transport">
+        <button class="btn" id="restart" title="Restart (same traffic)">↺</button>
+        <button class="btn" id="back" title="Step back (←)">‹</button>
+        <button class="btn primary play" id="play">Play</button>
+        <button class="btn" id="fwd" title="Step forward (→)">›</button>
       </div>
-      <label class="speed">speed <input id="speed" type="range" min="1" max="40" value="12"></label>
+      <label class="speed">speed <input id="speed" type="range" min="1" max="40" value="12"><span class="v" id="speedv">12/s</span></label>
     </div>
-    <div class="card">
-      <h3>Add people</h3>
-      <div class="grid2b">
-        <button class="btn" id="add-lobby">+10 at lobby</button>
-        <button class="btn" id="add-top">+10 at top</button>
-        <button class="btn" id="add-rand">+10 random</button>
-        <button class="btn" id="add-one">+1 random</button>
+    <div>
+      <div class="kicker" style="margin-bottom:8px">Add people</div>
+      <div class="grid2">
+        <button class="btn" id="add-lobby">+10 at lobby</button><button class="btn" id="add-top">+10 at top</button>
+        <button class="btn" id="add-rand">+10 random</button><button class="btn" id="add-one">+1 random</button>
       </div>
-      <div class="msg">Or click a floor. Everyone added goes to all three rules.</div>
+      <div class="note">Or click any floor in a building. Everyone you add goes to all three rules.</div>
     </div>
-    <div class="card">
-      <h3>Keep traffic flowing</h3>
-      <div class="row">
-        <select id="pattern" style="max-width:118px;width:auto"></select>
-        <label class="f" style="flex:1 1 80px">quiet <input id="flow" type="range" min="0" max="100" value="0" style="flex:1;min-width:50px"> busy</label>
-      </div>
-      <div class="msg" id="flowmsg">Off. Slide right to start.</div>
+    <div>
+      <div class="rowb"><span class="kicker">Keep traffic flowing</span><button class="switch" id="flow-on" role="switch" aria-checked="false" aria-label="Keep traffic flowing"></button></div>
+      <label class="flow">quiet <input id="flow" type="range" min="1" max="100" value="30"> busy</label>
+      <div class="note" id="flowmsg"></div>
     </div>
-    <div class="legend" style="padding:0 4px"><i class="w"></i>people waiting on this floor<br><i class="d"></i>people who want to go to this floor<br><i class="o"></i>car with doors open</div>
+    <div class="legend">
+      <div><i style="background:var(--wait)"></i>waiting on this floor</div>
+      <div><i style="border:1.5px solid var(--want)"></i>wants to reach this floor</div>
+      <div><i style="border-radius:2px;box-shadow:0 0 0 2px var(--wait);width:7px;height:7px;margin:0 1px 0 1px"></i>car with doors open</div>
+    </div>
   </aside>
-</div>
-
-
+</main>
 
 <div class="overlay" id="help" hidden>
-  <div class="help">
-    <h2>How it works <button class="btn icon" id="help-close">✕</button></h2>
-    <p><b>Traffic.</b> Pick a situation — a morning rush, lunch hour, a 51-floor tower — or upload your own CSV in the brief's format (<code>time,id,source,dest</code>). All three rules always receive exactly the same passengers and run in step, so switching the view never changes the clock.</p>
-    <p><b>Rules.</b> <b>Smart dispatch</b> estimates every passenger's time to destination and picks the car that adds the least total delay — the method behind modern destination-dispatch systems (ETD). <b>Nearest car</b> sends the closest car heading the right way, ignoring how many stops it already has. <b>Take turns</b> rotates through the cars regardless of where they are.</p>
-    <p><b>Reading the building.</b> Amber dots on the left are people waiting on that floor; hollow dots on the right are people who want to reach that floor (waiting or already riding). A car's outline turns amber while its doors are open. The three numbers are average wait so far, people waiting right now, and the longest anyone has waited; green is the best of the three rules, red the worst. Standings rank the rules by average wait, live.</p>
-    <p>One tick is one floor of travel; each stop costs one tick. The building is set before a run (Apply &amp; restart). The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario by an automated test. Keyboard: space play/pause, ← → step. <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">full results</a>.</p>
+  <div class="sheet help">
+    <h2>What am I looking at? <button class="btn icon" id="help-close" aria-label="Close">✕</button></h2>
+    <p>One building, three copies. Each copy is run by a different dispatch rule — the rule that decides which car answers each request. All three receive exactly the same people at the same moments, so any difference you see is the rule, nothing else.</p>
+    <p>The question the page answers: <b>which rule makes people wait least?</b> The rules are ranked live by average wait — including the wait so far of anyone still standing — and the verdict appears when everyone has been delivered.</p>
+    <h3>The three rules</h3>
+    <div class="rules">
+      <div style="--rc:var(--etd)"><b>Smart dispatch</b>Estimates every passenger's time to destination and picks the car that adds the least total delay for everyone. This is how modern destination-dispatch systems work (ETD).</div>
+      <div style="--rc:var(--nearest)"><b>Nearest car</b>Sends the closest car already heading the right way, ignoring how many stops it has queued. Simple, and it degrades under load.</div>
+      <div style="--rc:var(--rr)"><b>Take turns</b>Cars take requests in strict rotation, wherever they happen to be. Uses no information at all — the baseline.</div>
+    </div>
+    <h3>Reading a building</h3>
+    <div class="leg">
+      <i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--wait)"></i><span>Amber dots on the left of a floor: people waiting there. More than five shows as +N.</span>
+      <i style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--want)"></i><span>Hollow violet dots on the right: people who want to reach that floor, waiting or already riding.</span>
+      <i style="display:inline-block;width:12px;height:8px;border-radius:2px;border:1.5px solid var(--etd)"></i><span>A car, coloured by its rule. It fills up as people board; the number is how many are aboard. An amber ring means the doors are open.</span>
+    </div>
+    <p style="margin-top:10px">The big number is the average wait so far in ticks; beside it, how many are waiting right now and the longest anyone has waited. Green marks the best of the three, red the worst. One tick is one floor of travel, and each stop costs one tick.</p>
+    <h3>Trying things</h3>
+    <p>Set the traffic and the building at the top, then <b>Apply &amp; restart</b>. While it runs, add people from the right or click a floor to place someone with a destination. “Keep traffic flowing” keeps people arriving. Adding people after everyone is delivered resumes the run. <kbd>Space</kbd> plays and pauses, <kbd>←</kbd> <kbd>→</kbd> step one tick.</p>
+    <p style="color:var(--muted);font-size:12.5px">The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario. <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">Full results</a> · <a href="../../README.md" target="_blank">Source</a></p>
   </div>
 </div>
 
 <div class="overlay" id="overlay" hidden>
-  <div>
-    <h2>Details for engineers <button class="btn icon" id="overlay-close">✕</button></h2>
-    <div class="rules3" id="details"></div>
+  <div class="sheet">
+    <h2>Details for engineers <button class="btn icon" id="overlay-close" aria-label="Close">✕</button></h2>
+    <div class="details" id="details"></div>
   </div>
 </div>
 
@@ -243,49 +237,48 @@ import { Simulation, makeScheduler, parseCsv, distribution, mulberry32, poisson,
 
 const $ = (id) => document.getElementById(id);
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-
 const RULES = {
-  etd: { name: 'Smart dispatch', color: '--s1', desc: 'Picks the car that adds the least total delay for everyone (ETD, as in modern systems).' },
-  nearest_car: { name: 'Nearest car', color: '--s2', desc: 'Sends the closest car going the right way, ignoring how busy it already is.' },
-  round_robin: { name: 'Take turns', color: '--s3', desc: 'Cars take requests in rotation, wherever they happen to be.' },
+  etd: { name: 'Smart dispatch', color: '--etd', desc: 'Picks the car that delays everyone the least.' },
+  nearest_car: { name: 'Nearest car', color: '--nearest', desc: 'Sends the closest car going the right way.' },
+  round_robin: { name: 'Take turns', color: '--rr', desc: 'Cars take requests in rotation, wherever they are.' },
 };
 const ORDER = ['etd', 'nearest_car', 'round_robin'];
-// Traffic patterns: a directional mix (up from lobby / down to lobby / interfloor) and an
-// arrival rate, generated in the browser for whatever building is set below. Defaults are
-// suggestions; every field can be changed before Apply.
 const SCENARIOS = [
   { key: 'morning', name: 'Morning rush', desc: 'Everyone arrives at the lobby and heads up.', mix: [0.85, 0.10, 0.05], rate: 0.35, defaults: { people: 160, cars: 4, floors: 20, cap: 8 } },
-  { key: 'lunch', name: 'Lunch hour', desc: 'Half going out, half coming back — the hardest pattern.', mix: [0.45, 0.45, 0.10], rate: 0.32, defaults: { people: 130, cars: 4, floors: 20, cap: 8 } },
-  { key: 'evening', name: 'Evening exit', desc: 'Short and intense: nearly everyone heads for the lobby.', mix: [0.10, 0.85, 0.05], rate: 0.37, defaults: { people: 110, cars: 4, floors: 20, cap: 8 } },
+  { key: 'lunch', name: 'Lunch hour', desc: 'Half going out, half coming back — the hardest.', mix: [0.45, 0.45, 0.10], rate: 0.32, defaults: { people: 130, cars: 4, floors: 20, cap: 8 } },
+  { key: 'evening', name: 'Evening exit', desc: 'Short and intense: nearly everyone heads down.', mix: [0.10, 0.85, 0.05], rate: 0.37, defaults: { people: 110, cars: 4, floors: 20, cap: 8 } },
   { key: 'interfloor', name: 'Quiet afternoon', desc: 'Light traffic between upper floors.', mix: [0.0, 0.0, 1.0], rate: 0.16, defaults: { people: 80, cars: 4, floors: 20, cap: 8 } },
-  { key: 'burst', name: 'Lobby burst', desc: 'A crowd at the lobby all at once. Cars fill; people get left behind.', mix: [1.0, 0.0, 0.0], rate: 0.55, defaults: { people: 75, cars: 2, floors: 20, cap: 6 } },
-  { key: 'tower', name: 'Tall tower', desc: 'Mixed traffic in a tall building — too tall for one bank.', mix: [0.70, 0.15, 0.15], rate: 0.72, defaults: { people: 230, cars: 6, floors: 51, cap: 10 } },
-  { key: 'sample', name: 'The brief\u2019s sample', desc: 'The three requests from the brief, exactly as given.', fixed: true, defaults: { people: 3, cars: 2, floors: 51, cap: 8 } },
+  { key: 'burst', name: 'Lobby burst', desc: 'A crowd at the lobby at once; cars fill, people wait.', mix: [1.0, 0.0, 0.0], rate: 0.55, defaults: { people: 75, cars: 2, floors: 20, cap: 6 } },
+  { key: 'tower', name: 'Tall tower', desc: 'Mixed traffic in a tall building.', mix: [0.70, 0.15, 0.15], rate: 0.72, defaults: { people: 230, cars: 6, floors: 51, cap: 10 } },
+  { key: 'sample', name: 'The brief\u2019s sample', desc: 'The three requests from the brief, as given.', fixed: true, mix: [0.85, 0.10, 0.05], defaults: { people: 3, cars: 2, floors: 51, cap: 8 } },
 ];
+const SAMPLE = [{ time: 0, id: 'passenger1', source: 1, dest: 51 }, { time: 0, id: 'passenger2', source: 1, dest: 37 }, { time: 10, id: 'passenger3', source: 20, dest: 1 }];
 const ORDINAL = ['1st', '2nd', '3rd'];
 
 let scenario = SCENARIOS[0];
 let building = { elevators: 4, floors: 20, capacity: 8, parkFloor: null };
 let baseRequests = [], injected = [], customName = null;
-let view = 'all';
-let sims = [];
-let playing = false, timer = null, live = 0, pattern = 'morning', rng = mulberry32(7), liveCount = 0, clickCount = 0;
+let view = 'all', sims = [];
+let playing = false, timer = null, flowOn = false, rng = mulberry32(7), liveCount = 0, clickCount = 0;
 
-// ---- data ---------------------------------------------------------------------------
-const SAMPLE = [{ time: 0, id: 'passenger1', source: 1, dest: 51 }, { time: 0, id: 'passenger2', source: 1, dest: 37 }, { time: 10, id: 'passenger3', source: 20, dest: 1 }];
-function setDefaults(sc) {
-  const d = sc.defaults; $('people').value = d.people; $('cars').value = d.cars; $('floors').value = d.floors; $('cap').value = d.cap; $('park').checked = false;
-  $('people').disabled = !!sc.fixed;
+// ---- theme --------------------------------------------------------------------------
+const THEME_KEY = 'edsim-theme';
+function setTheme(t) { document.documentElement.dataset.theme = t; try { localStorage.setItem(THEME_KEY, t); } catch {} $('theme-btn').textContent = t === 'dark' ? '○' : '◐'; if (sims.length) draw(true); }
+$('theme-btn').onclick = () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+// ---- setup --------------------------------------------------------------------------
+function setDefaults(sc) { const d = sc.defaults; $('people').value = d.people; $('cars').value = d.cars; $('floors').value = d.floors; $('cap').value = d.cap; $('park').checked = false; $('people').disabled = !!sc.fixed; }
+function describe(msg) {
+  const el = $('pdesc');
+  if (msg) { el.innerHTML = `<b>${msg}</b>`; return; }
+  el.textContent = customName ? `${baseRequests.length} requests from ${customName}.` : scenario.desc;
 }
-/** Read the setup bar; returns null (with a message) if invalid. */
 function readSetup() {
-  const people = +$('people').value, cars = +$('cars').value, floors = +$('floors').value, cap = +$('cap').value, msg = $('bldmsg');
-  if (!(cars >= 1 && cars <= 10 && floors >= 2 && floors <= 80 && cap >= 1 && cap <= 30 && people >= 1 && people <= 2000)) { msg.textContent = 'people 1–2000, cars 1–10, floors 2–80, capacity 1–30'; return null; }
-  if (customName) {
-    const need = Math.max(2, ...baseRequests.flatMap(r => [r.source, r.dest]));
-    if (floors < need) { msg.textContent = `your file uses floor ${need}`; return null; }
-  } else if (scenario.fixed && floors < 51) { msg.textContent = 'the brief\u2019s sample needs 51 floors'; return null; }
-  msg.textContent = '';
+  const people = +$('people').value, cars = +$('cars').value, floors = +$('floors').value, cap = +$('cap').value;
+  if (!(cars >= 1 && cars <= 10 && floors >= 2 && floors <= 80 && cap >= 1 && cap <= 30 && people >= 1 && people <= 2000)) { describe('people 1–2000, cars 1–10, floors 2–80, capacity 1–30'); return null; }
+  if (customName) { const need = Math.max(2, ...baseRequests.flatMap(r => [r.source, r.dest])); if (floors < need) { describe(`your file uses floor ${need}`); return null; } }
+  else if (scenario.fixed && floors < 51) { describe('the brief\u2019s sample needs 51 floors'); return null; }
+  describe();
   return { people, cars, floors, cap, park: $('park').checked };
 }
 function applySetup() {
@@ -296,31 +289,16 @@ function applySetup() {
   else baseRequests = generateTraffic({ floors: su.floors, people: su.people, mix: scenario.mix, rate: scenario.rate, seed: 1 });
   return true;
 }
-// ---- simulations: all three, always in step ---------------------------------------
-function makeSims(requests) {
-  const cfg = { ...building, dwellTicks: 1, startFloor: 1, servedFloors: {} };
-  return ORDER.map(rule => ({ rule, sim: new Simulation(cfg, makeScheduler(rule), requests.map(r => ({ ...r }))) }));
-}
-function reset() {
-  pause();
-  injected = []; clickCount = 0; liveCount = 0; rng = mulberry32(7);
-  sims = makeSims(baseRequests);
-  buildStage();
-  draw(true);
-}
-function rebuild(to) {
-  sims = makeSims([...baseRequests, ...injected]);
-  for (let i = 0; i < to; i++) advance();
-  draw(true);
-}
+
+// ---- simulations: all three, always in step --------------------------------------
+function makeSims(requests) { const cfg = { ...building, dwellTicks: 1, startFloor: 1, servedFloors: {} }; return ORDER.map(rule => ({ rule, sim: new Simulation(cfg, makeScheduler(rule), requests.map(r => ({ ...r }))) })); }
+function reset() { pause(); injected = []; clickCount = 0; liveCount = 0; rng = mulberry32(7); sims = makeSims(baseRequests); buildStage(); draw(true); }
+function rebuild(to) { sims = makeSims([...baseRequests, ...injected]); for (let i = 0; i < to; i++) advance(); draw(true); }
 const currentTick = () => sims[0].sim.now;
-const allFinished = () => sims.every(s => s.sim.finished) && live === 0;
+const allFinished = () => sims.every(s => s.sim.finished) && !flowOn;
 function advance() { for (const s of sims) { if (s.sim.finished) s.sim.now += 1; else s.sim.step(); } }
 function tickAll() {
-  if (live > 0) {
-    const n = poisson(rng, live / 100 * 0.6);
-    for (let k = 0; k < n; k++) { const [source, dest] = makeTrip(rng, building.floors, PATTERNS[pattern].mix); inject({ time: currentTick(), id: `live${++liveCount}`, source, dest }); }
-  }
+  if (flowOn) { const n = poisson(rng, +$('flow').value / 100 * 0.6); for (let k = 0; k < n; k++) { const [source, dest] = makeTrip(rng, building.floors, scenario.mix); inject({ time: currentTick(), id: `live${++liveCount}`, source, dest }); } }
   advance();
 }
 function inject(req) { injected.push(req); for (const s of sims) s.sim.addRequest({ ...req }); }
@@ -328,299 +306,263 @@ function step() { if (!allFinished()) tickAll(); draw(); }
 function play() { if (allFinished()) return; playing = true; $('play').textContent = 'Pause'; loop(); }
 function pause() { playing = false; $('play').textContent = 'Play'; clearTimeout(timer); }
 function loop() {
-  clearTimeout(timer);
-  if (!playing) return;
+  clearTimeout(timer); if (!playing) return;
   step();
   if (allFinished()) { pause(); draw(); toast('Everyone delivered. Add people to keep going.'); return; }
   timer = setTimeout(loop, 1000 / +$('speed').value);
 }
-function setTickDuration() { document.documentElement.style.setProperty('--tick', `${playing ? Math.round(1000 / +$('speed').value) : 220}ms`); }
+function setTickDuration() { document.documentElement.style.setProperty('--tick', `${playing ? Math.round(1000 / +$('speed').value) : 220}ms`); $('speedv').textContent = `${$('speed').value}/s`; }
 
-// ---- controls ---------------------------------------------------------------------
+// ---- controls -----------------------------------------------------------------------
 function renderControls() {
   const sel = $('scenarios');
   sel.innerHTML = SCENARIOS.map(s => `<option value="${s.key}">${s.name}</option>`).join('') + (customName ? `<option value="__custom">${customName}</option>` : '');
   sel.value = customName ? '__custom' : scenario.key;
-  sel.onchange = () => { if (sel.value === '__custom') return; scenario = SCENARIOS.find(s => s.key === sel.value); customName = null; setDefaults(scenario); $('scdesc').textContent = scenario.desc + ' Adjust anything, then Apply & restart.'; };
-  $('scdesc').textContent = customName ? `${baseRequests.length} requests from ${customName}.` : scenario.desc;
+  sel.onchange = () => { if (sel.value === '__custom') return; scenario = SCENARIOS.find(s => s.key === sel.value); customName = null; setDefaults(scenario); describe(); flowMsg(); };
+  describe();
   const seg = $('view'); seg.innerHTML = '';
   for (const key of [...ORDER, 'all']) {
-    const b = document.createElement('button');
-    b.setAttribute('aria-pressed', String(view === key));
-    if (key === 'all') b.textContent = 'All three';
-    else { b.className = 'rule'; b.style.setProperty('--rc', css(RULES[key].color)); b.innerHTML = `<i></i>${RULES[key].name}`; }
+    const b = document.createElement('button'); b.setAttribute('aria-pressed', String(view === key));
+    if (key === 'all') b.textContent = 'All three'; else { b.style.setProperty('--rc', `var(${RULES[key].color})`); b.innerHTML = `<i></i>${RULES[key].name}`; }
     b.onclick = () => { view = key; renderControls(); buildStage(); draw(true); };
     seg.appendChild(b);
   }
 }
 const visible = () => (view === 'all' ? sims : sims.filter(s => s.rule === view));
 
-// ---- stage: persistent DOM so cars animate between ticks ------------------------------
+// ---- stage ---------------------------------------------------------------------------
 function buildStage() {
   const stage = $('stage'), vis = visible();
-  stage.style.setProperty('--n', vis.length);
-  stage.innerHTML = '';
+  stage.style.setProperty('--n', vis.length); stage.innerHTML = '';
   for (const s of vis) {
-    const r = RULES[s.rule];
-    const el = document.createElement('section');
-    el.className = 'bld'; el.dataset.rule = s.rule; el.style.setProperty('--rc', css(r.color));
-    el.innerHTML = `
-      <header><h2>${r.name}<span class="rank" data-k="rank"></span></h2><span class="done" data-k="done"></span></header>
-      <p class="desc">${r.desc}</p>
-      <div class="kpis">
-        <div class="kpi" data-kpi="typ"><b data-k="typ">–</b><small>avg wait (incl. waiting)</small></div>
-        <div class="kpi" data-kpi="now"><b data-k="now">–</b><small>waiting now</small></div>
-        <div class="kpi" data-kpi="worst"><b data-k="worst">–</b><small>longest wait</small></div>
-      </div>
-      <div class="shaftbox"><svg class="shaft" role="img" aria-label="${r.name}"></svg></div>
-      <canvas class="hist"></canvas>`;
-    stage.appendChild(el);
-    el.querySelector('svg').addEventListener('click', onShaftClick);
+    const r = RULES[s.rule], el = document.createElement('section');
+    el.className = 'bld'; el.dataset.rule = s.rule; el.style.setProperty('--rc', `var(${r.color})`);
+    el.innerHTML = `<div class="head"><span class="rank" data-k="rank"></span><span class="name"><i></i>${r.name}</span><span class="done" data-k="done"></span></div>
+      <div><div class="desc">${r.desc}</div><div class="stats"><div><div class="big" data-k="typ">–</div><div class="lbl">avg wait, ticks</div></div><div class="col"><div class="sm" data-k="now">–</div><div class="lbl">waiting</div></div><div class="col"><div class="sm" data-k="worst">–</div><div class="lbl">longest</div></div></div></div>
+      <div class="shaftbox"><svg class="shaft" role="img" aria-label="${r.name} building"></svg></div>
+      <div class="hist"><canvas></canvas></div>`;
+    stage.appendChild(el); el.querySelector('svg').addEventListener('click', onShaftClick);
   }
 }
-/** Geometry for a building panel's SVG; recomputed when the box size or building changes. */
 function geometry(box, cars) {
-  const W = Math.max(240, box.clientWidth), H = Math.max(180, box.clientHeight);
-  const floors = building.floors, top = 10, bottom = 18, left = 62, right = 40;
+  const W = Math.max(200, box.clientWidth), H = Math.max(120, box.clientHeight);
+  const floors = building.floors, top = 10, bottom = 8, left = 72, right = 44;
   const rowH = (H - top - bottom) / floors, laneW = (W - left - right) / cars;
-  return { W, H, floors, top, bottom, left, right, rowH, laneW, carH: Math.min(Math.max(rowH * 0.95, 12), 30), carW: Math.min(laneW * 0.68, 56), y: (f) => top + (floors - f) * rowH + rowH / 2 };
+  return { W, H, floors, top, bottom, left, right, rowH, laneW, carH: Math.min(Math.max(rowH * 0.9, 10), 22), carW: Math.min(laneW * 0.7, 34), y: (f) => top + (floors - f) * rowH + rowH / 2, cx: (i) => left + laneW * i + laneW / 2 };
 }
 function buildShaft(svg, sim) {
   const g = geometry(svg.parentElement, sim.cars.length);
-  svg.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`);
-  svg.dataset.key = `${g.W}x${g.H}:${g.floors}:${sim.cars.length}`;
-  const line = css('--line'), muted = css('--muted');
-  const labelStep = g.floors > 40 ? 5 : g.floors > 20 ? 2 : 1;
+  svg.setAttribute('viewBox', `0 0 ${g.W} ${g.H}`); svg.dataset.key = `${g.W}x${g.H}:${g.floors}:${sim.cars.length}`;
+  const line = css('--line2'), line1 = css('--line'), faint = css('--label');
+  const labelStep = g.floors > 40 ? 5 : g.floors > 24 ? 2 : 1;
   let out = '';
   for (let f = 1; f <= g.floors; f++) {
-    out += `<rect class="floor-hit" data-f="${f}" x="0" y="${g.y(f) - g.rowH / 2}" width="${g.W}" height="${g.rowH}" fill="transparent"/>`;
-    out += `<line x1="${g.left}" y1="${g.y(f)}" x2="${g.W - g.right}" y2="${g.y(f)}" stroke="${line}" stroke-width="1" pointer-events="none"/>`;
-    if (f === 1 || f % labelStep === 0) out += `<text x="${g.left - 30}" y="${g.y(f) + 3.5}" font-size="10" fill="${muted}" text-anchor="end" pointer-events="none">${f === 1 ? 'lobby' : f}</text>`;
+    out += `<rect class="hit" data-f="${f}" x="0" y="${g.y(f) - g.rowH / 2}" width="${g.W}" height="${g.rowH}" fill="transparent"/>`;
+    out += `<line x1="${g.left}" y1="${g.y(f)}" x2="${g.W - g.right}" y2="${g.y(f)}" stroke="${f === 1 ? line1 : line}" pointer-events="none"/>`;
+    if (f === 1 || f % labelStep === 0) out += `<text x="${g.left - 56}" y="${g.y(f) + 3.5}" font-size="10" font-family="${css('--mono')}" fill="${faint}" text-anchor="end" pointer-events="none">${f === 1 ? 'L' : f}</text>`;
   }
+  sim.cars.forEach((c, i) => { out += `<line x1="${g.cx(i)}" y1="${g.top}" x2="${g.cx(i)}" y2="${g.H - g.bottom}" stroke="${line1}" pointer-events="none"/>`; });
   out += `<g class="waiting" pointer-events="none"></g><g class="wanted" pointer-events="none"></g>`;
   sim.cars.forEach((c, i) => {
-    const cx = g.left + g.laneW * i + g.laneW / 2;
-    out += `<line x1="${cx}" y1="${g.top}" x2="${cx}" y2="${g.H - g.bottom}" stroke="${line}" stroke-width="2" pointer-events="none"/>`;
-    out += `<text x="${cx}" y="${g.H - 6}" font-size="10.5" fill="${muted}" text-anchor="middle" pointer-events="none">car ${i + 1}</text>`;
-  });
-  sim.cars.forEach((c, i) => {
-    const cx = g.left + g.laneW * i + g.laneW / 2;
-    out += `<g class="car" data-i="${i}" pointer-events="none" style="transform: translateY(${g.y(c.floor)}px)"><rect x="${cx - g.carW / 2}" y="${-g.carH / 2}" width="${g.carW}" height="${g.carH}" rx="5" stroke-width="2.5"/><text x="${cx}" y="4" font-size="${g.carH < 16 ? 9 : 11}" font-weight="700" text-anchor="middle"></text></g>`;
+    const x = g.cx(i) - g.carW / 2, h = g.carH;
+    out += `<g class="car" data-i="${i}" pointer-events="none" style="transform: translateY(${g.y(c.floor)}px)"><rect class="ring" x="${x - 2.5}" y="${-h / 2 - 2.5}" width="${g.carW + 5}" height="${h + 5}" rx="6" fill="none" stroke-width="2"/><rect x="${x}" y="${-h / 2}" width="${g.carW}" height="${h}" rx="4" fill="${css('--panel')}" stroke-width="1.5"/><clipPath id="cp${sim.scheduler.name}${i}"><rect x="${x}" y="${-h / 2}" width="${g.carW}" height="${h}" rx="4"/></clipPath><rect class="fill" clip-path="url(#cp${sim.scheduler.name}${i})" x="${x}" y="${h / 2}" width="${g.carW}" height="0" opacity=".9"/><text x="${g.cx(i)}" y="3.5" font-size="${h < 14 ? 8.5 : 10}" font-weight="600" font-family="${css('--mono')}" text-anchor="middle"></text></g>`;
   });
   out += `<g class="fx"></g>`;
-  svg.innerHTML = out;
-  svg._g = g;
+  svg.innerHTML = out; svg._g = g;
 }
 function updateShaft(svg, sim, rule) {
-  const g = svg._g, wait = css('--wait'), want = css('--want'), line = css('--line'), muted = css('--muted'), color = css(RULES[rule].color), soft = css('--soft');
+  const g = svg._g, wait = css('--wait'), waitInk = css('--wait-ink'), want = css('--want'), color = css(RULES[rule].color), line1 = css('--line'), ink2 = css('--ink2');
   const waiting = new Map(), wanted = new Map();
-  for (const c of sim.cars) {
-    for (const p of c.waiting) { waiting.set(p.source, (waiting.get(p.source) || 0) + 1); wanted.set(p.dest, (wanted.get(p.dest) || 0) + 1); }
-    for (const p of c.aboard) wanted.set(p.dest, (wanted.get(p.dest) || 0) + 1);
-  }
-  const r = Math.min(3.2, g.rowH * 0.3);
+  for (const c of sim.cars) { for (const p of c.waiting) { waiting.set(p.source, (waiting.get(p.source) || 0) + 1); wanted.set(p.dest, (wanted.get(p.dest) || 0) + 1); } for (const p of c.aboard) wanted.set(p.dest, (wanted.get(p.dest) || 0) + 1); }
+  const r = Math.min(3, g.rowH * 0.28), gap = r * 2 + 1.5;
   let w = '';
   for (const [f, n] of waiting) {
     const dots = Math.min(n, 5);
-    for (let k = 0; k < dots; k++) w += `<circle cx="${g.left - 24 + k * (r * 2 + 1.5)}" cy="${g.y(f)}" r="${r}" fill="${wait}"/>`;
-    if (n > 5) w += `<text x="${g.left - 24 + 5 * (r * 2 + 1.5)}" y="${g.y(f) + 3.5}" font-size="10" font-weight="700" fill="${wait}">+${n - 5}</text>`;
+    for (let k = 0; k < dots; k++) w += `<circle cx="${g.left - 8 - k * gap}" cy="${g.y(f)}" r="${r}" fill="${wait}"/>`;
+    if (n > 5) w += `<text x="${g.left - 8 - 5 * gap + r}" y="${g.y(f) + 3.5}" font-size="10" font-weight="600" fill="${waitInk}" text-anchor="end">+${n - 5}</text>`;
   }
   svg.querySelector('.waiting').innerHTML = w;
   let d = '';
   for (const [f, n] of wanted) {
     const dots = Math.min(n, 4);
-    for (let k = 0; k < dots; k++) d += `<circle cx="${g.W - g.right + 8 + k * (r * 2 + 1.5)}" cy="${g.y(f)}" r="${r}" fill="none" stroke="${want}" stroke-width="1.3"/>`;
-    if (n > 4) d += `<text x="${g.W - g.right + 8 + 4 * (r * 2 + 1.5)}" y="${g.y(f) + 3.5}" font-size="10" fill="${want}">+${n - 4}</text>`;
+    for (let k = 0; k < dots; k++) d += `<circle cx="${g.W - g.right + 8 + k * gap}" cy="${g.y(f)}" r="${r}" fill="none" stroke="${want}" stroke-width="1.4"/>`;
+    if (n > 4) d += `<text x="${g.W - g.right + 8 + 4 * gap - r}" y="${g.y(f) + 3.5}" font-size="10" fill="${want}">+${n - 4}</text>`;
   }
   svg.querySelector('.wanted').innerHTML = d;
   sim.cars.forEach((c, i) => {
-    const el = svg.querySelector(`.car[data-i="${i}"]`);
-    el.style.transform = `translateY(${g.y(c.floor)}px)`;
-    const rect = el.firstElementChild, text = el.lastElementChild;
-    rect.setAttribute('fill', c.load ? color : soft);
-    rect.setAttribute('stroke', c.dwellRemaining > 0 ? wait : (c.load ? color : line));
-    text.setAttribute('fill', c.load ? '#fff' : muted);
-    text.textContent = `${c.direction > 0 ? '▲ ' : c.direction < 0 ? '▼ ' : ''}${c.load}/${c.capacity}`;
+    const el = svg.querySelector(`.car[data-i="${i}"]`); el.style.transform = `translateY(${g.y(c.floor)}px)`;
+    const [ring, body, , fill, text] = el.children;
+    const frac = c.load / c.capacity, fh = g.carH * frac;
+    ring.setAttribute('stroke', c.dwellRemaining > 0 ? wait : 'none');
+    body.setAttribute('stroke', c.load ? color : line1);
+    fill.setAttribute('fill', color); fill.setAttribute('height', fh); fill.setAttribute('y', g.carH / 2 - fh);
+    text.setAttribute('fill', frac >= 0.5 ? '#fff' : ink2);
+    text.textContent = `${c.direction > 0 ? '▴' : c.direction < 0 ? '▾' : ''}${c.load}`;
   });
 }
+function boardFx(svg, sim, rule) {
+  const g = svg._g, now = sim.now - 1, fx = svg.querySelector('.fx');
+  for (const e of sim.events) { if (e.t < now) continue; if (e.t > now) break; if (e.type !== 'board') continue;
+    fx.insertAdjacentHTML('beforeend', `<circle class="board" cx="${g.cx(e.car)}" cy="${g.y(e.floor)}" r="${g.carH * 0.7}" fill="none" stroke="${css(RULES[rule].color)}" stroke-width="1.5" style="transform-origin:${g.cx(e.car)}px ${g.y(e.floor)}px"/>`);
+  }
+  while (fx.children.length > 12) fx.firstElementChild.remove();
+}
 
-// ---- drawing ----------------------------------------------------------------------------
+// ---- numbers -------------------------------------------------------------------------
 let histMax = 1;
 function stats(sim) {
-  const now = sim.now;
-  const boarded = sim.passengers.filter(p => p.boardTime !== null).map(p => p.wait);
-  const waitingNow = sim.passengers.filter(p => p.boardTime === null).map(p => now - p.requestTime);
-  // Average wait so far counts everyone who has asked: boarded passengers' waits plus the
-  // wait-so-far of those still standing, so a rule that strands people cannot look good.
-  const all = [...boarded, ...waitingNow];
+  const now = sim.now, boarded = sim.passengers.filter(p => p.boardTime !== null).map(p => p.wait), waitingNow = sim.passengers.filter(p => p.boardTime === null).map(p => now - p.requestTime);
+  const all = [...boarded, ...waitingNow]; // wait so far of those still standing counts
   return { typ: all.length ? distribution(all).mean : null, now: waitingNow.length, worst: Math.max(0, ...all), done: sim.passengers.filter(p => p.alightTime !== null).length, total: sim.passengers.length, waits: boarded };
 }
 function ranking(all) {
   const key = (x) => [x.st.typ, x.st.worst, x.st.now];
   const ranked = [...all].filter(x => x.st.typ !== null).sort((a, b) => a.st.typ - b.st.typ || a.st.worst - b.st.worst || a.st.now - b.st.now);
-  const rank = {};
-  ranked.forEach((x, i) => { rank[x.rule] = i > 0 && key(x).every((v, j) => Math.abs(v - key(ranked[i - 1])[j]) < 1e-9) ? rank[ranked[i - 1].rule] : i; });
-  return rank;
+  const rank = {}; ranked.forEach((x, i) => { rank[x.rule] = i > 0 && key(x).every((v, j) => Math.abs(v - key(ranked[i - 1])[j]) < 1e-9) ? rank[ranked[i - 1].rule] : i; });
+  const shared = {}; for (const k in rank) shared[k] = Object.values(rank).filter(v => v === rank[k]).length > 1;
+  return { rank, shared };
 }
 function draw(force = false) {
-  setTickDuration();
-  $('time').textContent = `t ${currentTick()}`;
+  setTickDuration(); $('time').textContent = `t ${currentTick()}`;
   const all = sims.map(s => ({ ...s, st: stats(s.sim) }));
   histMax = Math.max(1, ...all.flatMap(x => x.st.waits));
-  const rank = ranking(all);
-  const extremes = {};
-  for (const k of ['typ', 'now', 'worst']) {
-    const vals = all.map(x => x.st[k]).filter(v => v !== null);
-    extremes[k] = vals.length === 3 && Math.min(...vals) !== Math.max(...vals) ? { best: Math.min(...vals), worst: Math.max(...vals) } : null;
-  }
+  const { rank, shared } = ranking(all);
+  const ext = {};
+  for (const k of ['typ', 'now', 'worst']) { const vals = all.map(x => x.st[k]).filter(v => v !== null); ext[k] = vals.length === 3 && Math.min(...vals) !== Math.max(...vals) ? { best: Math.min(...vals), worst: Math.max(...vals) } : null; }
   for (const el of document.querySelectorAll('.bld')) {
-    const x = all.find(a => a.rule === el.dataset.rule);
-    const st = x.st, svg = el.querySelector('svg');
+    const x = all.find(a => a.rule === el.dataset.rule), st = x.st, svg = el.querySelector('svg');
     el.querySelector('[data-k=typ]').textContent = st.typ === null ? '–' : st.typ.toFixed(1);
     el.querySelector('[data-k=now]').textContent = st.total ? st.now : '–';
     el.querySelector('[data-k=worst]').textContent = st.total ? st.worst : '–';
-    el.querySelector('[data-k=done]').textContent = st.total ? `${st.done} of ${st.total} delivered` : '';
-    const rk = el.querySelector('[data-k=rank]');
-    rk.textContent = rank[x.rule] !== undefined ? ORDINAL[rank[x.rule]] : ''; rk.className = `rank r${(rank[x.rule] ?? -1) + 1}`;
-    for (const k of ['typ', 'now', 'worst']) {
-      const kp = el.querySelector(`[data-kpi=${k}]`); kp.classList.remove('best', 'worst');
-      if (extremes[k] && st[k] !== null) { if (st[k] === extremes[k].best) kp.classList.add('best'); else if (st[k] === extremes[k].worst) kp.classList.add('worst'); }
-    }
-    const box = svg.parentElement, key = `${Math.max(240, box.clientWidth)}x${Math.max(180, box.clientHeight)}:${building.floors}:${x.sim.cars.length}`;
+    el.querySelector('[data-k=done]').textContent = st.total ? `${st.done} of ${st.total}` : '';
+    const rk = el.querySelector('[data-k=rank]'); rk.textContent = rank[x.rule] !== undefined ? ORDINAL[rank[x.rule]] : '·'; rk.className = `rank r${(rank[x.rule] ?? -1) + 1}${shared[x.rule] ? ' tie' : ''}`;
+    for (const k of ['typ', 'now', 'worst']) { const n = el.querySelector(`[data-k=${k}]`); n.classList.remove('best', 'worst'); if (ext[k] && st[k] !== null) { if (st[k] === ext[k].best) n.classList.add('best'); else if (st[k] === ext[k].worst) n.classList.add('worst'); } }
+    const box = svg.parentElement, key = `${Math.max(200, box.clientWidth)}x${Math.max(120, box.clientHeight)}:${building.floors}:${x.sim.cars.length}`;
     if (force || svg.dataset.key !== key) buildShaft(svg, x.sim);
-    updateShaft(svg, x.sim, x.rule);
+    updateShaft(svg, x.sim, x.rule); if (!force) boardFx(svg, x.sim, x.rule);
     drawHist(el.querySelector('canvas'), st.waits, css(RULES[x.rule].color));
   }
-  drawResult(all, rank);
-  drawDetails();
+  drawVerdict(all, rank); drawDetails();
 }
-function drawResult(all, rank) {
-  const rows = [...all].sort((a, b) => (rank[a.rule] ?? 9) - (rank[b.rule] ?? 9));
-  const v = $('result');
-  if (allFinished() && rows.length === 3 && rows[2].st.typ !== null) {
-    const a = rows[0], b = rows[1], c = rows[2];
-    const pct = (x) => Math.round((x.st.typ / a.st.typ - 1) * 100);
-    const tie = rank[b.rule] === rank[a.rule];
-    v.innerHTML = tie
-      ? `<b>A tie${rank[c.rule] === rank[a.rule] ? ' between all three' : ` between ${RULES[a.rule].name} and ${RULES[b.rule].name}`}</b> · average wait ${a.st.typ.toFixed(1)} ticks${rank[c.rule] === rank[a.rule] ? '' : ` (${RULES[c.rule].name} ${c.st.typ.toFixed(1)}, +${pct(c)}%)`} · with this little traffic the rule makes no difference — add people or reduce cars`
-      : `<b>${RULES[a.rule].name} wins</b> · average wait ${a.st.typ.toFixed(1)} ticks vs ${b.st.typ.toFixed(1)} for ${RULES[b.rule].name} (+${pct(b)}%) and ${c.st.typ.toFixed(1)} for ${RULES[c.rule].name} (+${pct(c)}%) · longest wait ${a.st.worst} / ${b.st.worst} / ${c.st.worst} · add people to keep going`;
-  } else if (rows[0].st.typ === null) v.textContent = `${baseRequests.length} people to serve · rules are ranked live by average wait · the verdict appears when everyone is delivered`;
-  else v.innerHTML = `Leading: <span style="color:var(--ink);font-weight:600">${RULES[rows[0].rule].name}</span> · ${rows[0].st.done + rows[1].st.done + rows[2].st.done > 0 ? '' : ''}verdict when everyone is delivered`;
+function drawVerdict(all, rank) {
+  const rows = [...all].sort((a, b) => (rank[a.rule] ?? 9) - (rank[b.rule] ?? 9)), v = $('verdict'), N = (r) => RULES[r.rule].name, f = (x) => x.st.typ.toFixed(1);
+  if (rows[0].st.typ === null) { v.textContent = `${baseRequests.length + injected.length} people to serve · rules are ranked live by average wait · the verdict appears when everyone is delivered`; return; }
+  const [a, b, c] = rows, less = (x) => Math.round((1 - a.st.typ / x.st.typ) * 100), tieAB = rank[b.rule] === rank[a.rule], tieAll = tieAB && rank[c.rule] === rank[a.rule];
+  if (allFinished() && rows.every(r => r.st.typ !== null)) {
+    if (tieAll) v.innerHTML = `Everyone delivered. <b>A tie between all three</b> — average wait ${f(a)} ticks each. With this little traffic the rule makes no difference; add people or reduce cars.`;
+    else if (tieAB) v.innerHTML = `Everyone delivered. <b>A tie between ${N(a)} and ${N(b)}</b> — average wait ${f(a)} ticks; ${N(c)} ${f(c)}, so people waited ${less(c)}% less than with it.`;
+    else v.innerHTML = `Everyone delivered. <b>${N(a)} wins</b> — people waited ${less(b)}% less than with ${N(b)} (${f(b)}) and ${less(c)}% less than with ${N(c)} (${f(c)}). Longest wait ${a.st.worst} / ${b.st.worst} / ${c.st.worst}.`;
+    return;
+  }
+  if (tieAll) v.innerHTML = `Tied so far · average wait ${f(a)} ticks each · verdict when everyone is delivered`;
+  else if (tieAB) v.innerHTML = `Tied so far: <span class="lead">${N(a)} and ${N(b)}</span> · ${f(a)} vs ${f(c)} ticks avg wait · verdict when everyone is delivered`;
+  else v.innerHTML = `Leading: <span class="lead">${N(a)}</span> · ${f(a)} vs ${f(b)} vs ${f(c)} ticks avg wait · verdict when everyone is delivered`;
 }
 function drawHist(cv, waits, color) {
-  const ctx = cv.getContext('2d'), dpr = window.devicePixelRatio || 1;
-  const W = cv.clientWidth || 300, H = cv.clientHeight || 50;
+  const ctx = cv.getContext('2d'), dpr = window.devicePixelRatio || 1, W = cv.clientWidth || 300, H = cv.clientHeight || 45;
   cv.width = W * dpr; cv.height = H * dpr; ctx.scale(dpr, dpr); ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = css('--muted'); ctx.font = '10.5px system-ui';
-  if (!waits.length) { ctx.fillText('waiting-time distribution appears as people board', 2, 12); return; }
-  const max = histMax, bins = Math.min(40, max + 1), size = Math.ceil((max + 1) / bins);
-  const counts = new Array(bins).fill(0); for (const w of waits) counts[Math.min(bins - 1, Math.floor(w / size))]++;
-  const peak = Math.max(1, ...counts), bw = (W - 4) / bins;
-  ctx.fillStyle = color;
-  counts.forEach((c, i) => { const h = (H - 26) * c / peak; ctx.fillRect(2 + i * bw + 1, H - 13 - h, Math.max(1, bw - 2), h); });
-  ctx.fillStyle = css('--muted');
-  ctx.fillText('wait 0', 2, H - 3); ctx.textAlign = 'right'; ctx.fillText(`${max} ticks`, W - 2, H - 3); ctx.textAlign = 'left';
-  ctx.fillText(`waiting times of the ${waits.length} who boarded`, 2, 10);
+  ctx.fillStyle = css('--label'); ctx.font = '10.5px system-ui, sans-serif'; ctx.textBaseline = 'alphabetic';
+  if (!waits.length) { ctx.fillText('waiting times appear here as people board', 0, H - 3); return; }
+  const max = histMax, bins = Math.min(40, max + 1), size = Math.ceil((max + 1) / bins), counts = new Array(bins).fill(0);
+  for (const w of waits) counts[Math.min(bins - 1, Math.floor(w / size))]++;
+  const peak = Math.max(1, ...counts), bw = W / bins;
+  ctx.fillStyle = color; ctx.globalAlpha = .75;
+  counts.forEach((c, i) => { const h = (H - 22) * c / peak; ctx.fillRect(i * bw + 1, H - 14 - h, Math.max(1, bw - 2), h); });
+  ctx.globalAlpha = 1; ctx.fillStyle = css('--label');
+  ctx.fillText('wait 0', 0, H - 3); ctx.textAlign = 'right'; ctx.fillText(`${max} ticks · ${waits.length} boarded`, W, H - 3); ctx.textAlign = 'left';
 }
 function drawDetails() {
   if ($('overlay').hidden) return;
   $('details').innerHTML = sims.map(({ sim, rule }) => {
-    const ev = sim.events.slice(-8).reverse().map(e => {
-      const car = e.car !== undefined ? `car ${e.car + 1}` : '';
-      if (e.type === 'request') return `t=${e.t} ${e.id} requests ${e.floor} → ${e.dest}`;
-      if (e.type === 'assign') return `t=${e.t} ${e.id} assigned to ${car}`;
-      if (e.type === 'board') return `t=${e.t} ${e.id} boards ${car} at ${e.floor}`;
-      return `t=${e.t} ${e.id} leaves ${car} at ${e.floor}`;
-    });
+    const ev = sim.events.slice(-10).reverse().map(e => { const car = e.car !== undefined ? `car ${e.car + 1}` : '';
+      if (e.type === 'request') return `t=${e.t} ${e.id} requests ${e.floor} → ${e.dest}`; if (e.type === 'assign') return `t=${e.t} ${e.id} assigned to ${car}`;
+      if (e.type === 'board') return `t=${e.t} ${e.id} boards ${car} at ${e.floor}`; return `t=${e.t} ${e.id} leaves ${car} at ${e.floor}`; });
     const rows = sim.cars.map((c, i) => `<tr><td>car ${i + 1}</td><td>${c.floor}</td><td>${c.direction > 0 ? 'up' : c.direction < 0 ? 'down' : 'idle'}</td><td>${c.load}/${c.capacity}</td><td>${c.waiting.length}</td><td>${c.stopsMade}</td><td>${c.floorsTravelled}</td></tr>`).join('');
-    return `<section style="--rc:${css(RULES[rule].color)}"><h3>${RULES[rule].name}</h3>
-      <h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>stops</th><th>travelled</th></tr></thead><tbody>${rows}</tbody></table>
-      <h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
+    return `<section style="--rc:var(${RULES[rule].color})"><h3>${RULES[rule].name}</h3><h4>Cars</h4><table><thead><tr><th>car</th><th>floor</th><th>dir</th><th>load</th><th>assigned</th><th>stops</th><th>travelled</th></tr></thead><tbody>${rows}</tbody></table><h4>Recent events</h4><ul class="log">${ev.map(s => `<li>${s}</li>`).join('') || '<li>no events yet</li>'}</ul></section>`;
   }).join('');
 }
 
-// ---- interaction: people ------------------------------------------------------------------
+// ---- people ---------------------------------------------------------------------------
 function addPerson(source, dest) { inject({ time: currentTick(), id: `you${++clickCount}`, source, dest }); ping(source); resumeIfIdle(); }
 let resumeTimer;
 function resumeIfIdle() { if (playing) return; clearTimeout(resumeTimer); resumeTimer = setTimeout(() => { if (!playing && !allFinished()) play(); }, 400); }
 function ping(floor) {
-  for (const svg of document.querySelectorAll('svg.shaft')) {
-    const g = svg._g; if (!g) continue;
-    const fx = svg.querySelector('.fx');
-    fx.insertAdjacentHTML('beforeend', `<circle class="ping" cx="${g.left - 16}" cy="${g.y(floor)}" r="4" fill="none" stroke="${css('--wait')}" stroke-width="2"/>`);
-    setTimeout(() => fx.firstElementChild && fx.firstElementChild.remove(), 750);
-  }
+  for (const svg of document.querySelectorAll('svg.shaft')) { const g = svg._g; if (!g) continue; const fx = svg.querySelector('.fx');
+    fx.insertAdjacentHTML('beforeend', `<circle class="ping" cx="${g.left - 14}" cy="${g.y(floor)}" r="4" fill="none" stroke="${css('--wait')}" stroke-width="2"/>`); setTimeout(() => fx.firstElementChild && fx.firstElementChild.remove(), 750); }
 }
 const upper = () => 2 + Math.floor(rng() * (building.floors - 1));
-function onShaftClick(e) {
-  const hit = e.target.closest('.floor-hit'); if (!hit) return;
-  const from = +hit.dataset.f, pop = $('pop');
-  const quick = [];
-  if (from !== 1) quick.push({ label: 'to the lobby', dest: 1 });
-  if (from !== building.floors) quick.push({ label: 'to the top', dest: building.floors });
-  pop.innerHTML = `<b>Passenger at ${from === 1 ? 'the lobby' : 'floor ' + from}</b> going…
-    <div class="row">${quick.map(o => `<button class="btn" data-d="${o.dest}">${o.label}</button>`).join('')}
-    <select id="dest">${Array.from({ length: building.floors }, (_, i) => i + 1).filter(f => f !== from).map(f => `<option value="${f}">floor ${f}</option>`).join('')}</select>
-    <button class="btn accent" data-go>Add</button></div>`;
-  pop.style.display = 'block';
-  pop.style.left = `${Math.min(e.clientX + 8, window.innerWidth - 320)}px`; pop.style.top = `${Math.min(e.clientY + 8, window.innerHeight - 110)}px`;
+function openPop(from, x, y) {
+  const pop = $('pop'), quick = [];
+  if (from !== 1) quick.push({ label: 'to the lobby', dest: 1 }); if (from !== building.floors) quick.push({ label: 'to the top', dest: building.floors });
+  pop.innerHTML = `<b>Add a passenger at ${from === 1 ? 'the lobby' : 'floor ' + from}, going…</b><div class="row">${quick.map(o => `<button class="btn" data-d="${o.dest}">${o.label}</button>`).join('')}<select class="field" id="dest">${Array.from({ length: building.floors }, (_, i) => i + 1).filter(f => f !== from).map(f => `<option value="${f}">floor ${f}</option>`).join('')}</select><button class="btn primary" data-go>Add</button></div>`;
+  pop.style.display = 'block'; pop.style.left = `${Math.min(x + 8, window.innerWidth - 340)}px`; pop.style.top = `${Math.min(y + 8, window.innerHeight - 100)}px`;
   const done = (dest) => { addPerson(from, dest); pop.style.display = 'none'; draw(); };
-  pop.querySelectorAll('[data-d]').forEach(b => b.onclick = () => done(+b.dataset.d));
-  pop.querySelector('[data-go]').onclick = () => done(+pop.querySelector('#dest').value);
+  pop.querySelectorAll('[data-d]').forEach(b => b.onclick = () => done(+b.dataset.d)); pop.querySelector('[data-go]').onclick = () => done(+pop.querySelector('#dest').value);
 }
-document.addEventListener('click', (e) => { if (!e.target.closest('#pop') && !e.target.closest('.floor-hit')) $('pop').style.display = 'none'; });
+function onShaftClick(e) { const hit = e.target.closest('.hit'); if (hit) openPop(+hit.dataset.f, e.clientX, e.clientY); }
+document.addEventListener('click', (e) => { if (!e.target.closest('#pop') && !e.target.closest('.hit')) $('pop').style.display = 'none'; });
 $('add-lobby').onclick = () => { for (let k = 0; k < 10; k++) addPerson(1, upper()); draw(); };
 $('add-top').onclick = () => { for (let k = 0; k < 10; k++) { let d = 1 + Math.floor(rng() * (building.floors - 1)); if (d === building.floors) d = 1; addPerson(building.floors, d); } draw(); };
 $('add-rand').onclick = () => { for (let k = 0; k < 10; k++) { const [s, d] = makeTrip(rng, building.floors, [0.34, 0.33, 0.33]); addPerson(s, d); } draw(); };
-$('add-one').onclick = () => { const [s, d] = makeTrip(rng, building.floors, PATTERNS[pattern].mix); addPerson(s, d); draw(); };
+$('add-one').onclick = () => { const [s, d] = makeTrip(rng, building.floors, scenario.mix); addPerson(s, d); draw(); };
 
-// ---- interaction: live traffic ------------------------------------------------------------
-$('pattern').innerHTML = Object.entries(PATTERNS).map(([k, p]) => `<option value="${k}">${p.label}</option>`).join('');
-$('pattern').onchange = (e) => { pattern = e.target.value; $('flow').dispatchEvent(new Event('input')); };
-$('flow').oninput = (e) => { live = +e.target.value; $('flowmsg').textContent = live ? `About ${(live / 100 * 0.6 * 60).toFixed(0)} arrivals per 60 ticks, ${PATTERNS[pattern].label.toLowerCase()} pattern.` : 'Off. Slide right to start.'; if (live && !playing) play(); };
+// ---- continuous traffic -----------------------------------------------------------------
+function flowMsg() { const rate = +$('flow').value; $('flowmsg').textContent = flowOn ? `On: about ${(rate / 100 * 0.6 * 60).toFixed(0)} arrivals per 60 ticks, ${(customName ? 'morning rush' : scenario.name.toLowerCase())} mix.` : 'Off. Turn on to keep people arriving in the current pattern.'; }
+$('flow-on').onclick = () => { flowOn = !flowOn; $('flow-on').setAttribute('aria-checked', String(flowOn)); flowMsg(); if (flowOn && !playing) play(); if (!flowOn) draw(); };
+$('flow').oninput = flowMsg;
 
-// ---- interaction: building (set before a run) ---------------------------------------------
+// ---- setup, files, transport, keys ------------------------------------------------------
 $('apply').onclick = () => { if (applySetup()) { reset(); renderControls(); } };
-
-// ---- files, transport, keys -------------------------------------------------------------------
 $('csv-link').onclick = () => $('csv').click();
 $('csv').onchange = async (e) => {
   const file = e.target.files[0]; if (!file) return;
-  try {
-    const text = await file.text();
+  try { const text = await file.text();
     const floors = Math.max(+$('floors').value, ...text.split(/\r?\n/).slice(1).flatMap(l => l.split(',').slice(2, 4).map(Number)).filter(Number.isFinite));
     const reqs = parseCsv(text, floors);
     building = { ...building, floors }; $('floors').value = floors; $('people').value = reqs.length; $('people').disabled = true;
-    baseRequests = reqs; customName = file.name;
-    reset(); renderControls();
-    toast(`Loaded ${reqs.length} requests from ${file.name}`);
+    baseRequests = reqs; customName = file.name; reset(); renderControls(); toast(`Loaded ${reqs.length} requests from ${file.name}`);
   } catch (err) { toast(`Could not load ${file.name}: ${err.message}`, 5000); }
   e.target.value = '';
 };
 $('play').onclick = () => (playing ? pause() : play());
 $('fwd').onclick = () => { pause(); step(); };
 $('back').onclick = () => { pause(); if (currentTick() > 0) rebuild(currentTick() - 1); };
+$('restart').onclick = () => { pause(); rebuild(0); };
 $('speed').oninput = setTickDuration;
 document.addEventListener('keydown', (e) => {
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
   if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
   if (e.key === 'ArrowRight') { pause(); step(); }
   if (e.key === 'ArrowLeft') { pause(); if (currentTick() > 0) rebuild(currentTick() - 1); }
-  if (e.key === 'Escape') { $('help').hidden = true; $('overlay').hidden = true; }
+  if (e.key === 'Escape') { $('help').hidden = true; $('overlay').hidden = true; $('pop').style.display = 'none'; }
 });
 $('details-btn').onclick = () => { $('overlay').hidden = !$('overlay').hidden; drawDetails(); };
 $('overlay-close').onclick = () => { $('overlay').hidden = true; };
 $('help-btn').onclick = () => { $('help').hidden = !$('help').hidden; };
 $('help-close').onclick = () => { $('help').hidden = true; };
+for (const id of ['help', 'overlay']) $(id).addEventListener('click', (e) => { if (e.target === $(id)) $(id).hidden = true; });
 let toastTimer;
 function toast(msg, ms = 2200) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms); }
 window.addEventListener('resize', () => sims.length && draw(true));
 
-// ---- go -------------------------------------------------------------------------------------
-setDefaults(scenario);
-applySetup();
-renderControls();
-reset();
+// ---- go ---------------------------------------------------------------------------------
+let saved = null; try { saved = localStorage.getItem(THEME_KEY); } catch {}
+const q = new URLSearchParams(location.search + '&' + location.hash.replace(/^#/, ''));
+setTheme(saved || 'light');
+if (q.get('view')) view = q.get('view');
+if (q.get('scenario')) scenario = SCENARIOS.find(s => s.key === q.get('scenario')) || scenario;
+setDefaults(scenario); applySetup(); renderControls(); reset(); flowMsg();
+// Demo states for the design review: #state=finished|help|details|add&t=N&dark=1&view=etd&scenario=tower
+function applyDemo(q) {
+  if (q.get('dark') === '1') { document.documentElement.dataset.theme = 'dark'; draw(true); }
+  if (q.has('t')) rebuild(+q.get('t'));
+  if (q.get('state') === 'finished') { let n = 0; while (!allFinished() && n++ < 5000) advance(); draw(true); }
+  if (q.get('state') === 'help') $('help').hidden = false;
+  if (q.get('state') === 'details') { $('overlay').hidden = false; drawDetails(); }
+  if (q.get('state') === 'add') { const svg = document.querySelector('svg.shaft'), b = svg.getBoundingClientRect(), g = svg._g; openPop(12, b.left + b.width * .45, b.top + g.y(12) * (b.height / g.H)); }
+}
+applyDemo(q);
+window.edsimDemo = (s) => { const p = new URLSearchParams(s); if (p.get('view')) { view = p.get('view'); renderControls(); buildStage(); draw(true); } if (p.get('scenario')) { scenario = SCENARIOS.find(x => x.key === p.get('scenario')) || scenario; setDefaults(scenario); applySetup(); renderControls(); reset(); } applyDemo(p); };
 </script>
 </body>
 </html>
