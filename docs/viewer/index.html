@@ -149,6 +149,24 @@
   .pop .row { display: flex; gap: 6px; align-items: center; }
   .toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 7px 13px; border-radius: 999px; font-size: 12.5px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
   .toast.show { opacity: 1; }
+
+  /* guided tour */
+  .tour-dim { position: fixed; inset: 0; z-index: 70; }
+  .tour-dim i { position: absolute; background: rgba(20,20,18,.5); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); transition: top .25s, left .25s, width .25s, height .25s; }
+  .tour-ring { position: fixed; z-index: 71; border-radius: 8px; box-shadow: 0 0 0 2px var(--wait), 0 0 0 6px rgba(224,154,0,.25); transition: top .25s, left .25s, width .25s, height .25s; }
+  .tour-ring.go { cursor: pointer; }
+  .tour-card { position: fixed; z-index: 72; width: 300px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px 10px; box-shadow: 0 16px 48px rgba(0,0,0,.28); font-size: 12.5px; transition: top .25s, left .25s; }
+  .tour-card::before { content: ""; position: absolute; width: 10px; height: 10px; background: var(--panel); border: 1px solid var(--line); border-width: 0 0 1px 1px; transform: rotate(45deg); }
+  .tour-card[data-arrow="top"]::before { top: -6px; left: 24px; border-width: 1px 0 0 1px; }
+  .tour-card[data-arrow="bottom"]::before { bottom: -6px; left: 24px; }
+  .tour-card[data-arrow="right"]::before { right: -6px; top: 18px; border-width: 0 1px 1px 0; }
+  .tour-card[data-arrow="none"]::before { display: none; }
+  .tour-card b { display: block; font-size: 13px; margin-bottom: 4px; }
+  .tour-card p { margin: 0 0 10px; color: var(--ink2); }
+  .tour-card .bar { display: flex; align-items: center; gap: 6px; }
+  .tour-card .n { color: var(--muted); font-size: 11.5px; margin-right: auto; }
+  .tour-card label { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11.5px; margin-top: 8px; cursor: pointer; }
+  .tour-card .skip { position: absolute; top: 6px; right: 6px; }
 </style>
 </head>
 <body>
@@ -231,7 +249,7 @@
     <p><b>Car usage</b>, under each building, shows one bar per car: how much of the run that car has been busy — carrying someone, or on its way to someone assigned to it. The caption gives the average across cars (how much car-time the rule spends) and the gap between the busiest and least busy car (how evenly it spreads the work). A rule can win on waiting time while working one car much harder than the others; take turns is even by construction but spends the most car-time. The Details view has the per-car numbers.</p>
     <h3>Trying things</h3>
     <p>Set the traffic and the building at the top, then <b>Apply &amp; restart</b>. While it runs, add people from the right or click a floor to place someone with a destination. “Keep traffic flowing” keeps people arriving. Adding people after everyone is delivered resumes the run. <kbd>Space</kbd> plays and pauses, <kbd>←</kbd> <kbd>→</kbd> step one tick.</p>
-    <p style="color:var(--muted);font-size:12.5px">The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario. <a href="../results/" target="_blank">Analysis explorer</a> · <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">Full results</a> · <a href="../../README.md" target="_blank">Source</a></p>
+    <p style="color:var(--muted);font-size:12.5px">The engine is a JavaScript port of the Python simulation, verified identical on every committed scenario. <a href="#" id="tour-link">Guided tour</a> · <a href="../results/" target="_blank">Analysis explorer</a> · <a href="../DESIGN.md" target="_blank">Design notes</a> · <a href="../results/comparison.md" target="_blank">Full results</a> · <a href="../../README.md" target="_blank">Source</a></p>
   </div>
 </div>
 
@@ -244,6 +262,22 @@
 
 <div class="pop" id="pop"></div>
 <div class="toast" id="toast"></div>
+
+<div id="tour" hidden>
+  <div class="tour-dim" id="tour-dim"><i></i><i></i><i></i><i></i></div>
+  <div class="tour-ring" id="tour-ring"></div>
+  <div class="tour-card" id="tour-card" role="dialog" aria-label="Guided tour">
+    <button class="btn icon skip" id="tour-skip" aria-label="Skip the tour" title="Skip">✕</button>
+    <b id="tour-title"></b>
+    <p id="tour-text"></p>
+    <div class="bar">
+      <span class="n" id="tour-n"></span>
+      <button class="btn" id="tour-back">Back</button>
+      <button class="btn primary" id="tour-next">Next</button>
+    </div>
+    <label><input type="checkbox" id="tour-remember">Don't show this again</label>
+  </div>
+</div>
 
 <script type="module">
 import { Simulation, makeScheduler, parseCsv, distribution, mulberry32, poisson, PATTERNS, makeTrip, generateTraffic, carUsage, balance, efficiency, LONG_WAIT_TICKS } from './engine.js';
@@ -576,6 +610,66 @@ let toastTimer;
 function toast(msg, ms = 2200) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), ms); }
 window.addEventListener('resize', () => sims.length && draw(true));
 
+// ---- guided tour --------------------------------------------------------------------------
+const TOUR_KEY = 'edsim-tour-seen';
+const TOUR = [
+  { sel: '#stage', title: 'One building, three rules', text: 'Each copy of the building is run by a different dispatch rule, and all three get exactly the same people at the same moments. Any difference you see is the rule.', arrow: 'none', at: 'center' },
+  { sel: '.setup', title: 'Set up the traffic', text: 'Pick a traffic pattern, then the number of people, cars, floors and the capacity per car. Apply & restart rebuilds all three buildings.', arrow: 'top' },
+  { sel: '#view', title: 'Show one rule or all three', text: 'Focus on a single rule for a bigger view, or keep all three side by side to compare.', arrow: 'top' },
+  { sel: 'aside > div:nth-child(2)', title: 'Add people while it runs', text: 'Drop ten people at the lobby, at the top or at random — or click any floor in a building to place one person with a destination.', arrow: 'right' },
+  { sel: 'aside > div:nth-child(3)', title: 'Keep traffic flowing', text: 'Switch this on and people keep arriving; the slider sets how busy the building is. Switch it off to let the run finish and see the verdict.', arrow: 'right' },
+  { sel: 'nav', title: 'Help and Details', text: 'Help explains what every dot and number means. Details shows the per-car figures for engineers.', arrow: 'top' },
+  { sel: '#play', title: 'Ready — press Play', text: 'Play runs the simulation (Space also works); ‹ and › step one tick at a time, ↺ restarts with the same traffic. The rules are ranked live by average wait.', arrow: 'right' },
+];
+let tourStep = 0;
+function tourRect(sel) { const el = document.querySelector(sel); return el ? el.getBoundingClientRect() : null; }
+function tourPlace() {
+  const s = TOUR[tourStep], r = tourRect(s.sel), ring = $('tour-ring'), card = $('tour-card');
+  if (!r) return tourNext();
+  const pad = 6;
+  const x1 = r.left - pad, y1 = r.top - pad, x2 = r.right + pad, y2 = r.bottom + pad;
+  Object.assign(ring.style, { top: `${y1}px`, left: `${x1}px`, width: `${x2 - x1}px`, height: `${y2 - y1}px` });
+  const [dt, db, dl, dr] = $('tour-dim').children, W0 = innerWidth, H0 = innerHeight;
+  Object.assign(dt.style, { top: 0, left: 0, width: `${W0}px`, height: `${Math.max(0, y1)}px` });
+  Object.assign(db.style, { top: `${y2}px`, left: 0, width: `${W0}px`, height: `${Math.max(0, H0 - y2)}px` });
+  Object.assign(dl.style, { top: `${y1}px`, left: 0, width: `${Math.max(0, x1)}px`, height: `${y2 - y1}px` });
+  Object.assign(dr.style, { top: `${y1}px`, left: `${x2}px`, width: `${Math.max(0, W0 - x2)}px`, height: `${y2 - y1}px` });
+  ring.classList.toggle('go', tourStep === TOUR.length - 1);
+  $('tour-title').textContent = s.title; $('tour-text').textContent = s.text;
+  $('tour-n').textContent = `${tourStep + 1} / ${TOUR.length}`;
+  $('tour-back').disabled = tourStep === 0;
+  $('tour-next').textContent = tourStep === TOUR.length - 1 ? 'Done' : 'Next';
+  card.dataset.arrow = s.arrow;
+  const cw = card.offsetWidth, ch = card.offsetHeight, W = innerWidth, H = innerHeight;
+  let top, left;
+  if (s.at === 'center') { top = r.top + (r.height - ch) / 2; left = r.left + (r.width - cw) / 2; }
+  else if (s.arrow === 'right') { top = r.top; left = r.left - cw - 14; }
+  else { top = r.bottom + 14; left = r.left; }
+  top = Math.max(8, Math.min(top, H - ch - 8)); left = Math.max(8, Math.min(left, W - cw - 8));
+  card.style.top = `${top}px`; card.style.left = `${left}px`;
+}
+function tourStart(step = 0) { pause(); $('help').hidden = true; $('overlay').hidden = true; tourStep = step; $('tour').hidden = false; tourPlace(); $('tour-next').focus(); }
+function tourEnd() {
+  $('tour').hidden = true;
+  if ($('tour-remember').checked) { try { localStorage.setItem(TOUR_KEY, '1'); } catch {} }
+  $('play').focus();
+}
+function tourNext() { if (tourStep >= TOUR.length - 1) return tourEnd(); tourStep++; tourPlace(); }
+$('tour-next').onclick = tourNext;
+$('tour-back').onclick = () => { if (tourStep > 0) { tourStep--; tourPlace(); } };
+$('tour-skip').onclick = tourEnd;
+$('tour-dim').onclick = tourEnd;
+$('tour-ring').onclick = () => { if (tourStep === TOUR.length - 1) { tourEnd(); play(); } };
+$('tour-link').onclick = (e) => { e.preventDefault(); tourStart(); };
+document.addEventListener('keydown', (e) => {
+  if ($('tour').hidden) return;
+  if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); tourEnd(); }
+  if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); e.stopImmediatePropagation(); tourNext(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); e.stopImmediatePropagation(); $('tour-back').click(); }
+  if (e.key === ' ') { e.preventDefault(); e.stopImmediatePropagation(); }
+}, true);
+window.addEventListener('resize', () => { if (!$('tour').hidden) tourPlace(); });
+
 // ---- go ---------------------------------------------------------------------------------
 let saved = null; try { saved = localStorage.getItem(THEME_KEY); } catch {}
 const q = new URLSearchParams(location.search + '&' + location.hash.replace(/^#/, ''));
@@ -593,6 +687,8 @@ function applyDemo(q) {
   if (q.get('state') === 'add') { const svg = document.querySelector('svg.shaft'), b = svg.getBoundingClientRect(), g = svg._g; openPop(12, b.left + b.width * .45, b.top + g.y(12) * (b.height / g.H)); }
 }
 applyDemo(q);
+{ let seen = null; try { seen = localStorage.getItem(TOUR_KEY); } catch {}
+  if (q.get('tour') === '1' || (!seen && !q.has('state') && q.get('tour') !== '0')) tourStart(); }
 window.edsimDemo = (s) => { const p = new URLSearchParams(s); if (p.get('view')) { view = p.get('view'); renderControls(); buildStage(); draw(true); } if (p.get('scenario')) { scenario = SCENARIOS.find(x => x.key === p.get('scenario')) || scenario; setDefaults(scenario); applySetup(); renderControls(); reset(); } applyDemo(p); };
 </script>
 </body>
