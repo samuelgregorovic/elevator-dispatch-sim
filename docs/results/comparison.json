@@ -111,6 +111,61 @@
   },
   {
     "scenario": "sample",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 3,
+    "ticks": 105,
+    "wait": {
+      "count": 3,
+      "min": 0,
+      "max": 73,
+      "mean": 24.333333333333332,
+      "p50": 0.0,
+      "p90": 73.0
+    },
+    "total": {
+      "count": 3,
+      "min": 37,
+      "max": 93,
+      "mean": 60.333333333333336,
+      "p50": 51.0,
+      "p90": 93.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 2,
+        "stops": 4,
+        "floors_travelled": 100,
+        "busy_ticks": 103,
+        "busy_share": 0.9809523809523809
+      },
+      {
+        "car": 2,
+        "carried": 1,
+        "stops": 2,
+        "floors_travelled": 36,
+        "busy_ticks": 37,
+        "busy_share": 0.3523809523809524
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.6666666666666666,
+      "busy_spread": 0.6285714285714286,
+      "carried_max_share": 0.6666666666666666,
+      "fair_share": 0.5
+    },
+    "observations": [
+      "median wait is 0 ticks: most passengers boarded immediately",
+      "2 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (2 of 3 requests)",
+      "direction mix: 2 up, 1 down",
+      "elevator 1: carried 2, stops 4, floors travelled 100, busy 98% of ticks",
+      "elevator 2: carried 1, stops 2, floors travelled 36, busy 35% of ticks",
+      "work balance: elevator 1 carried 67% of passengers (fair share 50%); busy share ranges over 63 points"
+    ]
+  },
+  {
+    "scenario": "sample",
     "scheduler": "round_robin",
     "passengers": 3,
     "ticks": 105,
@@ -363,6 +418,79 @@
       "elevator 3: carried 44, stops 56, floors travelled 378, busy 88% of ticks",
       "elevator 4: carried 39, stops 53, floors travelled 391, busy 89% of ticks",
       "work balance: elevator 1 carried 27% of passengers (fair share 25%); busy share ranges over 9 points"
+    ]
+  },
+  {
+    "scenario": "morning_up_peak",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 166,
+    "ticks": 490,
+    "wait": {
+      "count": 166,
+      "min": 0,
+      "max": 41,
+      "mean": 10.963855421686747,
+      "p50": 5.0,
+      "p90": 32.0
+    },
+    "total": {
+      "count": 166,
+      "min": 1,
+      "max": 61,
+      "mean": 23.46987951807229,
+      "p50": 21.0,
+      "p90": 41.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 41,
+        "stops": 54,
+        "floors_travelled": 400,
+        "busy_ticks": 449,
+        "busy_share": 0.9163265306122449
+      },
+      {
+        "car": 2,
+        "carried": 34,
+        "stops": 49,
+        "floors_travelled": 409,
+        "busy_ticks": 448,
+        "busy_share": 0.9142857142857143
+      },
+      {
+        "car": 3,
+        "carried": 49,
+        "stops": 64,
+        "floors_travelled": 390,
+        "busy_ticks": 444,
+        "busy_share": 0.9061224489795918
+      },
+      {
+        "car": 4,
+        "carried": 42,
+        "stops": 54,
+        "floors_travelled": 414,
+        "busy_ticks": 460,
+        "busy_share": 0.9387755102040817
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.9188775510204082,
+      "busy_spread": 0.032653061224489854,
+      "carried_max_share": 0.29518072289156627,
+      "fair_share": 0.25
+    },
+    "observations": [
+      "66 of 166 passengers (40%) waited more than twice the median wait of 5 ticks",
+      "42 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (142 of 166 requests)",
+      "direction mix: 144 up, 22 down",
+      "elevator 1: carried 41, stops 54, floors travelled 400, busy 92% of ticks",
+      "elevator 2: carried 34, stops 49, floors travelled 409, busy 91% of ticks",
+      "elevator 3: carried 49, stops 64, floors travelled 390, busy 91% of ticks",
+      "elevator 4: carried 42, stops 54, floors travelled 414, busy 94% of ticks",
+      "work balance: elevator 3 carried 30% of passengers (fair share 25%); busy share ranges over 3 points"
     ]
   },
   {
@@ -659,6 +787,79 @@
   },
   {
     "scenario": "lunch_two_way",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 131,
+    "ticks": 489,
+    "wait": {
+      "count": 131,
+      "min": 0,
+      "max": 39,
+      "mean": 8.213740458015268,
+      "p50": 5.0,
+      "p90": 22.0
+    },
+    "total": {
+      "count": 131,
+      "min": 2,
+      "max": 55,
+      "mean": 19.251908396946565,
+      "p50": 16.0,
+      "p90": 36.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 32,
+        "stops": 48,
+        "floors_travelled": 347,
+        "busy_ticks": 383,
+        "busy_share": 0.7832310838445807
+      },
+      {
+        "car": 2,
+        "carried": 37,
+        "stops": 55,
+        "floors_travelled": 340,
+        "busy_ticks": 380,
+        "busy_share": 0.7770961145194274
+      },
+      {
+        "car": 3,
+        "carried": 32,
+        "stops": 52,
+        "floors_travelled": 372,
+        "busy_ticks": 409,
+        "busy_share": 0.83640081799591
+      },
+      {
+        "car": 4,
+        "carried": 30,
+        "stops": 49,
+        "floors_travelled": 346,
+        "busy_ticks": 382,
+        "busy_share": 0.7811860940695297
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.794478527607362,
+      "busy_spread": 0.059304703476482645,
+      "carried_max_share": 0.2824427480916031,
+      "fair_share": 0.25
+    },
+    "observations": [
+      "37 of 131 passengers (28%) waited more than twice the median wait of 5 ticks",
+      "27 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (53 of 131 requests)",
+      "direction mix: 59 up, 72 down",
+      "elevator 1: carried 32, stops 48, floors travelled 347, busy 78% of ticks",
+      "elevator 2: carried 37, stops 55, floors travelled 340, busy 78% of ticks",
+      "elevator 3: carried 32, stops 52, floors travelled 372, busy 84% of ticks",
+      "elevator 4: carried 30, stops 49, floors travelled 346, busy 78% of ticks",
+      "work balance: elevator 2 carried 28% of passengers (fair share 25%); busy share ranges over 6 points"
+    ]
+  },
+  {
+    "scenario": "lunch_two_way",
     "scheduler": "round_robin",
     "passengers": 131,
     "ticks": 487,
@@ -951,6 +1152,79 @@
   },
   {
     "scenario": "evening_down_peak",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 113,
+    "ticks": 331,
+    "wait": {
+      "count": 113,
+      "min": 0,
+      "max": 43,
+      "mean": 10.761061946902656,
+      "p50": 6.0,
+      "p90": 31.0
+    },
+    "total": {
+      "count": 113,
+      "min": 3,
+      "max": 69,
+      "mean": 23.238938053097346,
+      "p50": 19.0,
+      "p90": 42.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 34,
+        "stops": 43,
+        "floors_travelled": 254,
+        "busy_ticks": 292,
+        "busy_share": 0.8821752265861027
+      },
+      {
+        "car": 2,
+        "carried": 22,
+        "stops": 35,
+        "floors_travelled": 244,
+        "busy_ticks": 266,
+        "busy_share": 0.8036253776435045
+      },
+      {
+        "car": 3,
+        "carried": 30,
+        "stops": 37,
+        "floors_travelled": 244,
+        "busy_ticks": 273,
+        "busy_share": 0.824773413897281
+      },
+      {
+        "car": 4,
+        "carried": 27,
+        "stops": 37,
+        "floors_travelled": 226,
+        "busy_ticks": 258,
+        "busy_share": 0.7794561933534743
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.8225075528700906,
+      "busy_spread": 0.10271903323262843,
+      "carried_max_share": 0.3008849557522124,
+      "fair_share": 0.25
+    },
+    "observations": [
+      "39 of 113 passengers (35%) waited more than twice the median wait of 6 ticks",
+      "12 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 14 (11 of 113 requests)",
+      "direction mix: 15 up, 98 down",
+      "elevator 1: carried 34, stops 43, floors travelled 254, busy 88% of ticks",
+      "elevator 2: carried 22, stops 35, floors travelled 244, busy 80% of ticks",
+      "elevator 3: carried 30, stops 37, floors travelled 244, busy 82% of ticks",
+      "elevator 4: carried 27, stops 37, floors travelled 226, busy 78% of ticks",
+      "work balance: elevator 1 carried 30% of passengers (fair share 25%); busy share ranges over 10 points"
+    ]
+  },
+  {
+    "scenario": "evening_down_peak",
     "scheduler": "round_robin",
     "passengers": 113,
     "ticks": 337,
@@ -1171,6 +1445,79 @@
   {
     "scenario": "interfloor",
     "scheduler": "nearest_car",
+    "passengers": 85,
+    "ticks": 454,
+    "wait": {
+      "count": 85,
+      "min": 0,
+      "max": 23,
+      "mean": 4.529411764705882,
+      "p50": 2.0,
+      "p90": 12.0
+    },
+    "total": {
+      "count": 85,
+      "min": 3,
+      "max": 37,
+      "mean": 12.176470588235293,
+      "p50": 10.0,
+      "p90": 23.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 26,
+        "stops": 50,
+        "floors_travelled": 198,
+        "busy_ticks": 232,
+        "busy_share": 0.5110132158590308
+      },
+      {
+        "car": 2,
+        "carried": 20,
+        "stops": 36,
+        "floors_travelled": 133,
+        "busy_ticks": 155,
+        "busy_share": 0.34140969162995594
+      },
+      {
+        "car": 3,
+        "carried": 19,
+        "stops": 37,
+        "floors_travelled": 203,
+        "busy_ticks": 225,
+        "busy_share": 0.4955947136563877
+      },
+      {
+        "car": 4,
+        "carried": 20,
+        "stops": 38,
+        "floors_travelled": 186,
+        "busy_ticks": 209,
+        "busy_share": 0.460352422907489
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.4520925110132159,
+      "busy_spread": 0.16960352422907488,
+      "carried_max_share": 0.3058823529411765,
+      "fair_share": 0.25
+    },
+    "observations": [
+      "29 of 85 passengers (34%) waited more than twice the median wait of 2 ticks",
+      "18 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 7 (8 of 85 requests)",
+      "direction mix: 42 up, 43 down",
+      "elevator 1: carried 26, stops 50, floors travelled 198, busy 51% of ticks",
+      "elevator 2: carried 20, stops 36, floors travelled 133, busy 34% of ticks",
+      "elevator 3: carried 19, stops 37, floors travelled 203, busy 50% of ticks",
+      "elevator 4: carried 20, stops 38, floors travelled 186, busy 46% of ticks",
+      "work balance: elevator 1 carried 31% of passengers (fair share 25%); busy share ranges over 17 points"
+    ]
+  },
+  {
+    "scenario": "interfloor",
+    "scheduler": "nearest_car_balanced",
     "passengers": 85,
     "ticks": 454,
     "wait": {
@@ -1499,6 +1846,61 @@
   },
   {
     "scenario": "capacity_stress",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 76,
+    "ticks": 303,
+    "wait": {
+      "count": 76,
+      "min": 0,
+      "max": 136,
+      "mean": 73.64473684210526,
+      "p50": 76.0,
+      "p90": 124.0
+    },
+    "total": {
+      "count": 76,
+      "min": 2,
+      "max": 153,
+      "mean": 86.09210526315789,
+      "p50": 91.0,
+      "p90": 131.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 35,
+        "stops": 38,
+        "floors_travelled": 229,
+        "busy_ticks": 265,
+        "busy_share": 0.8745874587458746
+      },
+      {
+        "car": 2,
+        "carried": 41,
+        "stops": 42,
+        "floors_travelled": 257,
+        "busy_ticks": 298,
+        "busy_share": 0.9834983498349835
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.9290429042904291,
+      "busy_spread": 0.1089108910891089,
+      "carried_max_share": 0.5394736842105263,
+      "fair_share": 0.5
+    },
+    "observations": [
+      "0 of 76 passengers (0%) waited more than twice the median wait of 76 ticks",
+      "5 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (76 of 76 requests)",
+      "direction mix: 76 up, 0 down",
+      "elevator 1: carried 35, stops 38, floors travelled 229, busy 87% of ticks",
+      "elevator 2: carried 41, stops 42, floors travelled 257, busy 98% of ticks",
+      "work balance: elevator 2 carried 54% of passengers (fair share 50%); busy share ranges over 11 points"
+    ]
+  },
+  {
+    "scenario": "capacity_stress",
     "scheduler": "round_robin",
     "passengers": 76,
     "ticks": 281,
@@ -1787,6 +2189,97 @@
       "elevator 5: carried 25, stops 36, floors travelled 348, busy 72% of ticks",
       "elevator 6: carried 28, stops 35, floors travelled 350, busy 72% of ticks",
       "work balance: elevator 2 carried 25% of passengers (fair share 17%); busy share ranges over 26 points"
+    ]
+  },
+  {
+    "scenario": "tall_building",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 231,
+    "ticks": 498,
+    "wait": {
+      "count": 231,
+      "min": 0,
+      "max": 220,
+      "mean": 47.935064935064936,
+      "p50": 18.0,
+      "p90": 116.0
+    },
+    "total": {
+      "count": 231,
+      "min": 2,
+      "max": 253,
+      "mean": 76.96103896103897,
+      "p50": 58.0,
+      "p90": 150.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 27,
+        "stops": 34,
+        "floors_travelled": 378,
+        "busy_ticks": 410,
+        "busy_share": 0.8232931726907631
+      },
+      {
+        "car": 2,
+        "carried": 50,
+        "stops": 62,
+        "floors_travelled": 435,
+        "busy_ticks": 496,
+        "busy_share": 0.9959839357429718
+      },
+      {
+        "car": 3,
+        "carried": 45,
+        "stops": 52,
+        "floors_travelled": 401,
+        "busy_ticks": 452,
+        "busy_share": 0.9076305220883534
+      },
+      {
+        "car": 4,
+        "carried": 28,
+        "stops": 33,
+        "floors_travelled": 301,
+        "busy_ticks": 332,
+        "busy_share": 0.6666666666666666
+      },
+      {
+        "car": 5,
+        "carried": 56,
+        "stops": 56,
+        "floors_travelled": 342,
+        "busy_ticks": 397,
+        "busy_share": 0.7971887550200804
+      },
+      {
+        "car": 6,
+        "carried": 25,
+        "stops": 29,
+        "floors_travelled": 279,
+        "busy_ticks": 307,
+        "busy_share": 0.6164658634538153
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.8012048192771083,
+      "busy_spread": 0.37951807228915657,
+      "carried_max_share": 0.24242424242424243,
+      "fair_share": 0.16666666666666666
+    },
+    "observations": [
+      "96 of 231 passengers (42%) waited more than twice the median wait of 18 ticks",
+      "25 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (160 of 231 requests)",
+      "direction mix: 179 up, 52 down",
+      "elevator 1: carried 27, stops 34, floors travelled 378, busy 82% of ticks",
+      "elevator 2: carried 50, stops 62, floors travelled 435, busy 100% of ticks",
+      "elevator 3: carried 45, stops 52, floors travelled 401, busy 91% of ticks",
+      "elevator 4: carried 28, stops 33, floors travelled 301, busy 67% of ticks",
+      "elevator 5: carried 56, stops 56, floors travelled 342, busy 80% of ticks",
+      "elevator 6: carried 25, stops 29, floors travelled 279, busy 62% of ticks",
+      "work balance: elevator 5 carried 24% of passengers (fair share 17%); busy share ranges over 38 points"
     ]
   },
   {
@@ -2155,6 +2648,97 @@
   },
   {
     "scenario": "tall_lobby_traffic",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 198,
+    "ticks": 458,
+    "wait": {
+      "count": 198,
+      "min": 0,
+      "max": 208,
+      "mean": 50.282828282828284,
+      "p50": 26.0,
+      "p90": 110.0
+    },
+    "total": {
+      "count": 198,
+      "min": 4,
+      "max": 250,
+      "mean": 80.15151515151516,
+      "p50": 67.0,
+      "p90": 150.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 35,
+        "stops": 40,
+        "floors_travelled": 396,
+        "busy_ticks": 435,
+        "busy_share": 0.9497816593886463
+      },
+      {
+        "car": 2,
+        "carried": 17,
+        "stops": 20,
+        "floors_travelled": 381,
+        "busy_ticks": 399,
+        "busy_share": 0.87117903930131
+      },
+      {
+        "car": 3,
+        "carried": 37,
+        "stops": 40,
+        "floors_travelled": 311,
+        "busy_ticks": 348,
+        "busy_share": 0.759825327510917
+      },
+      {
+        "car": 4,
+        "carried": 27,
+        "stops": 30,
+        "floors_travelled": 333,
+        "busy_ticks": 361,
+        "busy_share": 0.7882096069868996
+      },
+      {
+        "car": 5,
+        "carried": 49,
+        "stops": 51,
+        "floors_travelled": 400,
+        "busy_ticks": 449,
+        "busy_share": 0.980349344978166
+      },
+      {
+        "car": 6,
+        "carried": 33,
+        "stops": 36,
+        "floors_travelled": 375,
+        "busy_ticks": 409,
+        "busy_share": 0.8930131004366813
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.87372634643377,
+      "busy_spread": 0.22052401746724892,
+      "carried_max_share": 0.2474747474747475,
+      "fair_share": 0.16666666666666666
+    },
+    "observations": [
+      "91 of 198 passengers (46%) waited more than twice the median wait of 26 ticks",
+      "22 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (158 of 198 requests)",
+      "direction mix: 158 up, 40 down",
+      "elevator 1: carried 35, stops 40, floors travelled 396, busy 95% of ticks",
+      "elevator 2: carried 17, stops 20, floors travelled 381, busy 87% of ticks",
+      "elevator 3: carried 37, stops 40, floors travelled 311, busy 76% of ticks",
+      "elevator 4: carried 27, stops 30, floors travelled 333, busy 79% of ticks",
+      "elevator 5: carried 49, stops 51, floors travelled 400, busy 98% of ticks",
+      "elevator 6: carried 33, stops 36, floors travelled 375, busy 89% of ticks",
+      "work balance: elevator 5 carried 25% of passengers (fair share 17%); busy share ranges over 22 points"
+    ]
+  },
+  {
+    "scenario": "tall_lobby_traffic",
     "scheduler": "round_robin",
     "passengers": 198,
     "ticks": 422,
@@ -2483,6 +3067,79 @@
   },
   {
     "scenario": "morning_up_peak_parked",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 166,
+    "ticks": 514,
+    "wait": {
+      "count": 166,
+      "min": 0,
+      "max": 44,
+      "mean": 9.41566265060241,
+      "p50": 3.0,
+      "p90": 36.0
+    },
+    "total": {
+      "count": 166,
+      "min": 1,
+      "max": 63,
+      "mean": 21.843373493975903,
+      "p50": 19.0,
+      "p90": 46.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 42,
+        "stops": 56,
+        "floors_travelled": 422,
+        "busy_ticks": 409,
+        "busy_share": 0.7957198443579766
+      },
+      {
+        "car": 2,
+        "carried": 43,
+        "stops": 58,
+        "floors_travelled": 408,
+        "busy_ticks": 392,
+        "busy_share": 0.7626459143968871
+      },
+      {
+        "car": 3,
+        "carried": 37,
+        "stops": 48,
+        "floors_travelled": 378,
+        "busy_ticks": 360,
+        "busy_share": 0.7003891050583657
+      },
+      {
+        "car": 4,
+        "carried": 44,
+        "stops": 56,
+        "floors_travelled": 440,
+        "busy_ticks": 406,
+        "busy_share": 0.7898832684824902
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.7621595330739299,
+      "busy_spread": 0.09533073929961089,
+      "carried_max_share": 0.26506024096385544,
+      "fair_share": 0.25
+    },
+    "observations": [
+      "54 of 166 passengers (33%) waited more than twice the median wait of 3 ticks",
+      "50 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (142 of 166 requests)",
+      "direction mix: 144 up, 22 down",
+      "elevator 1: carried 42, stops 56, floors travelled 422, busy 80% of ticks",
+      "elevator 2: carried 43, stops 58, floors travelled 408, busy 76% of ticks",
+      "elevator 3: carried 37, stops 48, floors travelled 378, busy 70% of ticks",
+      "elevator 4: carried 44, stops 56, floors travelled 440, busy 79% of ticks",
+      "work balance: elevator 4 carried 27% of passengers (fair share 25%); busy share ranges over 10 points"
+    ]
+  },
+  {
+    "scenario": "morning_up_peak_parked",
     "scheduler": "round_robin",
     "passengers": 166,
     "ticks": 507,
@@ -2807,6 +3464,97 @@
       "elevator 5: carried 45, stops 45, floors travelled 416, busy 97% of ticks",
       "elevator 6: carried 40, stops 37, floors travelled 424, busy 98% of ticks",
       "work balance: elevator 5 carried 23% of passengers (fair share 17%); busy share ranges over 36 points"
+    ]
+  },
+  {
+    "scenario": "tall_lobby_zoned",
+    "scheduler": "nearest_car_balanced",
+    "passengers": 198,
+    "ticks": 471,
+    "wait": {
+      "count": 198,
+      "min": 0,
+      "max": 205,
+      "mean": 52.57070707070707,
+      "p50": 31.0,
+      "p90": 127.0
+    },
+    "total": {
+      "count": 198,
+      "min": 3,
+      "max": 259,
+      "mean": 81.79797979797979,
+      "p50": 61.0,
+      "p90": 178.0
+    },
+    "cars": [
+      {
+        "car": 1,
+        "carried": 27,
+        "stops": 33,
+        "floors_travelled": 275,
+        "busy_ticks": 303,
+        "busy_share": 0.643312101910828
+      },
+      {
+        "car": 2,
+        "carried": 28,
+        "stops": 36,
+        "floors_travelled": 264,
+        "busy_ticks": 295,
+        "busy_share": 0.6263269639065817
+      },
+      {
+        "car": 3,
+        "carried": 35,
+        "stops": 40,
+        "floors_travelled": 244,
+        "busy_ticks": 280,
+        "busy_share": 0.5944798301486199
+      },
+      {
+        "car": 4,
+        "carried": 23,
+        "stops": 25,
+        "floors_travelled": 386,
+        "busy_ticks": 408,
+        "busy_share": 0.8662420382165605
+      },
+      {
+        "car": 5,
+        "carried": 45,
+        "stops": 45,
+        "floors_travelled": 416,
+        "busy_ticks": 459,
+        "busy_share": 0.9745222929936306
+      },
+      {
+        "car": 6,
+        "carried": 40,
+        "stops": 37,
+        "floors_travelled": 424,
+        "busy_ticks": 460,
+        "busy_share": 0.9766454352441614
+      }
+    ],
+    "balance": {
+      "busy_mean": 0.7802547770700636,
+      "busy_spread": 0.3821656050955414,
+      "carried_max_share": 0.22727272727272727,
+      "fair_share": 0.16666666666666666
+    },
+    "observations": [
+      "68 of 198 passengers (34%) waited more than twice the median wait of 31 ticks",
+      "16 passengers boarded in the tick they requested (wait 0)",
+      "busiest origin floor: 1 (158 of 198 requests)",
+      "direction mix: 158 up, 40 down",
+      "elevator 1: carried 27, stops 33, floors travelled 275, busy 64% of ticks",
+      "elevator 2: carried 28, stops 36, floors travelled 264, busy 63% of ticks",
+      "elevator 3: carried 35, stops 40, floors travelled 244, busy 59% of ticks",
+      "elevator 4: carried 23, stops 25, floors travelled 386, busy 87% of ticks",
+      "elevator 5: carried 45, stops 45, floors travelled 416, busy 97% of ticks",
+      "elevator 6: carried 40, stops 37, floors travelled 424, busy 98% of ticks",
+      "work balance: elevator 5 carried 23% of passengers (fair share 17%); busy share ranges over 38 points"
     ]
   },
   {

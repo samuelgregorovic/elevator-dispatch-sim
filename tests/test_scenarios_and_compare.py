@@ -77,7 +77,12 @@ def test_compare_cli_writes_outputs(tmp_path, capsys):
     )
     assert code == 0
     rows = json.loads((tmp_path / "comparison.json").read_text())
-    assert {r["scheduler"] for r in rows} == {"etd", "nearest_car", "round_robin"}
+    assert {r["scheduler"] for r in rows} == {
+        "etd",
+        "nearest_car",
+        "nearest_car_balanced",
+        "round_robin",
+    }
     assert (tmp_path / "comparison.md").exists()
     assert (tmp_path / "traces" / "sample__etd.json").exists()
     assert "sample" in capsys.readouterr().out

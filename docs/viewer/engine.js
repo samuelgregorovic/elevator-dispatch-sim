@@ -97,13 +97,14 @@ function requireFeasible(request, cars) {
 const dirOf = (r) => (r.dest > r.source ? UP : DOWN);
 
 export class NearestCar {
-  constructor() { this.name = 'nearest_car'; }
+  constructor(balanced = false) { this.balanced = balanced; this.name = balanced ? 'nearest_car_balanced' : 'nearest_car'; }
   assign(request, cars) {
-    let best = -1, bestCost = Infinity;
+    let best = -1, bestCost = Infinity, bestOcc = Infinity;
     for (const car of requireFeasible(request, cars)) {
       const distance = Math.abs(car.floor - request.source);
       const cost = approaching(car, request) ? distance : distance + 2 * span(cars);
-      if (cost < bestCost) { best = car.index; bestCost = cost; }
+      const occ = this.balanced ? car.load + car.waiting.length : 0;
+      if (cost < bestCost || (cost === bestCost && occ < bestOcc)) { best = car.index; bestCost = cost; bestOcc = occ; }
     }
     return best;
   }
@@ -175,6 +176,7 @@ export function project(car, now, horizon = null) {
 export function makeScheduler(name, fairness = 0) {
   if (name === 'etd') return new ETD(fairness);
   if (name === 'nearest_car') return new NearestCar();
+  if (name === 'nearest_car_balanced') return new NearestCar(true);
   if (name === 'round_robin') return new RoundRobin();
   throw new Error(`unknown scheduler ${name}`);
 }

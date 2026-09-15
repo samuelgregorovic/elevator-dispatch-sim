@@ -10,6 +10,7 @@ from .round_robin import RoundRobinScheduler
 SCHEDULERS: dict[str, type] = {
     "etd": ETDScheduler,
     "nearest_car": NearestCarScheduler,
+    "nearest_car_balanced": NearestCarScheduler,
     "round_robin": RoundRobinScheduler,
 }
 
@@ -19,6 +20,8 @@ def make_scheduler(name: str, fairness: float = 0.0) -> Scheduler:
         raise ValueError(f"unknown scheduler {name!r}; choose from {sorted(SCHEDULERS)}")
     if name == "etd":
         return ETDScheduler(fairness=fairness)
+    if name == "nearest_car_balanced":
+        return NearestCarScheduler(balanced=True)
     return SCHEDULERS[name]()
 
 

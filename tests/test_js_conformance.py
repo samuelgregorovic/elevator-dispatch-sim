@@ -24,7 +24,13 @@ ROOT = Path(__file__).parent.parent
 ENGINE = ROOT / "docs" / "viewer" / "conform.mjs"
 NODE = shutil.which("node")
 
-VARIANTS = [Variant("etd"), Variant("nearest_car"), Variant("round_robin"), Variant("etd", 0.5)]
+VARIANTS = [
+    Variant("etd"),
+    Variant("nearest_car"),
+    Variant("nearest_car_balanced"),
+    Variant("round_robin"),
+    Variant("etd", 0.5),
+]
 
 
 def run_js(csv: Path, config, variant: Variant) -> dict:

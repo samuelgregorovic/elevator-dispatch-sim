@@ -41,9 +41,19 @@ def test_feed_never_releases_future_requests():
     assert feed.exhausted
 
 
-def test_scheduler_has_no_handle_on_the_feed():
-    spy = SpyScheduler()
-    sim = Simulation(SimulationConfig(elevators=1, floors=10), spy, [req(0, "a", 1, 2)])
-    assert not hasattr(spy, "feed")
-    assert "feed" not in {name for name in dir(spy) if not name.startswith("_")}
-    sim.run(max_ticks=100)
+def test_scheduler_interface_carries_no_feed_and_no_future():
+    # The only thing a scheduler is ever given is (request, cars, now): the protocol has no
+    # parameter through which the feed or the request list could reach it, and the
+    # simulation holds the feed privately. A scheduler cannot peek because there is nothing
+    # to peek at.
+    import inspect
+
+    from elevator_sim.schedulers.base import Scheduler
+
+    params = list(inspect.signature(Scheduler.assign).parameters)
+    assert params == ["self", "request", "cars", "now"]
+    sim = Simulation(SimulationConfig(elevators=1, floors=10), SpyScheduler(), [req(0, "a", 1, 2)])
+    # The simulation's feed is the only path to requests, and nothing hands it to a scheduler:
+    # the scheduler receives cars and the clock, never the simulation or the feed.
+    assert not any(isinstance(v, Simulation) for v in vars(sim.scheduler).values())
+    assert "feed" not in vars(sim.scheduler)

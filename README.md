@@ -16,7 +16,7 @@ Discrete-time simulation of a destination-dispatch elevator system, built agains
 - **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): traffic patterns for any building, all three rules side by side with a live ranking, add passengers, live traffic, your own CSV. Space to play, ← → to step.
 - **[The presentation](docs/presentation/elevator-dispatch.pdf)** — a sixteen-slide walkthrough with speaker notes ([PowerPoint](docs/presentation/elevator-dispatch.pptx)): the question, the model, the rules, the evidence, which rule for which building, and how the work was done.
 - **[The whitepaper](docs/WHITEPAPER.md)** — the whole story top to bottom for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
-- **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
+- **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows). [`robustness.md`](docs/results/robustness.md) re-runs every pattern with twenty fresh seeds and says which findings hold.
 - **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps, car usage and balance.
 - **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).
 - **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
@@ -48,16 +48,21 @@ wait         0    45   15.00      0     45
 travel      20    51   36.00     37     51
 total       37    65   51.00     51     65
 
+car      carried  stops  floors   busy
+1              1      2      50    66%
+2              2      4      72    97%
+
 observations:
   - median wait is 0 ticks: most passengers boarded immediately
   - 2 passengers boarded in the tick they requested (wait 0)
   - busiest origin floor: 1 (2 of 3 requests)
   - direction mix: 2 up, 1 down
-  - elevator 1: carried 1, stops 2, floors travelled 50, idle 34% of ticks
-  - elevator 2: carried 2, stops 4, floors travelled 72, idle 3% of ticks
+  - elevator 1: carried 1, stops 2, floors travelled 50, busy 66% of ticks
+  - elevator 2: carried 2, stops 4, floors travelled 72, busy 97% of ticks
+  - work balance: elevator 2 carried 67% of passengers (fair share 50%); busy share ranges over 31 points
 ```
 
-Options for `run`: `--scheduler {etd,nearest_car,round_robin}` (default `etd`), `--fairness W` (ETD age weight, default 0), `--dwell N` (ticks per stop, default 1; `0` is the literal brief), `--start-floor`, `--park-floor` (send idle cars there), `--express CAR:FLOORS` (e.g. `--express 3:1,30-51` makes car 3 serve only the lobby and floors 30–51).
+Options for `run`: `--scheduler {etd,nearest_car,nearest_car_balanced,round_robin}` (default `etd`), `--fairness W` (ETD age weight, default 0), `--dwell N` (ticks per stop, default 1; `0` is the literal brief), `--start-floor`, `--park-floor` (send idle cars there), `--express CAR:FLOORS` (e.g. `--express 3:1,30-51` makes car 3 serve only the lobby and floors 30–51).
 
 Other commands:
 
@@ -65,8 +70,9 @@ Other commands:
 uv run python -m elevator_sim compare                    # every scheduler × every scenario, table + JSON
 uv run python -m elevator_sim compare --fairness 0.5 --out docs/results          # regenerate the committed tables
 uv run python scenarios/generate.py                      # regenerate the scenario CSVs (seeded, byte-identical)
+uv run python scenarios/robustness.py                    # twenty fresh seeds per pattern -> docs/results/robustness.md (~2 min)
 uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # PNG charts as committed
-uv run pytest                                            # 131 tests (40 are the JS/Python conformance matrix; need Node)
+uv run pytest                                            # 192 tests (50 are the JS/Python conformance matrix; need Node)
 uv run ruff check . && uv run ruff format --check .
 ```
 
@@ -78,23 +84,24 @@ uv run ruff check . && uv run ruff format --check .
 | **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` and `round_robin` as baselines. |
 | **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature, plus a capacity burst and two 51-floor cases chosen as stress tests; policy variants for parking at the lobby and zoned express cars. |
 | **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and an interactive browser simulator on GitHub Pages (JavaScript port of the engine, conformance-tested against Python). |
-| **Tests** | 131 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
+| **Tests** | 192 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics for every committed result, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
 
 ## Results in brief
 
 Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/results/comparison.md`](docs/results/comparison.md); which rule and policy to choose for which building, with the reasoning, in [`docs/WHITEPAPER.md`](docs/WHITEPAPER.md#which-rule-which-policy-for-which-building).
 
-- ETD has the lowest average and p90 wait on every realistic traffic pattern: 1.2× (quiet interfloor) to 3.7× (tall building) lower average wait than nearest-car, and 2–3.3× lower than round robin.
-- Under a single-origin capacity burst ETD and round robin tie: when the system is saturated the only lever is spreading load evenly.
-- ETD also uses the least car-time (cars busy 62% of the morning peak against 89% nearest-car and 95% round robin) but shares the work least evenly (one car in four carries 36% of the passengers); the fairness weight evens the cars as a side effect. Per-car usage is reported by every command and shown live in the simulator.
-- Parking idle cars at the lobby cuts ETD's up-peak average wait by ~40%. A fairness weight of 0.5 halves the tall building's maximum wait at a ~25% cost in average wait, improves everything under the capacity burst, and is close to neutral on the 20-floor patterns — a per-building tuning knob, not a free improvement.
+- ETD has the lowest average and p90 wait on every realistic traffic pattern, and the finding holds across twenty fresh seeds of every pattern (lowest in 119 of 120 runs on the six non-saturated patterns — [`docs/results/robustness.md`](docs/results/robustness.md)). The margin over nearest-car is 1.2× (quiet interfloor) to 3.7× (tall building) on the committed seeds and 1.2× to 2.6 ± 0.8× across seeds; 2–3× over round robin.
+- Under a single-origin capacity burst the rules are within noise of each other: when the system is saturated the only lever is spreading load evenly, and no rule has an edge.
+- ETD also uses the least car-time (cars busy 62% of the morning peak against 89% nearest-car and 95% round robin) but shares the work least evenly (one car in four carries 36% of the passengers); the fairness weight narrows that gap in most seeds. Per-car usage is reported by every command and shown live in the simulator.
+- Parking idle cars at the lobby cuts ETD's up-peak average wait by ~40% (every seed). A fairness weight of 0.5 improves everything under the capacity burst (14 of 20 seeds); on the tall building it halved the maximum wait on the committed seed but not across seeds (4 of 20), where it raises the average — a per-building tuning knob that at these loads pays under saturation, not a free improvement.
+- Zoning six cars into local and express at moderate load is a null result: worse on the committed seed, within noise across twenty.
 - Splitting six cars into local and express zones is worse than six free cars at moderate load: zoning trades flexibility for stop reduction and only pays off under saturation.
 
 ![Waiting-time distribution on the tall building](docs/charts/wait_distribution_tall_building.png)
 
 ## Time and cost
 
-About one hour of my own time framing the problem, writing the plan and reviewing the outputs, then autonomous execution of the plan by AI tooling, plus follow-up steering for later changes. AI usage cost less than €50 in total, across Fable 5.1 at medium effort for the planning, execution, fixes and documentation, with Opus 5 and Sonnet 5 on smaller follow-up tasks; the two design-tool runs (interface and deck) are included.
+Two sessions on consecutive days. On the first, one to two hours of my own time framing the problem, reviewing the plan and then its autonomous execution. On the second, two to three hours reviewing and steering the later phases — adversarial testing, the simulator redesign, documentation, the interface, the car-usage metrics and the presentation — and tweaking what came back. Roughly four hours of my attention in all; the commit history spans about six hours of wall-clock, the rest being the assistant working. AI usage cost less than €50 in total, across Fable 5.1 at medium effort for the planning, execution, fixes and documentation, with Opus 5 and Sonnet 5 on smaller follow-up tasks; the two design-tool runs (interface and deck) are included.
 
 ## Assumptions, simplifications and trade-offs
 

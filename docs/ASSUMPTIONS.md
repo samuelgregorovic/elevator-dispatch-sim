@@ -46,13 +46,13 @@ Consequence: a passenger who requests at `t` on the floor where an idle car alre
 
 One refinement, found by a property-based test: a passenger waiting at the car's current floor who wants to travel in the car's current direction counts as a stop ahead. Without it, a single car with two waiting passengers on adjacent floors wanting opposite directions reverses at each floor before either can board and oscillates forever.
 
-**A13. Tie-breaking is deterministic.** When two cars have equal cost, the lower car index wins. Combined with seeded scenario generation this makes every run reproducible byte for byte.
+**A13. Tie-breaking is deterministic.** When two cars have equal cost, the lower car index wins. Combined with seeded scenario generation this makes every run reproducible byte for byte. For nearest-car, which has no load term, this means simultaneous requests at one floor all go to the lowest-index idle car there; the `nearest_car_balanced` variant breaks ties by occupancy instead, and the comparison reports both so that the share of the margin due to the tie-break is visible (small across seeds; see `results/robustness.md`).
 
 ## Input
 
 **A14. Input format.** CSV with header `time,id,source,dest`, as in the brief. Rows need not be sorted; they are sorted by `time` (stable, preserving file order within a tick) on load. Sorting is not peeking: the controller still only sees a row once the clock reaches its `time`.
 
-**A15. Validation.** The following are rejected with a message naming the row: rows with fewer than four fields; non-integer fields; `time < 0`; `source == dest`; `source` or `dest` outside `1..n`; duplicate `id`. An empty request list is valid and produces a single log row for tick 0.
+**A15. Validation.** The following are rejected with a message naming the row: rows with fewer than four fields; non-integer fields; `time < 0`; `source == dest`; `source` or `dest` outside `1..n`; duplicate `id`. An empty request list is valid and produces a single log row for tick 0. The parser is otherwise Python's: rows with extra fields are accepted and the extras ignored, `int()` accepts `1_000`, ` 3 `, `+1` and Unicode digits, and a file with only a header runs as no passengers. None of these produce a wrong result, so they are documented rather than rejected.
 
 **A16. No peek-ahead is structural.** The simulation reads requests through a feed object that only releases rows with `time <= now`. The scheduler receives new requests one tick at a time and has no reference to the feed. A spy scheduler that records the clock at which it sees each request asserts this, and the feed's release rule is tested directly.
 
@@ -64,7 +64,7 @@ One refinement, found by a property-based test: a passenger waiting at the car's
 
 **A19. Statistics.** For wait and total time: min, max, mean, p50, p90; plus a short list of generated observations (share of passengers waiting more than twice the median, busiest origin floor, per-car usage and balance).
 
-**A20. Car usage and balance.** Per car: passengers carried, stops, floors travelled, and *busy ticks* — ticks in which the car has a passenger aboard or a passenger assigned and still waiting; *busy share* is busy ticks over ticks simulated. A car moving to park is not busy. Balance across cars: the mean busy share (how much car-time the rule spends), the *spread* (busiest minus least busy car's share, in points), and the busiest car's share of delivered passengers against the fair share 1/cars. Reason: waiting time says how the passengers fared; these say how the cars were used — the same result achieved with less car-time is cheaper to run, and work concentrated on one car is uneven wear. Both are reported by `run`, `compare`, the charts and the browser simulator, and the browser port is held to the Python definition by the conformance test.
+**A20. Car usage and balance.** Per car: passengers carried, stops, floors travelled, and *busy ticks* — ticks in which the car has a passenger aboard or a passenger assigned and still waiting; *busy share* is busy ticks over ticks simulated. A car moving to park is not busy, and a parked run lasts until the cars have parked, so its busy shares are computed over a slightly longer run than the unparked one (484 against 474 ticks on the morning peak). Balance across cars: the mean busy share (how much car-time the rule spends), the *spread* (busiest minus least busy car's share, in points), and the busiest car's share of delivered passengers against the fair share 1/cars. Reason: waiting time says how the passengers fared; these say how the cars were used — the same result achieved with less car-time is cheaper to run, and work concentrated on one car is uneven wear. Both are reported by `run`, `compare`, the charts and the browser simulator, and the browser port is held to the Python definition by the conformance test.
 
 ## Out of scope
 

@@ -1,6 +1,6 @@
 # Testing approach
 
-`uv run pytest` — 131 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix.
+`uv run pytest` — 192 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix.
 
 The suite is organised by what kind of mistake it would catch, not by module.
 
@@ -16,7 +16,7 @@ These tests are deliberately tiny — one to four requests, one or two cars — 
 
 `test_no_peek_ahead.py`
 
-A spy *scheduler* records the clock value at which it sees each request. The test asserts that every request is seen exactly at its own `time`, never earlier, on an input that is deliberately out of order. The `RequestFeed` is also tested directly for its release rule. This is the brief's hardest constraint to trust by inspection, so it is tested rather than promised.
+A spy *scheduler* records the clock value at which it sees each request. The test asserts that every request is seen exactly at its own `time`, never earlier, on an input that is deliberately out of order. The `RequestFeed` is also tested directly for its release rule, and the scheduler protocol's signature is asserted to carry only `(request, cars, now)` — there is no parameter through which a feed could reach a scheduler. This is the brief's hardest constraint to trust by inspection, so it is tested rather than promised.
 
 ## 3. Property-based invariants
 
@@ -34,9 +34,9 @@ These are the properties the brief's three objectives translate into. The delive
 
 ## 4. Regression tests: golden statistics
 
-`test_scenarios_golden.py`, `test_policies.py`
+`test_scenarios_golden.py`, `test_results_golden.py`, `test_policies.py`
 
-The sample from the brief is run with each scheduler and its tick count, wait and total statistics are pinned. Three empirical findings from the committed scenarios are pinned as inequalities (parking reduces up-peak wait; the fairness weight lowers the maximum wait on `tall_lobby_traffic`; the zoned scenario is fully served). Any change in behaviour — intended or not — changes these numbers and has to be acknowledged by updating the test.
+The sample from the brief is run with each scheduler and its tick count, wait and total statistics are pinned. Every row of the committed comparison table (`docs/results/comparison.json`, 50 scenario × variant rows) is regenerated and compared field by field — passengers, ticks, wait and total distributions, per-car usage, balance — so that a behaviour change cannot orphan a figure quoted in the README, the design notes, the whitepaper or the deck without failing the suite. Three empirical findings are pinned as inequalities (parking reduces up-peak wait; the fairness weight lowers the maximum wait under the capacity burst; the zoned scenario is fully served); only findings that also held across fresh seeds (`docs/results/robustness.md`) are pinned this way — an earlier test pinned the fairness effect on the tall lobby traffic, which the seed study showed was a coincidence of the committed seed.
 
 ## 5. Scenario and tooling tests
 
@@ -48,7 +48,7 @@ The scenario generator is re-run inside the test and its output compared byte fo
 
 `test_js_conformance.py`
 
-The interactive simulator on GitHub Pages runs a JavaScript port of the engine (`docs/viewer/engine.js`). Two implementations of the same rules will drift unless something stops them, so the suite runs the port with Node (`docs/viewer/conform.mjs`) on every committed scenario with every scheduler — 40 combinations — and asserts that positions per tick, the full event list, every passenger's assignment, boarding and alighting ticks, and every car's carried, stops, floors and busy ticks are identical to Python's. Skipped when Node is absent; CI installs it.
+The interactive simulator on GitHub Pages runs a JavaScript port of the engine (`docs/viewer/engine.js`). Two implementations of the same rules will drift unless something stops them, so the suite runs the port with Node (`docs/viewer/conform.mjs`) on every committed scenario with every scheduler variant — 50 combinations — and asserts that positions per tick, the full event list, every passenger's assignment, boarding and alighting ticks, and every car's carried, stops, floors and busy ticks are identical to Python's. Skipped when Node is absent; CI installs it.
 
 ## What is not tested, and why
 

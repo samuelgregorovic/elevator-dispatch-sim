@@ -10,17 +10,26 @@ from .base import require_feasible
 
 class NearestCarScheduler:
     """Pick the car with the smallest distance to the origin, penalising cars that would
-    have to reverse first. Ignores queued stops, which is its documented weakness."""
+    have to reverse first. Ignores queued stops, which is its documented weakness.
 
-    name = "nearest_car"
+    Ties go to the lowest car index (A13). With ``balanced=True`` they go instead to the
+    car with the fewest passengers assigned or aboard, which is the one thing a real
+    nearest-car controller would add; the comparison reports both so that the margin
+    attributable to the tie-break is visible (docs/results/robustness.md).
+    """
+
+    def __init__(self, balanced: bool = False) -> None:
+        self.balanced = balanced
+        self.name = "nearest_car_balanced" if balanced else "nearest_car"
 
     def assign(self, request: Request, cars: Sequence[Elevator], now: int) -> int:
-        best_index, best_cost = -1, float("inf")
+        best_index, best_key = -1, (float("inf"), float("inf"))
         for car in require_feasible(request, cars):
             distance = abs(car.floor - request.source)
             cost = distance if _approaching(car, request) else distance + 2 * _span(cars)
-            if cost < best_cost:
-                best_index, best_cost = car.index, cost
+            occupancy = car.load + len(car.waiting) if self.balanced else 0
+            if (cost, occupancy) < best_key:
+                best_index, best_key = car.index, (cost, occupancy)
         return best_index
 
 

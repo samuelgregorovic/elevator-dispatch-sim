@@ -40,8 +40,15 @@ def _add_config_args(p: argparse.ArgumentParser) -> None:
 def _config_from_args(a: argparse.Namespace) -> SimulationConfig:
     served: dict[int, frozenset[int]] = {}
     for spec in a.express:
-        car, _, floors = spec.partition(":")
-        served[int(car) - 1] = frozenset(parse_floors(floors))
+        car, sep, floors = spec.partition(":")
+        try:
+            if not sep or not car.isdigit():
+                raise ValueError
+            served[int(car) - 1] = frozenset(parse_floors(floors))
+        except ValueError:
+            raise ValueError(
+                f"--express expects CAR:FLOORS such as 3:1,30-51, got {spec!r}"
+            ) from None
     return SimulationConfig(
         elevators=a.elevators,
         floors=a.floors,
@@ -159,7 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except (InvalidInputError, ValueError, RuntimeError) as exc:
+    except (InvalidInputError, ValueError, RuntimeError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

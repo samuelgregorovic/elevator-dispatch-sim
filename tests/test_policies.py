@@ -1,7 +1,9 @@
 """Bonus policies: fairness weight, express cars, park-at-lobby.
 
 The last three tests are empirical: they pin findings from the committed
-scenarios (see docs/DESIGN.md) so that a change in behaviour is noticed.
+scenarios (see docs/DESIGN.md) so that a change in behaviour is noticed. Only
+findings that also held across fresh seeds (docs/results/robustness.md) are
+pinned.
 """
 
 from __future__ import annotations
@@ -69,9 +71,10 @@ def test_parking_at_lobby_reduces_up_peak_wait_for_etd():
     assert parked["wait"]["mean"] < unparked["wait"]["mean"]
 
 
-def test_fairness_weight_lowers_max_wait_on_tall_lobby_traffic():
-    rows = run_matrix(
-        [scenario("tall_lobby_traffic")], [Variant("etd"), Variant("etd", fairness=0.5)]
-    )
+def test_fairness_weight_lowers_max_wait_under_the_capacity_burst():
+    # The one committed scenario where the effect held across fresh seeds as well
+    # (docs/results/robustness.md: 14 of 20). The tall-building version of this test was
+    # dropped after the seed study showed it pinned a coincidence.
+    rows = run_matrix([scenario("capacity_stress")], [Variant("etd"), Variant("etd", fairness=0.5)])
     plain, fair = rows
     assert fair["wait"]["max"] < plain["wait"]["max"]
