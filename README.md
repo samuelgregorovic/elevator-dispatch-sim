@@ -95,13 +95,12 @@ Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in 
 - ETD also uses the least car-time (cars busy 62% of the morning peak against 89% nearest-car and 95% round robin) but shares the work least evenly (one car in four carries 36% of the passengers); the fairness weight narrows that gap in most seeds. Per-car usage is reported by every command and shown live in the simulator.
 - Parking idle cars at the lobby cuts ETD's up-peak average wait by ~40% (every seed). A fairness weight of 0.5 improves everything under the capacity burst (14 of 20 seeds); on the tall building it halved the maximum wait on the committed seed but not across seeds (4 of 20), where it raises the average — a per-building tuning knob that at these loads pays under saturation, not a free improvement.
 - Zoning six cars into local and express at moderate load is a null result: worse on the committed seed, within noise across twenty.
-- Splitting six cars into local and express zones is worse than six free cars at moderate load: zoning trades flexibility for stop reduction and only pays off under saturation.
 
 ![Waiting-time distribution on the tall building](docs/charts/wait_distribution_tall_building.png)
 
 ## Time and cost
 
-Two sessions on consecutive days. On the first, one to two hours of my own time framing the problem, reviewing the plan and then its autonomous execution. On the second, two to three hours reviewing and steering the later phases — adversarial testing, the simulator redesign, documentation, the interface, the car-usage metrics and the presentation — and tweaking what came back. Roughly four hours of my attention in all; the commit history spans about six hours of wall-clock, the rest being the assistant working. AI usage cost less than €50 in total, across Fable 5.1 at medium effort for the planning, execution, fixes and documentation, with Opus 5 and Sonnet 5 on smaller follow-up tasks; the two design-tool runs (interface and deck) are included.
+Two sessions on consecutive days. On the first, one to two hours of my own time framing the problem, reviewing the plan and then its autonomous execution. On the second, two to three hours reviewing and steering the later phases — adversarial testing, the simulator redesign, documentation, the interface, the car-usage metrics and the presentation — and tweaking what came back. Roughly four hours of my attention in all; the commit history spans about seven hours of wall-clock, the rest being the assistant working. AI usage cost less than €50 in total, across Fable 5.1 at medium effort for the planning, execution, fixes and documentation, with Opus 5 and Sonnet 5 on smaller follow-up tasks; the two design-tool runs (interface and deck) are included.
 
 ## Assumptions, simplifications and trade-offs
 

@@ -1,6 +1,6 @@
 # Testing approach
 
-`uv run pytest` — 192 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix.
+`uv run pytest` — 192 tests, about twenty seconds, no network, no fixtures beyond the committed scenario files. CI runs the suite with `ruff` on Python 3.11 and 3.12, with Node installed for the conformance matrix — on push, so commits pushed in a batch are checked only at the batch's head; the pre-commit hook in `.githooks/` runs the same three commands locally on every commit.
 
 The suite is organised by what kind of mistake it would catch, not by module.
 
