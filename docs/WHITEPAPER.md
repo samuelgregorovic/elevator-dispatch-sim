@@ -156,7 +156,7 @@ Separately, the finished system was reviewed end to end — requirements against
 
 ## How the work was done
 
-One engineer, AI tooling, two days. The plan came first, with every ambiguity in the brief resolved in writing before code; the engine, tests, scenarios and comparison followed in that order; then a round of adversarial testing, the browser simulator and this document. Time and cost are stated in the README.
+One engineer, AI tooling, two days. The plan came first, with every ambiguity in the brief resolved in writing before code; the engine, tests, scenarios and comparison followed in that order; then a round of adversarial testing, the browser simulator, this document, the interface, the car-usage metrics, the presentation and the sensitivity studies. Time and cost are stated in the README.
 
 ## Reproducing every number
 

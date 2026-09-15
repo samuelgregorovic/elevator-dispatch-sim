@@ -2,25 +2,34 @@
 
 [![ci](https://github.com/samuelgregorovic/elevator-dispatch-sim/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelgregorovic/elevator-dispatch-sim/actions/workflows/ci.yml)
 
-Discrete-time simulation of a destination-dispatch elevator system, built against the brief in [`docs/brief.pdf`](docs/brief.pdf): configurable cars, floors and capacity; three scheduling algorithms behind one interface; the positions log and passenger statistics the brief asks for; and a measured comparison of the schedulers on realistic traffic patterns.
+Discrete-time simulation of a destination-dispatch elevator system, built against the brief in [`docs/brief.pdf`](docs/brief.pdf): configurable cars, floors and capacity; three scheduling algorithms behind one interface; the positions log and passenger statistics the brief asks for; and a measured comparison of the schedulers on realistic traffic — one seed, twenty seeds, and five sensitivity studies.
 
-**See it run without installing anything:** [the interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) runs the engine in your browser — pick a traffic pattern and any building (cars, floors, capacity, number of people), watch all three rules side by side on identical traffic with a live ranking, click a floor to add a passenger, turn on continuous arrivals, or upload your own CSV. It is a JavaScript port of the Python engine, verified identical on every committed scenario by an automated test.
+## See it without installing anything
 
+| [**Live simulator →**](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) | [**Analysis explorer →**](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/results/) |
+|---|---|
+| The engine in your browser. Pick a traffic pattern and any building, watch all three rules on identical traffic with a live ranking, click a floor to add a passenger, set the stop cost, upload your own CSV. A JavaScript port of the Python engine, verified identical on every committed scenario. | Every result on one page. Pick a metric and the rules; see the committed comparison, the seed spreads, and the five studies — stop cost, load, how many cars, a burst, an office day — as interactive charts drawn from the committed JSON. |
+| [![The simulator](docs/charts/simulator.png)](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) | [![The analysis explorer](docs/charts/explorer.png)](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/results/) |
 
-[![The interactive simulator: all three rules on the morning rush, live standings](docs/charts/simulator.png)](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)
+Also readable on GitHub:
+
+- **[The whitepaper](docs/WHITEPAPER.md)** — the whole story for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
+- **[The presentation](docs/presentation/elevator-dispatch.pdf)** — nineteen slides with speaker notes ([PowerPoint](docs/presentation/elevator-dispatch.pptx)).
+- **[Results](docs/results/)** — [`comparison.md`](docs/results/comparison.md) (every scheduler on every scenario), [`robustness.md`](docs/results/robustness.md) (twenty fresh seeds per pattern), [`studies.md`](docs/results/studies.md) (stop cost, load, cars, bursts, the office day); discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
+- **[Charts](docs/charts/)** and **[an example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak.
+- **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
+
+## Results in brief
+
+- **Smart dispatch (ETD) has the lowest average and p90 wait on every realistic traffic pattern**, and the finding holds across twenty fresh seeds of every pattern (lowest in 119 of 120 runs on the six non-saturated patterns). Its margin over nearest-car is 1.2× on quiet traffic, 1.5–2× on office peaks and 2.6 ± 0.8× on a 51-floor tower (3.7× on the committed seed); 2–3× over round robin.
+- **The margin grows with load.** On the morning peak, from half to double arrivals, ETD's average wait goes from 6 to 11 ticks, nearest-car's from 8 to 31 — and it holds when stops cost nothing (the brief's literal model), one tick or two.
+- **It is a sizing question.** For at most one passenger in ten waiting over 30 ticks (about a minute), ETD needs 2 cars on the morning peak where the baselines need 5, and 9 on the tower where they need more than 10.
+- **It recovers.** After a 30-person burst at one floor, ETD is back to normal in ~25 ticks; take turns ~40; nearest-car ~120.
+- **Park by the clock or not at all.** Parking idle cars at the lobby cuts morning up-peak wait ~40% on every seed, but parked there all day it gives the gain back by evening; a schedule that follows the traffic (`--park-schedule`) cuts an office day's average wait by 11%.
+- **ETD uses the least car travel per passenger** (6.1 floors against 9.3 and 10.0) because it bundles people going the same way — its riders sit through more intermediate stops, not fewer — and it shares the work least evenly (one car in four carries 36% of the passengers); the fairness weight narrows that gap in most seeds.
+- **Two honest negatives.** Under a saturated lobby burst the three rules are within noise of each other; and zoning six cars into local and express at moderate load is a null result. A fairness weight of 0.5 reliably helps only under saturation.
 
 ![Average and p90 waiting time per scenario and scheduler](docs/charts/wait_by_scenario.png)
-
-## Looking at the solution on GitHub, without running anything
-
-- **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): traffic patterns for any building, all three rules side by side with a live ranking, add passengers, live traffic, your own CSV. Space to play, ← → to step.
-- **[The presentation](docs/presentation/elevator-dispatch.pdf)** — a nineteen-slide walkthrough with speaker notes ([PowerPoint](docs/presentation/elevator-dispatch.pptx)): the question, the model, the rules, the evidence, which rule for which building, and how the work was done.
-- **[The whitepaper](docs/WHITEPAPER.md)** — the whole story top to bottom for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
-- **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows). [`robustness.md`](docs/results/robustness.md) re-runs every pattern with twenty fresh seeds and says which findings hold.
-- **[Analysis explorer](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/results/)** — every result in one interactive page: pick a pattern, a metric and the rules, and see the comparison, the seed spreads, the load and car sweeps, the burst and the office day, with the charts drawn from the committed JSON.
-- **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps, car usage and balance, stop-cost sensitivity, load curve, car sweep, backlog, who waits, wait by time of day.
-- **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).
-- **[Source](src/elevator_sim/)** — start at [`simulation.py`](src/elevator_sim/simulation.py) for the tick loop, [`model.py`](src/elevator_sim/model.py) for car behaviour, [`schedulers/etd.py`](src/elevator_sim/schedulers/etd.py) for the cost function; [`tests/`](tests/) for what is guaranteed.
 
 ## How to run
 
@@ -69,15 +78,14 @@ observations:
 
 Options for `run`: `--scheduler {etd,nearest_car,nearest_car_balanced,round_robin}` (default `etd`), `--fairness W` (ETD age weight, default 0), `--dwell N` (ticks per stop, default 1; `0` is the literal brief), `--start-floor`, `--park-floor` (send idle cars there), `--park-schedule 0:1,900:16` (park floor by time of day), `--express CAR:FLOORS` (e.g. `--express 3:1,30-51` makes car 3 serve only the lobby and floors 30–51).
 
-Other commands:
+Everything committed regenerates byte for byte:
 
 ```bash
-uv run python -m elevator_sim compare                    # every scheduler × every scenario, table + JSON
-uv run python -m elevator_sim compare --fairness 0.5 --out docs/results          # regenerate the committed tables
-uv run python scenarios/generate.py                      # regenerate the scenario CSVs (seeded, byte-identical)
+uv run python -m elevator_sim compare --fairness 0.5 --out docs/results   # every scheduler × every scenario -> docs/results/comparison.{md,json}
+uv run python scenarios/generate.py                      # the scenario CSVs (seeded)
 uv run python scenarios/robustness.py                    # twenty fresh seeds per pattern -> docs/results/robustness.md (~2 min)
 uv run python scenarios/studies.py                       # stop cost, load, cars, bursts, office day -> docs/results/studies.md + charts (~3 min)
-uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # PNG charts as committed
+uv sync --group dev --extra viz && uv run python -m elevator_sim report --fairness 0.05 --fairness 0.2 --fairness 0.5 --fairness 1   # the PNG charts
 uv run pytest                                            # 225 tests (65 are the JS/Python conformance matrix; need Node)
 uv run ruff check . && uv run ruff format --check .
 ```
@@ -87,47 +95,35 @@ uv run ruff check . && uv run ruff format --check .
 | | |
 |---|---|
 | **Engine** | Tick loop with a fixed order of operations; LOOK car movement; capacity; configurable dwell per stop; a request feed that structurally cannot peek ahead; input validation that fails fast with the row named. |
-| **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` and `round_robin` as baselines. |
-| **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature, plus a capacity burst and two 51-floor cases chosen as stress tests; policy variants for parking at the lobby and zoned express cars. |
-| **Outputs** | Positions log, JSON trace, statistics with p50/p90 and generated observations, a comparison table, PNG charts, and an interactive browser simulator on GitHub Pages (JavaScript port of the engine, conformance-tested against Python). |
-| **Tests** | 225 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics for every committed result, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz and malformed inputs. |
-
-## Results in brief
-
-Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/results/comparison.md`](docs/results/comparison.md); which rule and policy to choose for which building, with the reasoning, in [`docs/WHITEPAPER.md`](docs/WHITEPAPER.md#which-rule-which-policy-for-which-building).
-
-- ETD has the lowest average and p90 wait on every realistic traffic pattern, and the finding holds across twenty fresh seeds of every pattern (lowest in 119 of 120 runs on the six non-saturated patterns — [`docs/results/robustness.md`](docs/results/robustness.md)). The margin over nearest-car is 1.2× (quiet interfloor) to 3.7× (tall building) on the committed seeds and 1.2× to 2.6 ± 0.8× across seeds; 2–3× over round robin.
-- Under a single-origin capacity burst the rules are within noise of each other: when the system is saturated the only lever is spreading load evenly, and no rule has an edge.
-- ETD also uses the least car-time (cars busy 62% of the morning peak against 89% nearest-car and 95% round robin) but shares the work least evenly (one car in four carries 36% of the passengers); the fairness weight narrows that gap in most seeds. Per-car usage is reported by every command and shown live in the simulator.
-- The ranking holds when stops cost nothing (the brief's literal model), one tick or two; ETD's lead grows with load (morning peak at double arrivals: 11 ticks against nearest-car's 31); for a service level of at most one in ten waiting over 30 ticks, ETD needs 2 cars on the morning peak where the baselines need 5, and 9 on the tower where they need more than 10; after a 30-person burst ETD recovers in ~25 ticks, nearest-car in ~120 ([`docs/results/studies.md`](docs/results/studies.md)).
-- Over a whole office day parking at the lobby all day is neutral (it wins the morning and loses the evening); a park schedule that follows the traffic (`--park-schedule`) cuts the day's average wait by 11%.
-- Parking idle cars at the lobby cuts ETD's up-peak average wait by ~40% (every seed). A fairness weight of 0.5 improves everything under the capacity burst (14 of 20 seeds); on the tall building it halved the maximum wait on the committed seed but not across seeds (4 of 20), where it raises the average — a per-building tuning knob that at these loads pays under saturation, not a free improvement.
-- Zoning six cars into local and express at moderate load is a null result: worse on the committed seed, within noise across twenty.
-
-![Waiting-time distribution on the tall building](docs/charts/wait_distribution_tall_building.png)
-
-## Time and cost
-
-Two sessions on consecutive days. On the first, about two hours of my own time framing the problem, reviewing the plan and then its autonomous execution. On the second, about four hours reviewing and steering the later phases — adversarial testing, the simulator redesign, documentation, the interface, the car-usage metrics, the presentation and the sensitivity studies — and tweaking what came back. About six hours of my attention in all; the assistant ran unsupervised for a further three to four hours across those phases. AI usage cost less than €100 in total, across Fable 5.1 at medium effort for the planning, execution, fixes and documentation, with Opus 5 and Sonnet 5 on smaller follow-up tasks; the two design-tool runs (interface and deck) are included.
+| **Schedulers** | `etd` — estimated-time-to-destination cost-based assignment as used by commercial destination-dispatch controllers, with an optional fairness weight; `nearest_car` (and a variant with balanced tie-breaks) and `round_robin` as baselines. |
+| **Policies** | Park idle cars at a floor, or by a time-of-day schedule; zoned express cars. |
+| **Scenarios** | Seeded generator for morning up-peak, lunchtime two-way, evening down-peak and interfloor traffic with the office mixes from the elevator-traffic literature; a capacity burst; two 51-floor cases; a whole office day; policy variants for parking and zoning. |
+| **Analysis** | A comparison table; a twenty-seed robustness study; five sensitivity studies (stop cost, load, car count, a burst, the day); PNG charts; the interactive explorer. |
+| **Outputs** | Positions log, JSON trace, statistics with p50/p90, the share of long waits, per-car usage and balance, efficiency per trip, generated observations; the browser simulator (JavaScript port of the engine, conformance-tested against Python). |
+| **Tests** | 225 tests: unit tests for every observable assumption, a structural no-peek-ahead test, property-based invariants over random buildings, golden statistics for every committed result, end-to-end CLI checks, and a JavaScript/Python conformance matrix — plus adversarial testing: a 400-seed fuzz, malformed inputs, and twenty fresh seeds per pattern. |
 
 ## Assumptions, simplifications and trade-offs
 
-Every decision the brief left open — what costs time, the order of operations inside a tick, immutable assignment, direction discipline, floor numbering, idle behaviour, validation — is recorded with its reason in [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md). Design-level trade-offs (tick-based over event-driven, exact projection over a heuristic ETA, greedy per-request assignment, immutable assignment) are discussed in [`docs/DESIGN.md`](docs/DESIGN.md). The testing approach is in [`docs/TESTING.md`](docs/TESTING.md).
+Every decision the brief left open — what costs time, the order of operations inside a tick, immutable assignment, direction discipline, floor numbering, idle behaviour, validation, the service-level threshold, the seconds conversion — is recorded with its reason in [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md). Design-level trade-offs (tick-based over event-driven, exact projection over a heuristic ETA, greedy per-request assignment, immutable assignment) are discussed in [`docs/DESIGN.md`](docs/DESIGN.md). The testing approach is in [`docs/TESTING.md`](docs/TESTING.md).
+
+## Time and cost
+
+Built with AI tooling, over two sessions on consecutive days: about two hours of my own time on the first, framing the problem and reviewing the plan and the first build; about four on the second, reviewing and steering the later work — the adversarial testing, the simulator, the documentation, the interface, the metrics, the presentation and the sensitivity studies. Six hours of my attention in all, plus three to four hours of unattended AI runs. AI usage cost under €100 in total (Fable 5.1 at medium effort for most of it, Opus 5 and Sonnet 5 on smaller tasks, the two design-tool runs for the interface and the deck included).
 
 ## What I would improve with more time
 
 1. **Reassignment window.** Allow the controller to move a passenger to another car until their car starts slowing for the pickup, as hybrid ETA systems do. This is the single change most likely to improve results under bursty load, and it needs a display model (what the passenger was told) to stay honest.
 2. **Batch re-optimisation.** Re-evaluate all outstanding assignments every few ticks instead of deciding each request once; the greedy per-request choice is what loses on the brief's three-request sample.
-3. **Time-of-day policies.** Parking floor and fairness weight should follow the traffic profile (park low in up-peak, high in down-peak) rather than being fixed per run.
-4. **Richer physics.** Door times and acceleration would make dwell a function of stop type; the one-tick model is enough to make stops cost something, which is all the comparison needs.
-5. **Sky-lobby transfers.** Two-leg journeys across zones, so that zoned buildings can serve interfloor traffic; a routing problem across banks rather than a scheduler change.
-6. **Event-driven core.** For very large buildings or long idle periods a discrete-event engine would be faster; at the brief's scale the tick loop is simpler and the outputs are per tick anyway.
+3. **Groups and no-shows.** Passengers travel alone in the generator; groups going to one floor would make demand lumpier and test the capacity-aware projection where it matters.
+4. **The fairness weight by time of day.** The park floor now follows a schedule; the fairness weight could too, since it pays under saturation and costs elsewhere.
+5. **Richer physics.** Door times and acceleration would make dwell a function of stop type; the one-tick model is enough to make stops cost something, and the ranking held at zero, one and two.
+6. **Sky-lobby transfers.** Two-leg journeys across zones, so that zoned buildings can serve interfloor traffic; a routing problem across banks rather than a scheduler change.
 
 ## Repository
 
 - `src/elevator_sim/` — the package (stdlib only); `schedulers/` holds the algorithms
 - `tests/` — unit, structural, property-based, golden and CLI tests
-- `scenarios/` — input files, `manifest.json`, and the seeded generator
-- `docs/` — brief, whitepaper, presentation, assumptions, design, research, testing, charts, results, the browser simulator (`viewer/`)
+- `scenarios/` — input files, `manifest.json`, the seeded generator, the seed and sensitivity studies
+- `docs/` — brief, whitepaper, presentation, assumptions, design, research, testing, charts, results and the analysis explorer (`results/`), the browser simulator (`viewer/`)
 
 MIT licence.

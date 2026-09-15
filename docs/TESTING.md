@@ -52,7 +52,7 @@ The interactive simulator on GitHub Pages runs a JavaScript port of the engine (
 
 ## What is not tested, and why
 
-- Rendering details of the charts and the simulator page beyond "produces a file" / "loads without console errors" (the page was exercised in a headless browser: floor click, live traffic, CSV upload, phone width). The engine underneath is covered by the conformance matrix. Pixel tests would cost more than they catch here.
+- Rendering details of the charts and the simulator page beyond "produces a file" / "loads without console errors" (the page is exercised in a headless browser at 1280×800, 1440×900 and 1920×1080: one screen, no console errors, floor click, live traffic, CSV upload, the stop-cost setting). The engine underneath is covered by the conformance matrix. Pixel tests would cost more than they catch here.
 - Performance. The full comparison runs in a few seconds; there is no requirement that would justify a benchmark.
 - The projection horizon bound in `etd.py` is generous by construction rather than proven tight; the invariant tests cover the outcome (every passenger delivered, deterministic), not the bound itself.
 
