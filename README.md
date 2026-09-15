@@ -14,6 +14,7 @@ Discrete-time simulation of a destination-dispatch elevator system, built agains
 ## Looking at the solution on GitHub, without running anything
 
 - **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): traffic patterns for any building, all three rules side by side with a live ranking, add passengers, live traffic, your own CSV. Space to play, ← → to step.
+- **[The whitepaper](docs/WHITEPAPER.md)** — the whole story top to bottom for a mixed audience: the question, the model, the rules, the evidence, and which rule and policy to choose for which building and traffic.
 - **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
 - **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps.
 - **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).
@@ -80,7 +81,7 @@ uv run ruff check . && uv run ruff format --check .
 
 ## Results in brief
 
-Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/results/comparison.md`](docs/results/comparison.md).
+Full table and discussion in [`docs/DESIGN.md`](docs/DESIGN.md); raw numbers in [`docs/results/comparison.md`](docs/results/comparison.md); which rule and policy to choose for which building, with the reasoning, in [`docs/WHITEPAPER.md`](docs/WHITEPAPER.md#which-rule-which-policy-for-which-building).
 
 - ETD has the lowest average and p90 wait on every realistic traffic pattern: 1.2× (quiet interfloor) to 3.7× (tall building) lower average wait than nearest-car, and 2–3.3× lower than round robin.
 - Under a single-origin capacity burst ETD and round robin tie: when the system is saturated the only lever is spreading load evenly.
@@ -111,6 +112,6 @@ Every decision the brief left open — what costs time, the order of operations 
 - `src/elevator_sim/` — the package (stdlib only); `schedulers/` holds the algorithms
 - `tests/` — unit, structural, property-based, golden and CLI tests
 - `scenarios/` — input files, `manifest.json`, and the seeded generator
-- `docs/` — brief, assumptions, design, research, testing, charts, results, the browser simulator (`viewer/`)
+- `docs/` — brief, whitepaper, assumptions, design, research, testing, charts, results, the browser simulator (`viewer/`)
 
 MIT licence.

@@ -60,7 +60,7 @@ One refinement, found by a property-based test: a passenger waiting at the car's
 
 **A17. Positions log.** `positions.csv` with header `time,elevator_1,…,elevator_k` and one row per tick.
 
-**A18. Trace.** `trace.json` with per-tick car state (floor, direction, load, dwell) and events (request, assign, board, alight) for the viewer and for debugging. Not required by the brief; it is what makes behaviour inspectable.
+**A18. Trace.** `trace.json` with per-tick car state (floor, direction, load, dwell) and events (request, assign, board, alight) for inspection and debugging. Not required by the brief; it is what makes behaviour inspectable. (The first browser viewer replayed this file; the current simulator runs its own port of the engine instead, so the trace is now for the `run` command's users.)
 
 **A19. Statistics.** For wait and total time: min, max, mean, p50, p90; plus a short list of generated observations (share of passengers waiting more than twice the median, busiest origin floor, per-car passengers carried and stop counts, idle share).
 
