@@ -4,16 +4,16 @@
 
 Discrete-time simulation of a destination-dispatch elevator system, built against the brief in [`docs/brief.pdf`](docs/brief.pdf): configurable cars, floors and capacity; three scheduling algorithms behind one interface; the positions log and passenger statistics the brief asks for; and a measured comparison of the schedulers on realistic traffic patterns.
 
-**See it run without installing anything:** [the interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) runs the engine in your browser — pick a traffic pattern and a dispatch rule, compare two rules side by side on identical traffic, click a floor to add a passenger, turn on continuous arrivals, change the building, or upload your own CSV. It is a JavaScript port of the Python engine, verified identical on every committed scenario by an automated test.
+**See it run without installing anything:** [the interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/) runs the engine in your browser — pick a traffic pattern and any building (cars, floors, capacity, number of people), watch all three rules side by side on identical traffic with a live ranking, click a floor to add a passenger, turn on continuous arrivals, or upload your own CSV. It is a JavaScript port of the Python engine, verified identical on every committed scenario by an automated test.
 
 
-[![The interactive simulator comparing two rules on the morning rush](docs/charts/simulator.png)](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)
+[![The interactive simulator: all three rules on the morning rush, live standings](docs/charts/simulator.png)](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)
 
 ![Average and p90 waiting time per scenario and scheduler](docs/charts/wait_by_scenario.png)
 
 ## Looking at the solution on GitHub, without running anything
 
-- **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): scenarios, side-by-side rules, add passengers, live traffic, your own CSV. Space to play, ← → to step.
+- **[The interactive simulator](https://samuelgregorovic.github.io/elevator-dispatch-sim/docs/viewer/)** — the engine running in the browser (GitHub Pages, static, no install): traffic patterns for any building, all three rules side by side with a live ranking, add passengers, live traffic, your own CSV. Space to play, ← → to step.
 - **[Comparison table](docs/results/comparison.md)** — average, p90 and maximum wait and total time for every scheduler on every scenario; discussed in [`docs/DESIGN.md`](docs/DESIGN.md#what-the-comparison-shows).
 - **[Charts](docs/charts/)** — wait by scenario, wait distributions, positions over time, fairness sweeps.
 - **[An example run](docs/example_run/)** — the exact files `run` produces for the morning up-peak: [`positions.csv`](docs/example_run/positions.csv) (one row per tick), [`summary.json`](docs/example_run/summary.json) and the printed [`summary.txt`](docs/example_run/summary.txt).

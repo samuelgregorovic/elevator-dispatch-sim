@@ -293,3 +293,19 @@ export function makeTrip(rng, floors, mix) {
   const s = upper(); let d = upper(); while (d === s) d = upper();
   return [s, d];
 }
+
+/** Generate `people` requests for any building from a pattern's directional mix and arrival rate. Seeded. */
+export function generateTraffic({ floors, people, mix, rate, seed = 1 }) {
+  const rng = mulberry32(seed);
+  const out = [];
+  let tick = 0;
+  while (out.length < people) {
+    const n = poisson(rng, rate);
+    for (let k = 0; k < n && out.length < people; k++) {
+      const [source, dest] = makeTrip(rng, floors, mix);
+      out.push({ time: tick, id: `p${String(out.length + 1).padStart(4, '0')}`, source, dest });
+    }
+    tick += 1;
+  }
+  return out;
+}
